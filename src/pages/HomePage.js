@@ -1193,7 +1193,7 @@ const HomePage = () => {
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
                   <ProductBrand>{product.brand}</ProductBrand>
-                  <ProductPrice>PKR {product.price}</ProductPrice>
+                  <ProductPrice>{product.price}</ProductPrice>
                   <ColorOptions>
                     {product.colors && product.colors.filter(color => color.name && color.hex).map((color, index) => (
                       <ColorSwatch key={index} color={color.hex || color} />
@@ -1236,7 +1236,7 @@ const HomePage = () => {
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
                   <ProductBrand>{product.brand}</ProductBrand>
-                  <ProductPrice>PKR {product.price}</ProductPrice>
+                  <ProductPrice>{product.price}</ProductPrice>
                   <ColorOptions>
                     {product.colors && product.colors.map((color, index) => (
                       <ColorSwatchContainer key={index}>

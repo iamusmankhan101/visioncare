@@ -342,86 +342,22 @@ const TotalLabel = styled.span`
   font-size: 1rem;
 `;
 
-const TotalAmount = styled.span`
-  font-weight: 600;
-  font-size: 1.2rem;
-`;
 
-const SavingsTag = styled.div`
-  display: inline-block;
-  background-color: #4CAF50;
-  color: white;
-  font-size: 0.8rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 4px;
-  margin-left: 0.5rem;
-`;
 
 // Update the ButtonsContainer and add a SelectLensButton
+
 const ButtonsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
-  margin-top: 1.5rem;
-  
-  @media (max-width: 480px) {
-    gap: 0.6rem;
-    margin-top: 1rem;
-  }
-`;
-
-const SelectLensButton = styled.button`
-  background-color: #48b2ee;
-  color: white;
-  border: none;
-  padding: 0.8rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  width: 100%;
-  transition: background-color 0.2s;
-  
-  &:hover {
-    background-color: #a07828;
-  }
-`;
-
-const OrderNowButton = styled.button`
-  background-color: #48b2ee;
-  color: white;
-  border: none;
-  padding: 0.8rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  width: 100%;
-  transition: background-color 0.2s;
-  
-  &:hover {
-    background-color: #a07828;
-  }
-`;
-
-const AddToCartButton = styled.button`
-  background-color: transparent;
-  color: #48b2ee;
-  border: 1px solid #48b2ee;
-  padding: 0.8rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  width: 100%;
-  transition: all 0.2s;
-  
-  &:hover {
-    background-color: #f9f3e8;
-  }
+  align-items: center;
+  margin-top: 1rem;
 `;
 
 const LensSelectionButton = styled.button`
   background-color: #48b2ee;
   border: 1px solid #ddd;
   padding: 1rem;
+{{ ... }}
   border-radius: 8px;
   cursor: pointer;
   width: 100%;
@@ -725,11 +661,6 @@ const ContinueButton = styled(ModalButton)`
   }
 `;
 
-const RecommendedSection = styled.div`
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
-`;
 
 const AttributeLabel = styled.div`
   font-weight: 600;
@@ -2634,17 +2565,17 @@ const ProductDetailPage = () => {
   
   // State variables
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedImage, setSelectedImage] = useState(0);
   const [isImageChanging, setIsImageChanging] = useState(false);
-  const [activeTab, setActiveTab] = useState('description');
+  const [, setActiveTab] = useState('description');
   const [activeAboutTab, setActiveAboutTab] = useState('details');
   
   const [selectedLensType, setSelectedLensType] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [inWishlist, setInWishlist] = useState(false);
+  const [, setQuantity] = useState(1);
+  const [, setInWishlist] = useState(false);
   
   // Add new state for modal
   const [isLensModalOpen, setIsLensModalOpen] = useState(false);
@@ -4282,7 +4213,7 @@ const ProductDetailPage = () => {
                     <BackButton onClick={handleBackNavigation}>
                       ← Back
                     </BackButton>
-                    <LensColorTitle>Choose a lens color</LensColorTitle>
+                    <LensColorTitle>Choose Lens Type</LensColorTitle>
                     
                     <LensColorOption 
                       selected={selectedLensColor === 'Clear'}

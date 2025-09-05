@@ -1,7 +1,40 @@
-# Hostinger Deployment Guide for Eyewear Website
+# Deployment Guide for Eyewear Website
 
 ## 🎯 Overview
-Your React eyewear website is ready for deployment! The production build has been created successfully.
+Your React eyewear website is ready for deployment! This guide covers both GitHub deployment and traditional hosting options.
+
+## 🚀 GitHub Deployment (Recommended)
+
+### Step 1: GitHub Repository Setup
+Your local Git repository is already initialized with the initial commit completed.
+
+### Step 2: Create GitHub Repository
+1. Go to [GitHub.com](https://github.com) and sign in
+2. Click **"New repository"** or the **"+"** icon → **"New repository"**
+3. Repository settings:
+   - **Repository name:** `eyewear-ecommerce` (or your preferred name)
+   - **Description:** `Modern eyewear e-commerce website built with React`
+   - **Visibility:** Public (recommended for free hosting)
+   - **DO NOT** initialize with README, .gitignore, or license (we already have these)
+4. Click **"Create repository"**
+
+### Step 3: Connect Local Repository to GitHub
+After creating the repository, run these commands in your project directory:
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/eyewear-ecommerce.git
+git branch -M main
+git push -u origin main
+```
+
+### Step 4: Deploy with GitHub Pages
+1. In your GitHub repository, go to **Settings** → **Pages**
+2. Under **Source**, select **"Deploy from a branch"**
+3. Choose **"gh-pages"** branch (we'll create this)
+4. Click **Save**
+
+### Step 5: Automated Deployment Setup
+We'll create a GitHub Action to automatically build and deploy your React app.
 
 ## 📁 Build Files Location
 Your optimized production files are located in:

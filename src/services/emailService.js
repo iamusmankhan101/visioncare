@@ -9,7 +9,7 @@ const EMAIL_PUBLIC_KEY = 'PA1sBHzR3bGsllCLx'; // Replace with your EmailJS publi
 
 // Contact form specific EmailJS configuration
 const CONTACT_SERVICE_ID = 'service_c8oh7k9'; // Replace with your contact form service ID
-const CONTACT_TEMPLATE_ID = 'template_6yf73tb'; // Replace with your contact form template ID
+const CONTACT_TEMPLATE_ID = ''; // Replace with your contact form template ID
 
 // Initialize EmailJS
 

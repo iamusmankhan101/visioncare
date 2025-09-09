@@ -2106,6 +2106,142 @@ const GradientTintLabel = styled.div`
   color: #333;
 `;
 
+// Checkout Flow Styled Components
+const CheckoutFlowContainer = styled.div`
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+`;
+
+const CheckoutFlowTitle = styled.h2`
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: #333;
+`;
+
+const CheckoutFlowSubtitle = styled.p`
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+`;
+
+const CheckoutFlowGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+`;
+
+const CheckoutFlowCard = styled.div`
+  border: 2px solid ${props => props.selected ? '#48b2ee' : '#e0e0e0'};
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: ${props => props.selected ? '#f8fcff' : 'white'};
+  
+  &:hover {
+    border-color: #48b2ee;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(72, 178, 238, 0.15);
+  }
+`;
+
+const CheckoutFlowCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const CheckoutFlowCardTitle = styled.h3`
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+`;
+
+const CheckoutFlowCardPrice = styled.span`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: ${props => props.free ? '#28a745' : '#48b2ee'};
+`;
+
+const CheckoutFlowCardDescription = styled.p`
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+`;
+
+const CheckoutFlowCardFeatures = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const CheckoutFlowCardFeature = styled.li`
+  color: #555;
+  margin-bottom: 0.5rem;
+  padding-left: 1.2rem;
+  position: relative;
+  
+  &:before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #28a745;
+    font-weight: bold;
+  }
+`;
+
+const CheckoutFlowNavigation = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+`;
+
+const CheckoutFlowBackButton = styled.button`
+  background: transparent;
+  border: 2px solid #ddd;
+  color: #666;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: #999;
+    color: #333;
+  }
+`;
+
+const CheckoutFlowContinueButton = styled.button`
+  background: ${props => props.disabled ? '#ccc' : '#48b2ee'};
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: ${props => props.disabled ? '#ccc' : '#3a9bd8'};
+  }
+`;
+
 // Checkout Review Page Styled Components
 const CheckoutReviewContainer = styled.div`
   max-width: 600px;
@@ -2593,6 +2729,11 @@ const ProductDetailPage = () => {
   // Add state for lens color selection
   const [selectedLensColor, setSelectedLensColor] = useState('');
   const [selectedSunOption, setSelectedSunOption] = useState('Basic');
+  const [selectedTransitionsOption, setSelectedTransitionsOption] = useState('GEN-S');
+  const [selectedBluelightOption, setSelectedBluelightOption] = useState('EBDBlue-360');
+  const [selectedEBDBlue360Type, setSelectedEBDBlue360Type] = useState('1.6');
+  const [selectedEBDBlueSmartColor, setSelectedEBDBlueSmartColor] = useState('Gray');
+  const [selectedEBDBluePlusType, setSelectedEBDBluePlusType] = useState('1.5');
   
   // Add state for tint customization
   const [selectedTintStrength, setSelectedTintStrength] = useState('Dark (80%)');
@@ -2605,9 +2746,15 @@ const ProductDetailPage = () => {
   const [selectedMirroredSunColor, setSelectedMirroredSunColor] = useState('Silver');
   const [selectedGradientColor, setSelectedGradientColor] = useState('Gray');
   
-  // Add state for checkout/review page
+  // Add state for checkout flow pages
   const [showCheckoutReview, setShowCheckoutReview] = useState(false);
+  const [showUsageSelection, setShowUsageSelection] = useState(false);
+  const [showLensTypeSelection, setShowLensTypeSelection] = useState(false);
+  const [showPrescriptionMethod, setShowPrescriptionMethod] = useState(false);
   const [hasBluelightUpgrade, setHasBluelightUpgrade] = useState(false);
+  const [selectedUsage, setSelectedUsage] = useState(null);
+  const [selectedLensTypeOption, setSelectedLensTypeOption] = useState(null);
+  const [selectedPrescriptionMethod, setSelectedPrescriptionMethod] = useState(null);
   
   // Add prescription form state
   const [prescriptionData, setPrescriptionData] = useState({
@@ -2794,10 +2941,55 @@ const ProductDetailPage = () => {
     setIsLensModalOpen(false);
   };
   
-  // Add function to handle continuing to checkout
+  // Navigation functions for checkout flow
+  const handleContinueToUsage = () => {
+    console.log('Starting checkout flow - Going to checkout review');
+    setIsLensModalOpen(false);
+    setShowCheckoutReview(true);
+  };
+  
+  const handleContinueToLensType = () => {
+    console.log('Moving to Step 2: Lens Type Selection');
+    setShowUsageSelection(false);
+    setShowLensTypeSelection(true);
+  };
+  
+  const handleContinueToPrescriptionMethod = () => {
+    console.log('Moving to Step 3: Prescription Method Selection');
+    setShowLensTypeSelection(false);
+    setShowPrescriptionMethod(true);
+  };
+  
+  const handleContinueToPrescriptionForm = () => {
+    console.log('Moving to Step 4: Prescription Form');
+    setShowPrescriptionMethod(false);
+    // Clear all checkout flow states
+    setShowUsageSelection(false);
+    setShowLensTypeSelection(false);
+    setShowPrescriptionMethod(false);
+    setIsLensModalOpen(true);
+    setModalScreen('prescription-form');
+  };
+  
   const handleContinueToCheckout = () => {
     setIsLensModalOpen(false);
     setShowCheckoutReview(true);
+  };
+  
+  // Back navigation functions
+  const handleBackToUsage = () => {
+    setShowLensTypeSelection(false);
+    setShowUsageSelection(true);
+  };
+  
+  const handleBackToLensType = () => {
+    setShowPrescriptionMethod(false);
+    setShowLensTypeSelection(true);
+  };
+  
+  const handleBackToPrescriptionMethod = () => {
+    setIsLensModalOpen(false);
+    setShowPrescriptionMethod(true);
   };
   
   // Enhanced prescription scanning function with realistic OCR simulation
@@ -2984,8 +3176,42 @@ const ProductDetailPage = () => {
   const calculateSubtotal = () => {
     let subtotal = parseFloat(product?.price) || 23; // Use actual product price
     
-    // All lens options are now free
-    // Removed: standard lens cost, sun lens costs, lens type costs, blue light upgrade
+    // Add lens option pricing based on selections
+    if (selectedLensColor === 'Transitions') {
+      if (selectedTransitionsOption === 'GEN-S') {
+        subtotal += 149;
+      } else if (selectedTransitionsOption === 'XTRActive') {
+        subtotal += 179;
+      } else if (selectedTransitionsOption === 'Drivewear') {
+        subtotal += 199;
+      }
+    } else if (selectedLensColor === 'Blue Light Filtering') {
+      if (selectedBluelightOption === 'EBDBlue-360') {
+        if (selectedEBDBlue360Type === '1.6') {
+          subtotal += 68.95;
+        } else if (selectedEBDBlue360Type === '1.74') {
+          subtotal += 78.95;
+        }
+      } else if (selectedBluelightOption === 'SightRelax') {
+        subtotal += 85.95;
+      } else if (selectedBluelightOption === 'EBDBlue-Smart') {
+        subtotal += 78.95;
+      } else if (selectedBluelightOption === 'EBDBlue-Plus') {
+        if (selectedEBDBluePlusType === '1.59') {
+          subtotal += 35.95;
+        } else if (selectedEBDBluePlusType === '1.5') {
+          subtotal += 22.95;
+        } else if (selectedEBDBluePlusType === '1.6') {
+          subtotal += 58.95;
+        }
+      }
+    } else if (selectedLensColor === 'Sun') {
+      if (selectedSunOption === 'Basic') {
+        subtotal += 4.95;
+      } else if (selectedSunOption === 'Polarized') {
+        subtotal += 89;
+      }
+    }
     
     return subtotal.toFixed(2);
   };
@@ -3000,6 +3226,17 @@ const ProductDetailPage = () => {
     ? originalPrice * (1 - product.discount.discountPercentage / 100)
     : originalPrice;
 
+  // Debug: Log current state
+  console.log('Current state:', {
+    showUsageSelection,
+    showLensTypeSelection,
+    showPrescriptionMethod,
+    isLensModalOpen,
+    modalScreen
+  });
+
+
+  
   // Show checkout review if requested
   if (showCheckoutReview) {
     return (
@@ -3048,22 +3285,56 @@ const ProductDetailPage = () => {
               <ProductDetailLabel>{product?.name} | {selectedColor} | {selectedSize}</ProductDetailLabel>
               <ProductDetailValue>{formatPrice(product?.price)}</ProductDetailValue>
             </ProductDetailItem>
-            <ProductDetailItem>
-              <ProductDetailLabel>• {selectedLensType}</ProductDetailLabel>
-              <ProductDetailValue>Free</ProductDetailValue>
-            </ProductDetailItem>
-            <ProductDetailItem>
-              <ProductDetailLabel>• {selectedLensColor} Lenses</ProductDetailLabel>
-              <ProductDetailValue></ProductDetailValue>
-            </ProductDetailItem>
-            <ProductDetailItem>
-              <ProductDetailLabel>• Standard Lenses</ProductDetailLabel>
-              <ProductDetailValue>Free</ProductDetailValue>
-            </ProductDetailItem>
-            {hasBluelightUpgrade && (
+            
+            {/* Show selected lens options */}
+            {selectedLensColor === 'Clear' && (
               <ProductDetailItem>
-                <ProductDetailLabel>• Blue Light Filtering</ProductDetailLabel>
-                <ProductDetailValue>PKR 6.95</ProductDetailValue>
+                <ProductDetailLabel>• Clear Lenses</ProductDetailLabel>
+                <ProductDetailValue>Free</ProductDetailValue>
+              </ProductDetailItem>
+            )}
+            
+            {selectedLensColor === 'Transitions' && (
+              <ProductDetailItem>
+                <ProductDetailLabel>• Transitions® {selectedTransitionsOption === 'GEN-S' ? 'GEN S™' : selectedTransitionsOption === 'XTRActive' ? 'XTRActive®' : 'Drivewear®'}</ProductDetailLabel>
+                <ProductDetailValue>
+                  {selectedTransitionsOption === 'GEN-S' ? 'PKR 149' : 
+                   selectedTransitionsOption === 'XTRActive' ? 'PKR 179' : 'PKR 199'}
+                </ProductDetailValue>
+              </ProductDetailItem>
+            )}
+            
+            {selectedLensColor === 'Blue Light Filtering' && (
+              <ProductDetailItem>
+                <ProductDetailLabel>
+                  • {selectedBluelightOption === 'EBDBlue-360' ? `EBDBlue 360™ ${selectedEBDBlue360Type}` :
+                     selectedBluelightOption === 'SightRelax' ? 'SightRelax' :
+                     selectedBluelightOption === 'EBDBlue-Smart' ? `EBDBlue Smart 1.6 (${selectedEBDBlueSmartColor})` :
+                     selectedBluelightOption === 'EBDBlue-Plus' ? `EBDBlue Plus™ ${selectedEBDBluePlusType}` : 'Blue Light Filtering'}
+                </ProductDetailLabel>
+                <ProductDetailValue>
+                  {selectedBluelightOption === 'EBDBlue-360' ? 
+                    (selectedEBDBlue360Type === '1.6' ? 'PKR 68.95' : 'PKR 78.95') :
+                   selectedBluelightOption === 'SightRelax' ? 'PKR 85.95' :
+                   selectedBluelightOption === 'EBDBlue-Smart' ? 'PKR 78.95' :
+                   selectedBluelightOption === 'EBDBlue-Plus' ? 
+                    (selectedEBDBluePlusType === '1.59' ? 'PKR 35.95' : 
+                     selectedEBDBluePlusType === '1.5' ? 'PKR 22.95' : 'PKR 58.95') : 'PKR 0'}
+                </ProductDetailValue>
+              </ProductDetailItem>
+            )}
+            
+            {selectedLensColor === 'Sun' && (
+              <ProductDetailItem>
+                <ProductDetailLabel>
+                  • Sun Protection ({selectedSunOption})
+                  {selectedSunOption === 'Basic' && selectedBasicTintColor && ` - ${selectedBasicTintColor}`}
+                  {selectedSunOption === 'Gradient' && selectedGradientColor && ` - ${selectedGradientColor} Gradient`}
+                </ProductDetailLabel>
+                <ProductDetailValue>
+                  {selectedSunOption === 'Basic' ? 'PKR 4.95' : 
+                   selectedSunOption === 'Polarized' ? 'PKR 89' : 'Free'}
+                </ProductDetailValue>
               </ProductDetailItem>
             )}
           </ReviewProductDetailsSection>
@@ -3325,9 +3596,7 @@ const ProductDetailPage = () => {
                 )}
               </SpecsContainer>
               
-              <ProductImageContainer>
-                <img src={product?.image || '/images/eyeglasses.webp'} alt={`${product?.name} details`} />
-              </ProductImageContainer>
+              
             </AboutContent>
           </TabsContainer>
         </AboutSection>
@@ -3414,21 +3683,61 @@ const ProductDetailPage = () => {
           
           <ReviewProductDetailsSection>
             <ProductDetailItem>
-              <ProductDetailLabel>Ember | Matte Black | Large</ProductDetailLabel>
-              <ProductDetailValue>$23</ProductDetailValue>
+              <ProductDetailLabel>{product?.name} | {selectedColor} | {selectedSize}</ProductDetailLabel>
+              <ProductDetailValue>{formatPrice(product?.price)}</ProductDetailValue>
             </ProductDetailItem>
-            <ProductDetailItem>
-              <ProductDetailLabel>• Single Vision Distance</ProductDetailLabel>
-              <ProductDetailValue>Free</ProductDetailValue>
-            </ProductDetailItem>
-            <ProductDetailItem>
-              <ProductDetailLabel>• Clear Lenses</ProductDetailLabel>
-              <ProductDetailValue></ProductDetailValue>
-            </ProductDetailItem>
-            <ProductDetailItem>
-              <ProductDetailLabel>• Standard Lenses</ProductDetailLabel>
-              <ProductDetailValue>Free</ProductDetailValue>
-            </ProductDetailItem>
+            
+            {/* Show selected lens options */}
+            {selectedLensColor === 'Clear' && (
+              <ProductDetailItem>
+                <ProductDetailLabel>• Clear Lenses</ProductDetailLabel>
+                <ProductDetailValue>Free</ProductDetailValue>
+              </ProductDetailItem>
+            )}
+            
+            {selectedLensColor === 'Transitions' && (
+              <ProductDetailItem>
+                <ProductDetailLabel>• Transitions® {selectedTransitionsOption === 'GEN-S' ? 'GEN S™' : selectedTransitionsOption === 'XTRActive' ? 'XTRActive®' : 'Drivewear®'}</ProductDetailLabel>
+                <ProductDetailValue>
+                  {selectedTransitionsOption === 'GEN-S' ? 'PKR 149' : 
+                   selectedTransitionsOption === 'XTRActive' ? 'PKR 179' : 'PKR 199'}
+                </ProductDetailValue>
+              </ProductDetailItem>
+            )}
+            
+            {selectedLensColor === 'Blue Light Filtering' && (
+              <ProductDetailItem>
+                <ProductDetailLabel>
+                  • {selectedBluelightOption === 'EBDBlue-360' ? `EBDBlue 360™ ${selectedEBDBlue360Type}` :
+                     selectedBluelightOption === 'SightRelax' ? 'SightRelax' :
+                     selectedBluelightOption === 'EBDBlue-Smart' ? `EBDBlue Smart 1.6 (${selectedEBDBlueSmartColor})` :
+                     selectedBluelightOption === 'EBDBlue-Plus' ? `EBDBlue Plus™ ${selectedEBDBluePlusType}` : 'Blue Light Filtering'}
+                </ProductDetailLabel>
+                <ProductDetailValue>
+                  {selectedBluelightOption === 'EBDBlue-360' ? 
+                    (selectedEBDBlue360Type === '1.6' ? 'PKR 68.95' : 'PKR 78.95') :
+                   selectedBluelightOption === 'SightRelax' ? 'PKR 85.95' :
+                   selectedBluelightOption === 'EBDBlue-Smart' ? 'PKR 78.95' :
+                   selectedBluelightOption === 'EBDBlue-Plus' ? 
+                    (selectedEBDBluePlusType === '1.59' ? 'PKR 35.95' : 
+                     selectedEBDBluePlusType === '1.5' ? 'PKR 22.95' : 'PKR 58.95') : 'PKR 0'}
+                </ProductDetailValue>
+              </ProductDetailItem>
+            )}
+            
+            {selectedLensColor === 'Sun' && (
+              <ProductDetailItem>
+                <ProductDetailLabel>
+                  • Sun Protection ({selectedSunOption})
+                  {selectedSunOption === 'Basic' && selectedBasicTintColor && ` - ${selectedBasicTintColor}`}
+                  {selectedSunOption === 'Gradient' && selectedGradientColor && ` - ${selectedGradientColor} Gradient`}
+                </ProductDetailLabel>
+                <ProductDetailValue>
+                  {selectedSunOption === 'Basic' ? 'PKR 4.95' : 
+                   selectedSunOption === 'Polarized' ? 'PKR 89' : 'Free'}
+                </ProductDetailValue>
+              </ProductDetailItem>
+            )}
           </ReviewProductDetailsSection>
           
           
@@ -3625,7 +3934,7 @@ const ProductDetailPage = () => {
                   <ModalButtonContainer>
                     <BackButton onClick={closeLensModal}>Back</BackButton>
                     <ContinueButton 
-                      onClick={handleContinueToCheckout}
+                      onClick={handleContinueToUsage}
                       disabled={!selectedLensOption}
                     >
                       Continue
@@ -3931,145 +4240,6 @@ const ProductDetailPage = () => {
                           </PrescriptionSelect>
                         </TableRow>
                         
-                        <TableRow>
-                          <EyeLabel>
-                            <div><strong>OS</strong></div>
-                            <div className="sub-label">left eye</div>
-                          </EyeLabel>
-                          <PrescriptionSelect 
-                            value={prescriptionData.os.sph}
-                            onChange={(e) => setPrescriptionData({
-                              ...prescriptionData,
-                              os: { ...prescriptionData.os, sph: e.target.value }
-                            })}
-                          >
-                            <option value="+6.00">+6.00</option>
-                            <option value="+5.75">+5.75</option>
-                            <option value="+5.50">+5.50</option>
-                            <option value="+5.25">+5.25</option>
-                            <option value="+5.00">+5.00</option>
-                            <option value="+4.75">+4.75</option>
-                            <option value="+4.50">+4.50</option>
-                            <option value="+4.25">+4.25</option>
-                            <option value="+4.00">+4.00</option>
-                            <option value="+3.75">+3.75</option>
-                            <option value="+3.50">+3.50</option>
-                            <option value="+3.25">+3.25</option>
-                            <option value="+3.00">+3.00</option>
-                            <option value="+2.75">+2.75</option>
-                            <option value="+2.50">+2.50</option>
-                            <option value="+2.25">+2.25</option>
-                            <option value="+2.00">+2.00</option>
-                            <option value="+1.75">+1.75</option>
-                            <option value="+1.50">+1.50</option>
-                            <option value="+1.25">+1.25</option>
-                            <option value="+1.00">+1.00</option>
-                            <option value="+0.75">+0.75</option>
-                            <option value="+0.50">+0.50</option>
-                            <option value="+0.25">+0.25</option>
-                            <option value="0.00">0.00</option>
-                            <option value="-0.25">-0.25</option>
-                            <option value="-0.50">-0.50</option>
-                            <option value="-0.75">-0.75</option>
-                            <option value="-1.00">-1.00</option>
-                            <option value="-1.25">-1.25</option>
-                            <option value="-1.50">-1.50</option>
-                            <option value="-1.75">-1.75</option>
-                            <option value="-2.00">-2.00</option>
-                            <option value="-2.25">-2.25</option>
-                            <option value="-2.50">-2.50</option>
-                            <option value="-2.75">-2.75</option>
-                            <option value="-3.00">-3.00</option>
-                            <option value="-3.25">-3.25</option>
-                            <option value="-3.50">-3.50</option>
-                            <option value="-3.75">-3.75</option>
-                            <option value="-4.00">-4.00</option>
-                            <option value="-4.25">-4.25</option>
-                            <option value="-4.50">-4.50</option>
-                            <option value="-4.75">-4.75</option>
-                            <option value="-5.00">-5.00</option>
-                            <option value="-5.25">-5.25</option>
-                            <option value="-5.50">-5.50</option>
-                            <option value="-5.75">-5.75</option>
-                            <option value="-6.00">-6.00</option>
-                            <option value="-6.25">-6.25</option>
-                            <option value="-6.50">-6.50</option>
-                            <option value="-6.75">-6.75</option>
-                            <option value="-7.00">-7.00</option>
-                            <option value="-7.25">-7.25</option>
-                            <option value="-7.50">-7.50</option>
-                            <option value="-7.75">-7.75</option>
-                            <option value="-8.00">-8.00</option>
-                          </PrescriptionSelect>
-                          <PrescriptionSelect 
-                            value={prescriptionData.os.cyl}
-                            onChange={(e) => setPrescriptionData({
-                              ...prescriptionData,
-                              os: { ...prescriptionData.os, cyl: e.target.value }
-                            })}
-                          >
-                            <option value="0.00">0.00</option>
-                            <option value="-0.25">-0.25</option>
-                            <option value="-0.50">-0.50</option>
-                            <option value="-0.75">-0.75</option>
-                            <option value="-1.00">-1.00</option>
-                            <option value="-1.25">-1.25</option>
-                            <option value="-1.50">-1.50</option>
-                            <option value="-1.75">-1.75</option>
-                            <option value="-2.00">-2.00</option>
-                            <option value="-2.25">-2.25</option>
-                            <option value="-2.50">-2.50</option>
-                            <option value="-2.75">-2.75</option>
-                            <option value="-3.00">-3.00</option>
-                          </PrescriptionSelect>
-                          <PrescriptionSelect 
-                            value={prescriptionData.os.axis}
-                            onChange={(e) => setPrescriptionData({
-                              ...prescriptionData,
-                              os: { ...prescriptionData.os, axis: e.target.value }
-                            })}
-                          >
-                            <option value="--">--</option>
-                            <option value="1">1</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                            <option value="20">20</option>
-                            <option value="25">25</option>
-                            <option value="30">30</option>
-                            <option value="35">35</option>
-                            <option value="40">40</option>
-                            <option value="45">45</option>
-                            <option value="50">50</option>
-                            <option value="55">55</option>
-                            <option value="60">60</option>
-                            <option value="65">65</option>
-                            <option value="70">70</option>
-                            <option value="75">75</option>
-                            <option value="80">80</option>
-                            <option value="85">85</option>
-                            <option value="90">90</option>
-                            <option value="95">95</option>
-                            <option value="100">100</option>
-                            <option value="105">105</option>
-                            <option value="110">110</option>
-                            <option value="115">115</option>
-                            <option value="120">120</option>
-                            <option value="125">125</option>
-                            <option value="130">130</option>
-                            <option value="135">135</option>
-                            <option value="140">140</option>
-                            <option value="145">145</option>
-                            <option value="150">150</option>
-                            <option value="155">155</option>
-                            <option value="160">160</option>
-                            <option value="165">165</option>
-                            <option value="170">170</option>
-                            <option value="175">175</option>
-                            <option value="180">180</option>
-                          </PrescriptionSelect>
-                        </TableRow>
-                        
                         <PDSection>
                           <EyeLabel><strong>PD</strong></EyeLabel>
                           {!prescriptionData.twoPDNumbers ? (
@@ -4230,7 +4400,10 @@ const ProductDetailPage = () => {
                     
                     <LensColorOption 
                       selected={selectedLensColor === 'Blue Light Filtering'}
-                      onClick={() => setSelectedLensColor('Blue Light Filtering')}
+                      onClick={() => {
+                        setSelectedLensColor('Blue Light Filtering');
+                        setModalScreen('blue-light-options');
+                      }}
                     >
                       <LensColorIcon color="#4A90E2">☀️</LensColorIcon>
                       <LensColorInfo>
@@ -4243,7 +4416,10 @@ const ProductDetailPage = () => {
                     
                     <LensColorOption 
                       selected={selectedLensColor === 'Transitions'}
-                      onClick={() => setSelectedLensColor('Transitions')}
+                      onClick={() => {
+                        setSelectedLensColor('Transitions');
+                        setModalScreen('transitions-options');
+                      }}
                     >
                       <LensColorIcon color="#6B7280">🔄</LensColorIcon>
                       <LensColorInfo>
@@ -4273,10 +4449,336 @@ const ProductDetailPage = () => {
                       </LensColorInfo>
                     </LensColorOption>
                     
-                    <ContinueToCheckoutButton onClick={handleContinueToCheckout}>
+                    <ContinueToCheckoutButton onClick={handleContinueToUsage}>
                       Continue to checkout
                     </ContinueToCheckoutButton>
                   </LensColorContainer>
+                </ModalScreen>
+                
+                {/* Transitions® Options Screen */}
+                <ModalScreen active={modalScreen === 'transitions-options'}>
+                  <SunProtectionContainer>
+                    <BackButton onClick={handleBackNavigation}>
+                      ← Back
+                    </BackButton>
+                    <SunProtectionTitle>Transitions® & Photochromic</SunProtectionTitle>
+                    
+                    <SunProtectionOption 
+                      selected={selectedTransitionsOption === 'GEN-S'}
+                      onClick={() => {
+                        setSelectedTransitionsOption('GEN-S');
+                      }}
+                    >
+                      <SunProtectionIcon color="#6B7280">🔄</SunProtectionIcon>
+                      <SunProtectionInfo>
+                        <SunProtectionHeader>
+                          <SunProtectionName>
+                            Transitions® GEN S™ <InfoIcon>i</InfoIcon>
+                            <span style={{backgroundColor: '#17a2b8', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px'}}>New</span>
+                          </SunProtectionName>
+                          <SunProtectionPrice>PKR 149</SunProtectionPrice>
+                        </SunProtectionHeader>
+                        <SunProtectionDescription>
+                          Perfect everyday lenses that are ultra responsive, fading back 2x faster than previous generations, with a spectacular color palette and HD vision at speed of your life.
+                        </SunProtectionDescription>
+                      </SunProtectionInfo>
+                    </SunProtectionOption>
+                    
+                    <SunProtectionOption 
+                      selected={selectedTransitionsOption === 'XTRActive'}
+                      onClick={() => {
+                        setSelectedTransitionsOption('XTRActive');
+                      }}
+                    >
+                      <SunProtectionIcon color="#4F46E5">🔄</SunProtectionIcon>
+                      <SunProtectionInfo>
+                        <SunProtectionHeader>
+                          <SunProtectionName>
+                            Transitions® XTRActive® <InfoIcon>i</InfoIcon>
+                            <span style={{backgroundColor: '#007bff', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px'}}>Top pick</span>
+                          </SunProtectionName>
+                          <SunProtectionPrice>PKR 179</SunProtectionPrice>
+                        </SunProtectionHeader>
+                        <SunProtectionDescription>
+                          The best extra darkness and protection for light-sensitive wearers. Lens activates outdoors, in the car, and in hot temperatures while indoor clarity is clear with a hint of protective tint.
+                        </SunProtectionDescription>
+                      </SunProtectionInfo>
+                    </SunProtectionOption>
+                    
+                    <SunProtectionOption 
+                      selected={selectedTransitionsOption === 'Drivewear'}
+                      onClick={() => {
+                        setSelectedTransitionsOption('Drivewear');
+                      }}
+                    >
+                      <SunProtectionIcon color="#059669">🚗</SunProtectionIcon>
+                      <SunProtectionInfo>
+                        <SunProtectionHeader>
+                          <SunProtectionName>
+                            Transitions® Drivewear® <InfoIcon>i</InfoIcon>
+                          </SunProtectionName>
+                          <SunProtectionPrice>PKR 199</SunProtectionPrice>
+                        </SunProtectionHeader>
+                        <SunProtectionDescription>
+                          Best adaptive sunglass lenses for driving that change color according to environment with UV and polarized protection for comfort and safety behind the wheel.
+                        </SunProtectionDescription>
+                      </SunProtectionInfo>
+                    </SunProtectionOption>
+                    
+                    <ContinueToCheckoutButton onClick={handleContinueToUsage}>
+                      Continue to checkout
+                    </ContinueToCheckoutButton>
+                  </SunProtectionContainer>
+                </ModalScreen>
+                
+                {/* Blue Light Filtering Options Screen */}
+                <ModalScreen active={modalScreen === 'blue-light-options'}>
+                  <SunProtectionContainer>
+                    <BackButton onClick={handleBackNavigation}>
+                      ← Back
+                    </BackButton>
+                    <SunProtectionTitle>Blue Light Filtering</SunProtectionTitle>
+                    
+                    <SunProtectionOption 
+                      selected={selectedBluelightOption === 'EBDBlue-360'}
+                      onClick={() => {
+                        setSelectedBluelightOption('EBDBlue-360');
+                      }}
+                    >
+                      <SunProtectionIcon color="#4A90E2">🛡️</SunProtectionIcon>
+                      <SunProtectionInfo>
+                        <SunProtectionHeader>
+                          <SunProtectionName>
+                            EBDBlue 360™ <InfoIcon>i</InfoIcon>
+                            <span style={{backgroundColor: '#007bff', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px'}}>Top pick</span>
+                          </SunProtectionName>
+                          <SunProtectionPrice>From PKR 68.95</SunProtectionPrice>
+                        </SunProtectionHeader>
+                        <SunProtectionDescription>
+                          Lenses that offer clarity around the clock by blocking 100% of UV rays during the day, filtering blue-violet light, and reducing glare at night.
+                        </SunProtectionDescription>
+                        
+                        {selectedBluelightOption === 'EBDBlue-360' && (
+                          <div style={{marginTop: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
+                            <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#374151'}}>
+                              Choose Lens Thickness:
+                            </div>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                              <div 
+                                style={{
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'space-between',
+                                  padding: '8px 12px', 
+                                  backgroundColor: selectedEBDBlue360Type === '1.6' ? '#dbeafe' : 'white',
+                                  border: selectedEBDBlue360Type === '1.6' ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEBDBlue360Type('1.6');
+                                }}
+                              >
+                                <span style={{fontSize: '13px', color: '#374151'}}>EBDBlue 360 1.6 <span style={{color: '#6b7280'}}>ⓘ</span></span>
+                                <span style={{fontSize: '13px', fontWeight: '600', color: '#374151'}}>PKR 68.95</span>
+                              </div>
+                              <div 
+                                style={{
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'space-between',
+                                  padding: '8px 12px', 
+                                  backgroundColor: selectedEBDBlue360Type === '1.74' ? '#dbeafe' : 'white',
+                                  border: selectedEBDBlue360Type === '1.74' ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEBDBlue360Type('1.74');
+                                }}
+                              >
+                                <span style={{fontSize: '13px', color: '#374151'}}>EBDBlue 360 1.74 <span style={{color: '#6b7280'}}>ⓘ</span></span>
+                                <span style={{fontSize: '13px', fontWeight: '600', color: '#374151'}}>PKR 78.95</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </SunProtectionInfo>
+                    </SunProtectionOption>
+                    
+                    <SunProtectionOption 
+                      selected={selectedBluelightOption === 'SightRelax'}
+                      onClick={() => {
+                        setSelectedBluelightOption('SightRelax');
+                      }}
+                    >
+                      <SunProtectionIcon color="#6366F1">👁️</SunProtectionIcon>
+                      <SunProtectionInfo>
+                        <SunProtectionHeader>
+                          <SunProtectionName>
+                            SightRelax <InfoIcon>i</InfoIcon>
+                          </SunProtectionName>
+                          <SunProtectionPrice>From PKR 85.95</SunProtectionPrice>
+                        </SunProtectionHeader>
+                        <SunProtectionDescription>
+                          Lenses that offer a visual boost via a magnified portion to relax and relieve digital eye strain while filtering blue-violet light. Produced by Essilor.
+                        </SunProtectionDescription>
+                      </SunProtectionInfo>
+                    </SunProtectionOption>
+                    
+                    <SunProtectionOption 
+                      selected={selectedBluelightOption === 'EBDBlue-Smart'}
+                      onClick={() => {
+                        setSelectedBluelightOption('EBDBlue-Smart');
+                      }}
+                    >
+                      <SunProtectionIcon color="#10B981">🔄</SunProtectionIcon>
+                      <SunProtectionInfo>
+                        <SunProtectionHeader>
+                          <SunProtectionName>
+                            EBDBlue Smart 1.6 <InfoIcon>i</InfoIcon>
+                          </SunProtectionName>
+                          <SunProtectionPrice>PKR 78.95</SunProtectionPrice>
+                        </SunProtectionHeader>
+                        <SunProtectionDescription>
+                          Blue light filtering lenses that change color according to environment to offer responsive UV protection.
+                        </SunProtectionDescription>
+                        
+                        {selectedBluelightOption === 'EBDBlue-Smart' && (
+                          <div style={{marginTop: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
+                            <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#374151'}}>
+                              Color: {selectedEBDBlueSmartColor}
+                            </div>
+                            <div style={{display: 'flex', gap: '12px', marginBottom: '16px'}}>
+                              <div 
+                                style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  borderRadius: '50%',
+                                  backgroundColor: '#4A5568',
+                                  border: selectedEBDBlueSmartColor === 'Gray' ? '3px solid #3b82f6' : '2px solid #d1d5db',
+                                  cursor: 'pointer',
+                                  position: 'relative'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEBDBlueSmartColor('Gray');
+                                }}
+                              />
+                              <div 
+                                style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  borderRadius: '50%',
+                                  backgroundColor: '#8B4513',
+                                  border: selectedEBDBlueSmartColor === 'Brown' ? '3px solid #3b82f6' : '2px solid #d1d5db',
+                                  cursor: 'pointer',
+                                  position: 'relative'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEBDBlueSmartColor('Brown');
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </SunProtectionInfo>
+                    </SunProtectionOption>
+                    
+                    <SunProtectionOption 
+                      selected={selectedBluelightOption === 'EBDBlue-Plus'}
+                      onClick={() => {
+                        setSelectedBluelightOption('EBDBlue-Plus');
+                      }}
+                    >
+                      <SunProtectionIcon color="#F59E0B">💡</SunProtectionIcon>
+                      <SunProtectionInfo>
+                        <SunProtectionHeader>
+                          <SunProtectionName>
+                            EBDBlue Plus™ <InfoIcon>i</InfoIcon>
+                          </SunProtectionName>
+                          <SunProtectionPrice>From PKR 22.95</SunProtectionPrice>
+                        </SunProtectionHeader>
+                        <SunProtectionDescription>
+                          Affordable lenses with advanced blue-violet light filtering technology.
+                        </SunProtectionDescription>
+                        
+                        {selectedBluelightOption === 'EBDBlue-Plus' && (
+                          <div style={{marginTop: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
+                            <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#374151'}}>
+                              Choose Lens Thickness:
+                            </div>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                              <div 
+                                style={{
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'space-between',
+                                  padding: '8px 12px', 
+                                  backgroundColor: selectedEBDBluePlusType === '1.59' ? '#dbeafe' : 'white',
+                                  border: selectedEBDBluePlusType === '1.59' ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEBDBluePlusType('1.59');
+                                }}
+                              >
+                                <span style={{fontSize: '13px', color: '#374151'}}>EBDBlue Plus™ 1.59 <span style={{color: '#6b7280'}}>ⓘ</span></span>
+                                <span style={{fontSize: '13px', fontWeight: '600', color: '#374151'}}>PKR 35.95</span>
+                              </div>
+                              <div 
+                                style={{
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'space-between',
+                                  padding: '8px 12px', 
+                                  backgroundColor: selectedEBDBluePlusType === '1.5' ? '#dbeafe' : 'white',
+                                  border: selectedEBDBluePlusType === '1.5' ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEBDBluePlusType('1.5');
+                                }}
+                              >
+                                <span style={{fontSize: '13px', color: '#374151'}}>EBDBlue Plus™ 1.5 <span style={{color: '#6b7280'}}>ⓘ</span></span>
+                                <span style={{fontSize: '13px', fontWeight: '600', color: '#374151'}}>PKR 22.95</span>
+                              </div>
+                              <div 
+                                style={{
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'space-between',
+                                  padding: '8px 12px', 
+                                  backgroundColor: selectedEBDBluePlusType === '1.6' ? '#dbeafe' : 'white',
+                                  border: selectedEBDBluePlusType === '1.6' ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedEBDBluePlusType('1.6');
+                                }}
+                              >
+                                <span style={{fontSize: '13px', color: '#374151'}}>EBDBlue Plus™ 1.6 <span style={{color: '#6b7280'}}>ⓘ</span></span>
+                                <span style={{fontSize: '13px', fontWeight: '600', color: '#374151'}}>PKR 58.95</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </SunProtectionInfo>
+                    </SunProtectionOption>
+                    
+                    <ContinueToCheckoutButton onClick={handleContinueToUsage}>
+                      Continue to checkout
+                    </ContinueToCheckoutButton>
+                  </SunProtectionContainer>
                 </ModalScreen>
                 
                 {/* Sun Protection Options Screen */}
@@ -4300,7 +4802,7 @@ const ProductDetailPage = () => {
                           <SunProtectionName>
                             Basic <InfoIcon>i</InfoIcon>
                           </SunProtectionName>
-                          <SunProtectionPrice>$4.95</SunProtectionPrice>
+                          <SunProtectionPrice>PKR 4.95</SunProtectionPrice>
                         </SunProtectionHeader>
                         <SunProtectionDescription>
                           Stylish sun tints in a range of colors with UV protection.
@@ -4321,7 +4823,7 @@ const ProductDetailPage = () => {
                           <SunProtectionName>
                             Polarized <InfoIcon>i</InfoIcon>
                           </SunProtectionName>
-                          <SunProtectionPrice>$59</SunProtectionPrice>
+                          <SunProtectionPrice>PKR 59</SunProtectionPrice>
                         </SunProtectionHeader>
                         <SunProtectionDescription>
                           Polarized lenses reduce extra bright light glares and hazy vision. An option that offers superior clarity and eye protection.
@@ -4339,7 +4841,7 @@ const ProductDetailPage = () => {
                           <SunProtectionName>
                             Gradient <InfoIcon>i</InfoIcon>
                           </SunProtectionName>
-                          <SunProtectionPrice>$149</SunProtectionPrice>
+                          <SunProtectionPrice>PKR 149</SunProtectionPrice>
                         </SunProtectionHeader>
                         <SunProtectionDescription>
                           Stylish gradient lenses that transition from dark at the top to lighter at the bottom, providing optimal sun protection while maintaining clear vision.
@@ -4393,7 +4895,7 @@ const ProductDetailPage = () => {
                             </BasicTintColorOptions>
                             <ChooseContinueButton onClick={(e) => {
                               e.stopPropagation();
-                              handleContinueToCheckout();
+                              handleContinueToUsage();
                             }}>
                               Choose & continue
                             </ChooseContinueButton>
@@ -4412,7 +4914,7 @@ const ProductDetailPage = () => {
                           <SunProtectionName>
                             Mirrored <InfoIcon>i</InfoIcon>
                           </SunProtectionName>
-                          <SunProtectionPrice>$29</SunProtectionPrice>
+                          <SunProtectionPrice>PKR 29</SunProtectionPrice>
                         </SunProtectionHeader>
                         <SunProtectionDescription>
                           Reflective lenses that combine fashion and function to reduce the amount of light entering your eyes.
@@ -4468,7 +4970,7 @@ const ProductDetailPage = () => {
                       </SunProtectionInfo>
                     </SunProtectionOption>
                     
-                    <ContinueToCheckoutButton onClick={handleContinueToCheckout}>
+                    <ContinueToCheckoutButton onClick={handleContinueToUsage}>
                       Continue to checkout
                     </ContinueToCheckoutButton>
                   </SunProtectionContainer>
@@ -4528,7 +5030,7 @@ const ProductDetailPage = () => {
                           </BasicTintColorSection>
                         )}
                       </PolarizedTintInfo>
-                      <PolarizedTintPrice>$59</PolarizedTintPrice>
+                      <PolarizedTintPrice>PKR 59</PolarizedTintPrice>
                     </PolarizedTintOption>
                     
                     <PolarizedTintOption 
@@ -4592,10 +5094,10 @@ const ProductDetailPage = () => {
                           </BasicTintColorSection>
                         )}
                       </PolarizedTintInfo>
-                      <PolarizedTintPrice>$89</PolarizedTintPrice>
+                      <PolarizedTintPrice>PKR 89</PolarizedTintPrice>
                     </PolarizedTintOption>
                     
-                    <ContinueToCheckoutButton onClick={handleContinueToCheckout}>
+                    <ContinueToCheckoutButton onClick={handleContinueToUsage}>
                       Continue to checkout
                     </ContinueToCheckoutButton>
                   </PolarizedTintContainer>
@@ -4702,7 +5204,7 @@ const ProductDetailPage = () => {
                       </TintColorGrid>
                     </TintSection>
                     
-                    <ChooseContinueButton onClick={handleContinueToCheckout}>
+                    <ChooseContinueButton onClick={handleContinueToUsage}>
                       Choose & continue
                     </ChooseContinueButton>
                   </TintCustomizationContainer>

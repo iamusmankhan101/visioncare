@@ -203,7 +203,7 @@ const applyFilters = (items, filters, sortOption) => {
   
   // Apply best selling filter
   if (filters.bestSelling) {
-    result = result.filter(item => item.bestSeller === true);
+    result = result.filter(item => item.bestSeller === true || item.bestSelling === true);
   }
   
   // Apply search filter

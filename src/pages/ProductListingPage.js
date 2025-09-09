@@ -1026,6 +1026,11 @@ const ProductListingPage = () => {
     return wishlistItems.some(item => item.id === productId);
   };
 
+  // Fetch products when component mounts
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
   // Get category, search, featured, best-sellers, and style from URL query params
   useEffect(() => {
     const params = new URLSearchParams(location.search);

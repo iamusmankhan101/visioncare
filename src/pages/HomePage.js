@@ -898,7 +898,9 @@ const HomePage = () => {
 
   // Fetch products when component mounts
   useEffect(() => {
+    console.log('HomePage useEffect - loading:', loading, 'products length:', products?.length);
     if (loading === 'idle' && (!products || products.length === 0)) {
+      console.log('Dispatching fetchProducts...');
       dispatch(fetchProducts());
     }
   }, [dispatch, loading, products]);
@@ -925,7 +927,7 @@ const HomePage = () => {
   }) : [];
   
   // Filter best selling products
-  const bestSellingProducts = products ? products.filter(product => product.bestSelling).map(product => {
+  const bestSellingProducts = products ? products.filter(product => product.bestSelling || product.bestSeller).map(product => {
     const selectedColorIndex = selectedColors[product.id] || 0;
     const selectedColor = product.colors && product.colors[selectedColorIndex];
     
@@ -943,9 +945,9 @@ const HomePage = () => {
     };
   }) : [];
   
-  // Display products - use actual data if available, otherwise use empty array
-  const displayFeaturedProducts = featuredProducts.length > 0 ? featuredProducts : (products || []);
-  const displayBestSellingProducts = bestSellingProducts.length > 0 ? bestSellingProducts : (products || []);
+  // Display products - use actual data if available, otherwise show all products
+  const displayFeaturedProducts = featuredProducts.length > 0 ? featuredProducts : (products || []).slice(0, 8);
+  const displayBestSellingProducts = bestSellingProducts.length > 0 ? bestSellingProducts : (products || []).slice(0, 8);
   
   // Mock data for categories
   const categories = [
@@ -1280,6 +1282,7 @@ const HomePage = () => {
               <StyleName>{style.name}</StyleName>
             </StyleCard>
           ))}
+          
         </StyleGrid>
       </StylePickerSection>
 

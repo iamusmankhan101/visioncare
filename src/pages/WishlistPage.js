@@ -198,7 +198,7 @@ const RemoveBtn = styled.button`
 `;
 
 const WishlistPage = () => {
-  const { user, isAuthenticated } = useSelector(state => state.auth);
+  const { isAuthenticated } = useSelector(state => state.auth);
   const wishlistItems = useSelector(state => state.wishlist?.items || []);
 
   // If user is not authenticated, show sign-in prompt

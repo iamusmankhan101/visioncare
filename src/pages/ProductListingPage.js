@@ -8,7 +8,7 @@ import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice
 // Import formatPrice utility
 import formatPrice from '../utils/formatPrice';
 // At the top of the file, keep only one import for the icons
-import { FiShoppingBag, FiHeart } from 'react-icons/fi';
+import { FiHeart } from 'react-icons/fi';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -36,10 +36,6 @@ const PageTitle = styled.h1`
   }
 `;
 
-const FilterCount = styled.div`
-  font-size: 0.8rem;
-  color: #666;
-`;
 
 const ProductsContainer = styled.div`
   display: grid;
@@ -277,125 +273,6 @@ const ListingCategoryBadge = styled.span`
     top: 8px;
     left: 8px;
     font-size: 0.65rem;
-    padding: 3px 6px;
-    z-index: 10;
-  }
-`;
-
-const ColorSwatch = styled.div`
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: ${props => props.color};
-  border: 1px solid #ddd;
-  cursor: pointer;
-  
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
-const ProductContent = styled.div`
-  padding: ${props => props.viewMode === 'list' ? '0.4rem' : '0.4rem'};
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: ${props => props.viewMode === 'list' ? 'center' : 'flex-start'};
-  padding:1rem;
-  text-align: left;
-  background-color: #fff;
-  width:85%;
-  margin: auto;
-  border-radius:10px;
-  position: relative;
-  margin-top:0px;
-  height:auto;
-  
-
-  @media (max-width: 768px) {
-    padding: 0.4rem;
-    justify-content: flex-start;
-  }
-`;
-
-// Update the ProductTitle styling
-const ProductTitle = styled.h3`
-  font-size: 0.8rem;
-  margin-bottom: 0.05rem;
-  font-weight: 500;
-  color: #333;
-  line-height: 1.2;
-  
-  @media (max-width: 480px) {
-    font-size: 0.7rem;
-  }
-`;
-
-// Add ProductCategory component
-const ProductCategory = styled.p`
-  font-size: 0.7rem;
-  color: #777;
-  margin-bottom: 0.1rem;
-  font-weight: 400;
-  line-height: 1.1;
-`;
-
-// Add ProductStyle component
-const ProductStyle = styled.p`
-  font-size: 0.65rem;
-  color: #888;
-  margin-bottom: 0.1rem;
-  font-weight: 400;
-  font-style: italic;
-  line-height: 1.1;
-`;
-
-// Update the ProductBrand styling
-const ProductBrand = styled.p`
-  font-size: 0.65rem;
-  color: #666;
-  margin-bottom: 0.1rem;
-  line-height: 1.1;
-  
-  @media (max-width: 480px) {
-    font-size: 0.6rem;
-  }
-`;
-
-// Update the ProductPrice styling
-const ProductPrice = styled.p`
-  font-weight: 600;
-  font-size: 0.85rem;
-  margin-bottom: 0.1rem;
-  color: #333;
-  line-height: 1.2;
-  
-  @media (max-width: 480px) {
-    font-size: 0.75rem;
-  }
-`;
-
-// Add a CartButton component
-const CartButton = styled.button`
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background: white;
-  border: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  z-index: 2;
-  font-size: 1.2rem;
-  color: #999;
-  
-  &:hover {
-    color: #48b2ee;
   }
 `;
 
@@ -418,137 +295,269 @@ const WishlistButton = styled.button`
   font-size: 1rem;
   color: ${props => props.isInWishlist ? '#ff4757' : '#999'};
   
-  @media (max-width: 768px) {
-    width: 24px;
-    height: 24px;
-    font-size: 0.8rem;
-    top: 8px;
-    right: 8px;
-  }
-  
   &:hover {
     color: #ff4757;
     transform: scale(1.1);
   }
 `;
 
-// Add a ColorsCount component
-const ColorsCount = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 50px;
-  background: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+const ProductContent = styled.div`
+  padding: 0.4rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+`;
+
+const ProductTitle = styled.h3`
+  font-size: 0.8rem;
+  margin-bottom: 0.05rem;
   font-weight: 500;
-  color: #666;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  z-index: 2;
+  color: #333;
+  line-height: 1.2;
   
-  @media (max-width: 768px) {
-    top: 40px;
-    right: 8px;
-    padding: 3px 6px;
-    font-size: 0.6rem;
+  @media (max-width: 480px) {
+    font-size: 0.65rem;
   }
 `;
 
-// Add a BestSeller badge component
-const BestSellerBadge = styled.div`
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: #48b2ee;
-  color: white;
-  padding: 4px 8px;
-  font-size: 0.7rem;
-  border-radius: 4px;
-  font-weight: 600;
-  z-index: 2;
+
+
+const FilterToggle = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    margin-bottom: 1.2rem;
+  }
 `;
 
+const FilterTag = styled.div`
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  
+  button {
+    background: none;
+    border: none;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: #666;
+  }
+`;
 
+const FilterTags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
 
+const PromoBanner = styled.div`
+  background: linear-gradient(135deg, #48b2ee, #a07828);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+`;
+
+const MobileViewToggle = styled.div`
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 0.2rem;
+  gap: 0.2rem;
+`;
+
+const ViewToggleButton = styled.button`
+  flex: 1;
+  background: ${props => props.active ? '#48b2ee' : 'transparent'};
+  color: ${props => props.active ? 'white' : '#666'};
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+`;
+
+const ProductBrand = styled.p`
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0 0 0.25rem 0;
+  font-weight: 400;
+`;
+
+const ProductPrice = styled.div`
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #48b2ee;
+  margin-bottom: 0.25rem;
+`;
 
 const ColorOptions = styled.div`
   display: flex;
-  padding-top:10px;
-  gap: 0.15rem;
-  margin: auto;
-  justify-content: center;
-  align-items: center;
-  width: fit-content;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
 `;
 
-const ColorOption = styled.div`
-  width: 16px;
-  height: 16px;
+const ColorSwatch = styled.div`
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background-color: ${props => props.color};
-  cursor: pointer;
+  background-color: ${props => props.color || '#ccc'};
   border: 1px solid #ddd;
-  transition: transform 0.2s ease;
-  margin: auto;
-  
-  &:hover {
-    transform: scale(1.1);
-  }
+  cursor: pointer;
 `;
 
-const ViewButton = styled(Link)`
-  display: block;
-  text-align: center;
-  background-color: transparent;
-  color: #d99b3a;
-  padding: 0.5rem;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  border: 1px solid #d99b3a;
-  
-  &:hover {
-    background-color: #d99b3a;
-    color: white;
-  }
+const MobileFilterModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: ${props => props.show ? 'flex' : 'none'};
+  flex-direction: column;
+  z-index: 1000;
 `;
 
-const NoResults = styled.div`
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 2rem;
+const MobileFilterHeader = styled.div`
+  background: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+`;
+
+const MobileFilterTitle = styled.h3`
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+`;
+
+const MobileFilterClose = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
   color: #666;
 `;
 
-const ResetButton = styled.button`
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+const MobileFilterContent = styled.div`
+  flex: 1;
+  background: white;
+  overflow-y: auto;
+  padding: 1rem;
+`;
+
+const MobileSortSection = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const MobileSortLabel = styled.h4`
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+`;
+
+const MobileSortOption = styled.button`
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.75rem 0;
+  font-size: 1rem;
   cursor: pointer;
-  margin-top: 1rem;
-  transition: background-color 0.3s ease;
+  border-bottom: 1px solid #eee;
+`;
+
+const MobileFilterSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const MobileFilterSectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+`;
+
+const MobileFilterSectionTitle = styled.h4`
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const MobileFilterSectionIcon = styled.span`
+  font-size: 1.2rem;
+  color: #666;
+`;
+
+const MobileFilterSectionContent = styled.div`
+  padding: 1rem 0;
+`;
+
+const MobileFilterOption = styled.button`
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
   font-size: 0.9rem;
-  
-  &:hover {
-    background-color: #e9ecef;
-  }
+  cursor: pointer;
+  color: ${props => props.selected ? '#48b2ee' : '#333'};
+  font-weight: ${props => props.selected ? '600' : '400'};
+`;
+
+const SelectedFilterValue = styled.span`
+  font-size: 0.8rem;
+  color: #48b2ee;
+  font-weight: 400;
+`;
+
+const MobileApplyButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  padding: 1rem;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
 `;
 
 const TopFiltersContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   gap: 1rem;
   
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+    align-items: stretch;
+    gap: 1rem;
   }
 `;
 
@@ -562,7 +571,7 @@ const FilterPillsContainer = styled.div`
 const FilterPillsLabel = styled.span`
   font-weight: 600;
   color: #333;
-  font-size: 0.9rem;
+  white-space: nowrap;
 `;
 
 const FilterPills = styled.div`
@@ -572,18 +581,17 @@ const FilterPills = styled.div`
 `;
 
 const FilterPill = styled.button`
+  background: ${props => props.active ? '#48b2ee' : '#f5f5f5'};
+  color: ${props => props.active ? 'white' : '#666'};
+  border: none;
   padding: 0.5rem 1rem;
-  border: 1px solid ${props => props.active ? '#333' : '#ddd'};
   border-radius: 20px;
-  background: ${props => props.active ? '#333' : 'white'};
-  color: ${props => props.active ? 'white' : '#333'};
-  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  transition: all 0.2s;
   
   &:hover {
-    border-color: #333;
-    background: ${props => props.active ? '#333' : '#f8f9fa'};
+    background: ${props => props.active ? '#3a9bd9' : '#e8e8e8'};
   }
 `;
 
@@ -596,7 +604,7 @@ const SortContainer = styled.div`
 const SortLabel = styled.span`
   font-weight: 600;
   color: #333;
-  font-size: 0.9rem;
+  white-space: nowrap;
 `;
 
 const SortSelect = styled.select`
@@ -604,344 +612,42 @@ const SortSelect = styled.select`
   border: 1px solid #ddd;
   border-radius: 4px;
   background: white;
-  font-size: 0.85rem;
   cursor: pointer;
-  
-  &:focus {
-    outline: none;
-    border-color: #333;
-  }
+  font-size: 0.9rem;
 `;
 
 const MobileFilterBar = styled.div`
-  display: none;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 1rem;
-  
-  @media (max-width: 768px) {
-    display: flex;
-  }
-`;
-
-const MobileFilterButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  
-  &:hover {
-    background: #f8f9fa;
-  }
-`;
-
-const MobileResultsCount = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-`;
-
-const MobileViewToggle = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const ViewToggleButton = styled.button`
-  background: ${props => props.active ? '#e67e22' : 'transparent'};
-  color: ${props => props.active ? 'white' : '#666'};
-  border: 1px solid #ddd;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  
-  &:hover {
-    background: ${props => props.active ? '#d35400' : '#f8f9fa'};
-  }
-`;
-
-const DesktopViewToggle = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const MobileFilterModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: white;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  transform: translateY(${props => props.show ? '0' : '-100%'});
-  opacity: ${props => props.show ? '1' : '0'};
-  visibility: ${props => props.show ? 'visible' : 'hidden'};
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-
-  @media (min-width: 769px) {
-    display: none;
-  }
-`;
-
-const MobileFilterHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-  background: #f8f9fa;
-`;
-
-const MobileFilterTitle = styled.h3`
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-`;
-
-const MobileFilterClose = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-  padding: 0;
-  
-  &:hover {
-    color: #333;
-  }
-`;
-
-const MobileCloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  color: #666;
-`;
-
-const MobileClearButton = styled.button`
-  background: none;
-  border: none;
-  color: #e67e22;
-  cursor: pointer;
-  font-weight: 500;
-`;
-
-const MobileFilterContent = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
-`;
-
-const MobileSortSection = styled.div`
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-`;
-
-const MobileSortLabel = styled.div`
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: #333;
-`;
-
-const MobileSortOption = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 0;
-  cursor: pointer;
-  color: #e67e22;
-  font-weight: 500;
-`;
-
-const MobileFilterSection = styled.div`
-  border-bottom: 1px solid #eee;
-`;
-
-const MobileFilterSectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  cursor: pointer;
-  background: white;
-  
-  &:hover {
-    background: #f8f9fa;
-  }
-`;
-
-const MobileFilterSectionTitle = styled.div`
-  font-weight: 500;
-  color: #333;
-`;
-
-const SelectedFilterValue = styled.span`
-  color: #e67e22;
-  font-weight: 400;
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
-`;
-
-const MobileFilterSectionIcon = styled.div`
-  font-size: 1.2rem;
-  color: #666;
-  transform: ${props => props.expanded ? 'rotate(45deg)' : 'rotate(0deg)'};
-  transition: transform 0.2s ease;
-`;
-
-const MobileFilterSectionContent = styled.div`
-  max-height: ${props => props.expanded ? '300px' : '0'};
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  background: #f8f9fa;
-`;
-
-const MobileFilterOption = styled.div`
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  
-  &:hover {
-    background: #e9ecef;
-    border-radius: 4px 0 0 4px;
-  }
-  
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const MobileApplyButton = styled.button`
-  background: #e67e22;
-  color: white;
-  border: none;
-  padding: 1rem;
-  margin: 1rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  
-  &:hover {
-    background: #d35400;
-  }
-`;
-
-const PromoBanner = styled.div`
-  background-image: url('/images/Untitled design (13).png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border-radius: 8px;
-  height: 200px;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const PromoContent = styled.div`
-  flex: 1;
-`;
-
-const PromoTitle = styled.h3`
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-`;
-
-const PromoText = styled.p`
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-`;
-
-const PromoCode = styled.div`
-  font-size: 0.8rem;
-  color: #e67e22;
-  font-weight: 600;
-`;
-
-const ShopNowButton = styled.button`
-  background-color: #e67e22;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  
-  &:hover {
-    background-color: #d35400;
-  }
-`;
-
-const FilterToggle = styled.div`
   display: none;
   
   @media (max-width: 768px) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.8rem 1rem;
-    background-color: #f8f8f8;
-    border-radius: 4px;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
     margin-bottom: 1rem;
-    cursor: pointer;
   }
 `;
 
-const FilterTags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-`;
-
-const FilterTag = styled.div`
+const MobileFilterButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  background-color: #f0f0f0;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  
-  button {
-    background: none;
-    border: none;
-    margin-left: 0.5rem;
-    cursor: pointer;
-    font-size: 1.2rem;
-    line-height: 1;
-    color: #666;
-  }
+  gap: 0.5rem;
 `;
 
-const ResultCount = styled.div`
+const MobileResultsCount = styled.span`
   font-size: 0.9rem;
   color: #666;
 `;
+
 
 const ProductListingPage = () => {
   const dispatch = useDispatch();
@@ -978,31 +684,9 @@ const ProductListingPage = () => {
   });
   
   // Define featuredProducts here, inside the component
-  const displayFeaturedProducts = items ? items.map(product => ({
-    id: product.id,
-    name: product.name,
-    price: formatPrice(product.price),
-    image: product.image,
-    category: product.category,
-    brand: product.brand,
-    colors: product.colors,
-    discount: product.discount,
-    featured: product.featured,
-    bestSeller: product.bestSeller,
-    fit: false
-  })) : [];
   
   
   // Add this function to handle adding products to cart
-  const handleAddToCart = (product) => {
-    dispatch(addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1
-    }));
-  };
 
   // Add wishlist functions
   const wishlistItems = useSelector(state => state.wishlist?.items || []);
@@ -1651,17 +1335,15 @@ const ProductListingPage = () => {
                   ))}
                 </ProductGrid>
       </ProductsContainer>
-      
-      <MobileFilterModal show={showFilters}>
-        <MobileFilterHeader>
-          <MobileFilterTitle>Filters</MobileFilterTitle>
-          <MobileFilterClose onClick={() => setShowFilters(false)}>×</MobileFilterClose>
-        </MobileFilterHeader>
-        
-        <MobileFilterContent>
-          <MobileSortSection>
-            <MobileSortLabel>Sort by:</MobileSortLabel>
-            <MobileSortOption onClick={() => dispatch(setSortOption('featured'))}>
+          <MobileFilterModal show={showFilters}>
+          <MobileFilterHeader>
+            <MobileFilterTitle>Filters</MobileFilterTitle>
+            <MobileFilterClose onClick={() => setShowFilters(false)}>×</MobileFilterClose>
+          </MobileFilterHeader>
+                <MobileFilterContent>
+            <MobileSortSection>
+              <MobileSortLabel>Sort by:</MobileSortLabel>
+              <MobileSortOption onClick={() => dispatch(setSortOption('featured'))}>
               Relevance {sortOption === 'featured' && '›'}
             </MobileSortOption>
           </MobileSortSection>

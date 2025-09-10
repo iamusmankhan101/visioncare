@@ -4,7 +4,6 @@ import {
   getAllOrders, 
   updateOrderStatus, 
   deleteOrder, 
-  searchOrders, 
   getOrderStats 
 } from '../../services/orderService';
 

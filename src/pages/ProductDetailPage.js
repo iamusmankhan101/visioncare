@@ -231,10 +231,12 @@ const RatingContainer = styled.div`
   margin-bottom: 1rem;
 `;
 
-const Stars = styled.div`
-  color: #f8d448;
-  font-size: 1rem;
-`;
+
+
+
+
+// Add the PrescriptionOptionsModal component
+
 
 const ReviewCount = styled.a`
   color: #666;
@@ -246,1137 +248,13 @@ const ReviewCount = styled.a`
   }
 `;
 
-const PopularFrame = styled.div`
-  background-color: #fff9e6;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  margin: 1rem 0;
-  font-size: 0.9rem;
-  color: #b38a0d;
-`;
-
-
-// Add SizeContainer back with updated styling
-const SizeContainer = styled.div`
-  margin: 1.5rem 0;
-`;
-
-const SizeLabel = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 0.8rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-align: left;
-`;
-
-// Update the RatingContainer
-// REMOVE this duplicate RatingContainer declaration entirely
-// const RatingContainer = styled.div`
-//   display: flex;
-//   align-items: center;
-//   gap: 0.5rem;
-//   margin: 1rem 0;
-// `;
-
-// Rename Stars to EnhancedStars to match what's used in the JSX
-const EnhancedStars = styled.div`
-  color: #f8d448;
-  font-size: 1.1rem;
-  display: flex;
-`;
-
-// Rename Star to StarIcon to match what's used in the JSX
-const StarIcon = styled.span`
-  margin-right: 2px;
-  color: ${props => props.filled ? '#FFD700' : '#ddd'};
-`;
-
-// Add the missing styled components
-const PriceContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-`;
-
-const CurrentPrice = styled.span`
-  font-size: 1.5rem;
-  font-weight: 600;
-`;
-
-const OriginalPrice = styled.span`
-  font-size: 1.2rem;
-  text-decoration: line-through;
-  color: #888;
-`;
-
-const PriceNote = styled.div`
-  font-size: 0.8rem;
-  color: #666;
-  margin-bottom: 1rem;
-`;
-
-const SizeGuideLink = styled.a`
-  font-size: 0.8rem;
-  color: #666;
-  text-decoration: underline;
-  &:hover {
-    color: #000;
-  }
-`;
-
-// Add these new styled components
-const TotalSection = styled.div`
-  margin: 2rem 0 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const TotalLabel = styled.span`
-  font-weight: 600;
-  font-size: 1rem;
-`;
-
-
-
-// Update the ButtonsContainer and add a SelectLensButton
-
-const ButtonsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 1rem;
-`;
-
-const LensSelectionButton = styled.button`
-  background-color: #48b2ee;
-  border: 1px solid #ddd;
-  padding: 1rem;
-{{ ... }}
-  border-radius: 8px;
-  cursor: pointer;
-  width: 100%;
-  margin: 1rem 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
-  
-  .lens-info {
-    text-align: left;
-    
-    .lens-type {
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-      font-size: 1rem;
-    }
-    
-    .lens-color {
-      color: #666;
-      font-size: 0.9rem;
-    }
-  }
-  
-  .arrow {
-    font-size: 1.2rem;
-    color: #ffffff;
-  }
-  
-  &:hover {
-    background-color: #48b2ee;
-  }
-`;
-
-
-// Add these styled components before the ProductDetailPage component
-
-// Add the missing styled components for the modal
-const LensSelectionModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
-  display: ${props => props.isOpen ? 'flex' : 'none'};
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding-right:60px;
-  overlay:hidden;
-`;
-
-const ModalContainer = styled.div`
-  max-width: 1300px;
-  width: 100%;
-  height: 90vh;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  
-  @media (max-width: 768px) {
-    height: 100vh;
-    width: 100%;
-    border-radius: 0;
-    max-height: 100%;
-  }
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 1rem 2rem;
-  border-bottom: 1px solid #eee;
-  
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-  
-  .back-button {
-    color: #48b2ee;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    text-decoration: none;
-    
-    &:hover {
-      text-decoration: underline;
-    }
-    
-    &:before {
-      content: '←';
-      margin-right: 5px;
-    }
-  }
-  
-  .close-button {
-    margin-left: auto;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #888;
-    
-    &:hover {
-      color: #333;
-    }
-  }
-`;
-
-const ModalContent = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  overflow: hidden;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const ProductContainer = styled.div`
-  flex: 0 0 40%;
-  background-color: #f9f9f9;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-right: 1px solid #eee;
-  
-  @media (max-width: 768px) {
-    display: none; /* Hide the product container on mobile */
-  }
-`;
-
-const LensOptionsContainer = styled.div`
-  flex: 0 0 60%;
-  padding: 3rem;
-  overflow-y: auto;
-  
-  @media (max-width: 768px) {
-    flex: 1;
-    padding: 1.5rem;
-    width: 100%;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 1rem;
-    width:92%;
-  }
-`;
-
-const ProductDisplay = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  
-  img {
-    width: 250px;
-    height: auto;
-    margin-bottom: 1rem;
-  }
-  
-  .product-name {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #333;
-  }
-  
-  .product-type {
-    font-size: 1rem;
-    color: #666;
-  }
-`;
-
-const LensUsageTitle = styled.h2`
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: rem;
-  color: #333;
-  text-align:left;
-  margin-top:1rem;
-`;
-
-const LensInfoLink = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 2rem;
-  color: #48b2ee;
-  font-size: 0.9rem;
-  cursor: pointer;
-  
-  &:before {
-    content: 'ⓘ';
-    margin-right: 5px;
-    font-size: 1rem;
-  }
-  
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const LensOptionCard = styled.div`
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  background-color: ${props => props.selected ? '#f9f9f9' : '#fff'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%; /* Ensure cards take full width of their container */
-  box-sizing: border-box; /* Include padding in width calculation */
-  
-  &:hover {
-    border-color: #48b2ee;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  }
-  
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-`;
-
-const LensOptionCards = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 82%;
-  
-  @media (max-width: 768px) {
-    max-width: 100%;
-  }
-`;
-
-const LensOptionTitle = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #333;
-`;
-
-const LensOptionDescription = styled.p`
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0;
-`;
-
-const ModalButtonContainer = styled.div`
-  display: none;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #f0f0f0;
-  max-width:82%;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-top: 2rem;
-    max-width: 92%;
-  }
-`;
-
-const ModalButton = styled.button`
-  padding: 0.9rem 1.8rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-`;
-
-const BackButton = styled(ModalButton)`
-  background-color: #48b2ee;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius:10px;
-  
-  &:hover {
-    background-color: #48b2ee;
-  }
-`;
-
-const ContinueButton = styled(ModalButton)`
-  background-color: #48b2ee;
-  color: white;
-  box-shadow: 0 4px 8px rgba(192, 138, 51, 0.25);
-  
-  &:hover {
-    background-color: #a67a2d;
-    box-shadow: 0 6px 12px rgba(192, 138, 51, 0.3);
-    transform: translateY(-2px);
-  }
-`;
-
-
-const AttributeLabel = styled.div`
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  text-align: left;
-  margin-top: 1rem;
-`;
-
-// Review Form Styled Components
-const ReviewsSection = styled.div`
-  margin: 3rem 0;
-  padding: 2rem;
-  background: #f9f9f9;
-  border-radius: 10px;
-  
-  @media (max-width: 768px) {
-    margin: 2rem 0;
-    padding: 1.5rem;
-  }
-`;
-
-const ReviewsTitle = styled.h2`
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-bottom: 2rem;
-  color: #333;
-  text-align: center;
-  
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-`;
-
-const ReviewFormContainer = styled.div`
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  
-  @media (max-width: 768px) {
-    padding: 1.5rem;
-  }
-`;
-
-const ReviewFormTitle = styled.h3`
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #333;
-`;
-
-const ReviewForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const ReviewFormRow = styled.div`
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-`;
-
-const ReviewInput = styled.input`
-  flex: 1;
-  padding: 0.8rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-family: inherit;
-  
-  &:focus {
-    outline: none;
-    border-color: #48b2ee;
-    box-shadow: 0 0 0 2px rgba(72, 178, 238, 0.2);
-  }
-  
-  &::placeholder {
-    color: #999;
-  }
-`;
-
-const StarRatingContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const StarRatingLabel = styled.span`
-  font-weight: 500;
-  color: #333;
-`;
-
-const StarRating = styled.div`
-  display: flex;
-  gap: 2px;
-`;
-
-const Star = styled.span`
-  font-size: 1.5rem;
-  color: ${props => props.filled ? '#f8d448' : '#ddd'};
-  cursor: pointer;
-  transition: color 0.2s ease;
-  
-  &:hover {
-    color: #f8d448;
-  }
-`;
-
-const ReviewTextarea = styled.textarea`
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 100px;
-  
-  &:focus {
-    outline: none;
-    border-color: #48b2ee;
-    box-shadow: 0 0 0 2px rgba(72, 178, 238, 0.2);
-  }
-  
-  &::placeholder {
-    color: #999;
-  }
-`;
-
-const ReviewSubmitButton = styled.button`
-  background: linear-gradient(135deg, #48b2ee 0%, #3a9bd9 100%);
-  color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  align-self: flex-start;
-  
-  &:hover {
-    background: linear-gradient(135deg, #3a9bd9 0%, #2980b9 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(72, 178, 238, 0.3);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-  
-  @media (max-width: 768px) {
-    align-self: stretch;
-  }
-`;
-
-const ReviewsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const ReviewItem = styled.div`
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-`;
-
-const ReviewHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-`;
-
-const ReviewerName = styled.h4`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-`;
-
-const ReviewRating = styled.div`
-  display: flex;
-  gap: 2px;
-`;
-
-const ReviewText = styled.p`
-  color: #666;
-  line-height: 1.6;
-  margin: 0 0 1rem 0;
-`;
-
-const ReviewDate = styled.span`
-  font-size: 0.9rem;
-  color: #999;
-`;
-
-const FreeShippingBadge = styled.div`
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 1rem 0;
-
-  .icon {
-    font-size: 1rem;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-  }
-`;
-
-const ShippingInfo = styled.div`
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 1rem 0;
-
-  .title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .details {
-    font-size: 0.9rem;
-    color: #666;
-    line-height: 1.4;
-  }
-
-  .highlight {
-    color: #4CAF50;
-    font-weight: 600;
-  }
-`;
-
-// Add the missing styled components
-const LensOptions = styled.div`
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-`;
-
-const LensOption = styled.div`
-  border: 1px solid ${props => props.selected ? '#000' : '#ddd'};
-  background-color: ${props => props.selected ? '#000' : 'transparent'};
-  color: ${props => props.selected ? '#fff' : '#000'};
-  padding: 0.8rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  
-  span {
-    font-size: 1.2rem;
-  }
-`;
-
-const ColorOptions = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
-  
-  
-  @media (max-width: 480px) {
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-`;
-
-const ColorOptionButton = styled.button`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border: 2px solid ${props => props.selected ? '#48b2ee' : '#e0e0e0'};
-  background-color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 70px;
-  
-  &:hover {
-    border-color: #48b2ee;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-`;
-
-const ColorSwatch = styled.div`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: ${props => props.color};
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-`;
-
-const ColorName = styled.span`
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #333;
-  text-align: center;
-`;
-
-const SizeOptions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-  
-  @media (max-width: 480px) {
-    gap: 0.3rem;
-  }
-`;
-
-const SizeOption = styled.button`
-  padding: 0.5rem 1rem;
-  border: 2px solid ${props => props.selected ? '#48b2ee' : '#ddd'};
-  background-color: ${props => props.selected ? '#48b2ee' : 'white'};
-  color: ${props => props.selected ? 'white' : '#333'};
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  
-  &:hover {
-    border-color: #48b2ee;
-    background-color: ${props => props.selected ? '#48b2ee' : '#f9f3e8'};
-  }
-`;
-
-const ProductDetailsSection = styled.section`
-  margin: 3rem 0;
-  padding: 2rem;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  display: flex;
-  gap: 2rem;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    margin: 2rem 0;
-    padding: 1.5rem;
-    gap: 1.5rem;
-  }
-  
-  @media (max-width: 480px) {
-    margin: 1rem 0;
-    padding: 1rem;
-    gap: 1rem;
-  }
-  
-  > div:first-child {
-    flex: 1;
-  }
-  
-  > div:last-child {
-    flex: 1;
-  }
-`;
-
-const DetailItem = styled.div`
-  display: flex;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #eee;
-`;
-
-const DetailLabel = styled.div`
-  flex: 1;
-  font-weight: 500;
-  color: #666;
-  text-align: left;
-`;
-
-const DetailValue = styled.div`
-  flex: 1;
-  text-align: right;
-  font-weight: 500;
-`;
-
-const AboutSection = styled.section`
-  margin: 3rem 0;
-  padding: 2rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  
-  @media (max-width: 768px) {
-    margin: 2rem 0;
-    padding: 1.5rem;
-  }
-  
-  @media (max-width: 480px) {
-    margin: 1rem 0;
-    padding: 1rem;
-  }
-`;
-
-const AboutContent = styled.div`
-  display: flex;
-  gap: 2rem;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const SpecsContainer = styled.div`
-  flex: 1;
-`;
-
-const AboutTitle = styled.h3`
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-  text-align: left;
-`;
-
-const SpecRow = styled.div`
-  display: flex;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.5rem;
-`;
-
-const SpecLabel = styled.div`
-  flex: 1;
-  font-weight: 500;
-  color: #666;
-  text-align: left;
-`;
-
-const SpecValue = styled.div`
-  flex: 2;
-  font-weight: 400;
-  text-align: right;
-`;
-
-const ProductImageContainer = styled.div`
-  flex: 0 0 300px;
-  
-  img {
-    width: 100%;
-    max-width: 300px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  
-  @media (max-width: 768px) {
-    flex: 1;
-    
-    img {
-      max-width: 100%;
-    }
-  }
-`;
-
-const TabsContainer = styled.div`
-  margin: 3rem 0;
-  
-  @media (max-width: 768px) {
-    margin: 2rem 0;
-  }
-  
-  @media (max-width: 480px) {
-    margin: 1rem 0;
-  }
-`;
-
-const TabsHeader = styled.div`
-  display: flex;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 1.5rem;
-  overflow-x: auto;
-  
-  @media (max-width: 480px) {
-    margin-bottom: 1rem;
-  }
-`;
-
-const Tab = styled.button`
-  padding: 0.8rem 1.5rem;
-  background: ${props => props.active ? '#48b2ee' : 'transparent'};
-  color: ${props => props.active ? 'white' : '#333'};
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-  white-space: nowrap;
-  
-  @media (max-width: 480px) {
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
-  }
-  
-  &:hover {
-    background: ${props => props.active ? '#48b2ee' : '#eee'};
-  }
-`;
-
-const TabContent = styled.div`
-  line-height: 1.6;
-  color: #444;
-  text-align: left;
-  
-  p {
-    margin-bottom: 1rem;
-    text-align: left;
-  }
-  
-  ul {
-    padding-left: 1.5rem;
-    margin-bottom: 1rem;
-    text-align: left;
-  }
-  
-  li {
-    text-align: left;
-  }
-`;
-
-const NotFoundContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 3rem 1rem;
-  max-width: 600px;
-  margin: 0 auto;
-`;
-
-const NotFoundTitle = styled.h2`
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-`;
-
-const NotFoundMessage = styled.p`
-  color: #666;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-`;
-
-const NotFoundButton = styled(Link)`
-  background-color: #48b2ee;
-  color: white;
-  padding: 0.8rem 1.5rem;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.2s;
-  
-  &:hover {
-    background-color: #a07828;
-  }
-`;
-
-// Remove sliding animation - show only current screen
-const ModalScreensContainer = styled.div`
-  display: block;
-  width: 100%;
-  overflow-x: hidden;
-`;
-
-const ModalScreen = styled.div`
-  width: 100%;
-  flex-shrink: 0;
-  padding-bottom: 2rem;
-  overflow-y: auto;
-  display: ${props => props.active ? 'block' : 'none'};
-`;
-
-// Add the PrescriptionOptionsModal component
-const PrescriptionOptionsModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: ${props => props.isOpen ? 'flex' : 'none'};
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 1rem;
-  
-  @media (max-width: 768px) {
-    padding: 0;
-  }
-`;
-
-const PrescriptionOptionCard = styled.div`
-  display: flex;
-  max-width: 75%;
-  align-items: center;
-  padding: 1.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background-color: white;
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-  }
-
-  @media (max-width: 480px) {
-    max-width: 75%;
-  }
-  
-  &:hover {
-    border-color: #48b2ee;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .icon {
-    margin-right: 1rem;
-    font-size: 1.5rem;
-    color: #555;
-  }
-  
-  .content {
-    flex: 1;
-  }
-  
-  .new-badge {
-    background-color: #4CAF50;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    margin-left: 0.5rem;
-  }
-`;
-
-const PrescriptionTitle = styled.h2`
-  font-size: 1.55rem;
-  margin-bottom: 2rem;
-  color: #333;
-  font-weight: 800;
-  text-align:left;
-`;
-
-const PrescriptionFormTitle = styled.h2`
-  font-size: 1.55rem;
-  margin-bottom: 2rem;
-  color: #333;
-  font-weight: 800;
-  text-align: left;
-  
-`;
-
-const FindDoctorLink = styled.a`
-  color: #48b2ee;
-  text-decoration: none;
-  display: block;
-  text-align: right;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  font-weight: 800;
-  text-align: left;
-`;
 
 const RelatedProductsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 2rem;
+  overflow-y: auto;
+  display: ${props => props.active ? 'block' : 'none'};
   
   @media (max-width: 1024px) {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1436,97 +314,12 @@ const ProductImage = styled.div`
   }
 `;
 
-const ProductCardInfo = styled.div`
-  padding: 1.25rem;
-  
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 0.75rem;
-  }
-`;
 
-const ProductCardName = styled.h4`
-  font-size: 1.1rem;
-  margin: 0 0 0.25rem 0;
-  font-weight: 600;
-  color: #333;
-  line-height: 1.3;
-  
-  @media (max-width: 768px) {
-    font-size: 1rem;
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-  }
-`;
 
-const ProductCardPrice = styled.div`
-  font-weight: 700;
-  color: #48b2ee;
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
-  
-  @media (max-width: 768px) {
-    font-size: 1rem;
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-  }
-`;
 
-const ProductCardBrand = styled.p`
-  font-size: 0.85rem;
-  color: #666;
-  margin: 0 0 0.25rem 0;
-  font-weight: 400;
-  
-  @media (max-width: 480px) {
-    font-size: 0.8rem;
-  }
-`;
 
 // Add missing styled components for the related products section
-const CategoryBadge = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  z-index: 2;
-`;
 
-const CartButton = styled.button`
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background-color: #48b2ee;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: all 0.3s ease;
-  z-index: 2;
-  
-  &:hover {
-    background-color: #a07828;
-    transform: scale(1.1);
-  }
-`;
 
 const ProductContent = styled.div`
   padding: 1rem;
@@ -1600,7 +393,381 @@ const RelatedProductImage = styled.div`
   }
 `;
 
-// Add styled components for prescription form
+const AboutSection = styled.div`
+  margin: 2rem 0;
+`;
+
+const AboutTitle = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+`;
+
+const TabsContainer = styled.div`
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const TabsHeader = styled.div`
+  display: flex;
+  background: #f8f9fa;
+`;
+
+const Tab = styled.button`
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  background: ${props => props.active ? 'white' : 'transparent'};
+  cursor: pointer;
+  font-weight: ${props => props.active ? '600' : '400'};
+  border-bottom: ${props => props.active ? '2px solid #48b2ee' : 'none'};
+`;
+
+const AboutContent = styled.div`
+  background: white;
+`;
+
+const SpecsContainer = styled.div`
+  padding: 1.5rem;
+`;
+
+const TabContent = styled.div`
+  display: ${props => props.active ? 'block' : 'none'};
+`;
+
+const SpecRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+`;
+
+const SpecLabel = styled.span`
+  font-weight: 500;
+  color: #666;
+`;
+
+const SpecValue = styled.span`
+  color: #333;
+`;
+
+const ReviewsSection = styled.div`
+  margin: 2rem 0;
+`;
+
+const ReviewsTitle = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+`;
+
+const ReviewFormContainer = styled.div`
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+`;
+
+const ReviewFormTitle = styled.h3`
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+`;
+
+const ReviewForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const ReviewFormRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const ReviewInput = styled.input`
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+`;
+
+const StarRatingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const StarRatingLabel = styled.label`
+  font-weight: 500;
+  color: #333;
+`;
+
+const StarRating = styled.div`
+  display: flex;
+  gap: 0.25rem;
+`;
+
+const Star = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: ${props => props.filled ? '#f8d448' : '#ddd'};
+  cursor: pointer;
+  padding: 0;
+  
+  &:hover {
+    color: #f8d448;
+  }
+`;
+
+const ReviewTextarea = styled.textarea`
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+`;
+
+const ReviewSubmitButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  align-self: flex-start;
+`;
+
+const ReviewsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const ReviewItem = styled.div`
+  padding: 1.5rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: white;
+`;
+
+const ReviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const ReviewerName = styled.span`
+  font-weight: 600;
+  color: #333;
+`;
+
+const ReviewRating = styled.div`
+  display: flex;
+  gap: 0.25rem;
+`;
+
+const ReviewText = styled.p`
+  color: #666;
+  line-height: 1.6;
+  margin: 0.5rem 0;
+`;
+
+const ReviewDate = styled.span`
+  font-size: 0.9rem;
+  color: #999;
+`;
+
+const LensSelectionModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: ${props => props.isOpen ? 'flex' : 'none'};
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+`;
+
+const ModalContainer = styled.div`
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+`;
+
+const ModalHeader = styled.div`
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ModalContent = styled.div`
+  padding: 1.5rem;
+`;
+
+const ProductContainer = styled.div`
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const ProductDisplay = styled.div`
+  flex: 1;
+  text-align: center;
+`;
+
+const LensOptionsContainer = styled.div`
+  flex: 2;
+`;
+
+const LensUsageTitle = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+`;
+
+const LensOptionCards = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const LensOptionCard = styled.div`
+  border: 2px solid ${props => props.selected ? '#48b2ee' : '#eee'};
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: ${props => props.selected ? '#f0f8ff' : 'white'};
+  
+  &:hover {
+    border-color: #48b2ee;
+  }
+`;
+
+const LensOptionTitle = styled.h3`
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const LensOptionDescription = styled.p`
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0;
+`;
+
+const ModalButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+`;
+
+const BackButton = styled.button`
+  background: none;
+  border: 1px solid #ddd;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  
+  &:hover {
+    background: #f5f5f5;
+  }
+`;
+
+const ContinueButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  
+  &:hover {
+    background: #3a9bd9;
+  }
+  
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const PrescriptionTitle = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+`;
+
+const PrescriptionOptionCard = styled.div`
+  border: 2px solid ${props => props.selected ? '#48b2ee' : '#eee'};
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: ${props => props.selected ? '#f0f8ff' : 'white'};
+  margin-bottom: 1rem;
+  
+  &:hover {
+    border-color: #48b2ee;
+  }
+`;
+
+const PrescriptionFormTitle = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+`;
+
+const ModalScreensContainer = styled.div`
+  display: block;
+  width: 100%;
+  overflow-x: hidden;
+`;
+
+const ModalScreen = styled.div`
+  width: 100%;
+  display: ${props => props.active ? 'block' : 'none'};
+`;
+
 const PrescriptionForm = styled.div`
   max-width: 82%;
 
@@ -1771,7 +938,6 @@ const LearnLink = styled.a`
   }
 `;
 
-// Add styled components for upload modal
 const UploadContainer = styled.div`
   max-width: 75%;
   text-align: center;
@@ -1850,7 +1016,6 @@ const HiddenFileInput = styled.input`
   display: none;
 `;
 
-// Add styled components for image preview screen
 const PreviewContainer = styled.div`
   max-width: 75%;
   text-align: center;
@@ -1953,7 +1118,6 @@ const ChooseDifferentFileButton = styled.button`
   }
 `;
 
-// Lens Color Selection Styled Components
 const LensColorContainer = styled.div`
   max-width: 80%;
   text-align: left;
@@ -1970,7 +1134,6 @@ const LensColorTitle = styled.h2`
   font-weight: 700;
 `;
 
-// Polarized Tint Selection Styled Components
 const PolarizedTintContainer = styled.div`
   max-width: 80%;
   text-align: left;
@@ -2265,6 +1428,128 @@ const ReviewSubtitle = styled.p`
   color: #666;
   margin-bottom: 2rem;
   line-height: 1.5;
+`;
+
+const EnhancedStars = styled.div`
+  display: flex;
+  gap: 0.25rem;
+`;
+
+const StarIcon = styled.span`
+  color: ${props => props.filled ? '#f8d448' : '#ddd'};
+  font-size: 1rem;
+`;
+
+const PriceContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+`;
+
+const CurrentPrice = styled.span`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #48b2ee;
+`;
+
+const OriginalPrice = styled.span`
+  font-size: 1.2rem;
+  color: #999;
+  text-decoration: line-through;
+`;
+
+const AttributeLabel = styled.div`
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #333;
+  font-size: 1rem;
+`;
+
+const ColorOptions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+`;
+
+const ColorOptionButton = styled.button`
+  background: none;
+  border: 2px solid ${props => props.selected ? '#48b2ee' : '#ddd'};
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    border-color: #48b2ee;
+  }
+`;
+
+const ColorSwatch = styled.div`
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: ${props => props.color || '#ccc'};
+  margin-bottom: 0.25rem;
+`;
+
+const ColorName = styled.span`
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+`;
+
+const SizeOptions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+`;
+
+const SizeOption = styled.button`
+  background: ${props => props.selected ? '#48b2ee' : 'white'};
+  color: ${props => props.selected ? 'white' : '#333'};
+  border: 2px solid ${props => props.selected ? '#48b2ee' : '#ddd'};
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  
+  &:hover {
+    border-color: #48b2ee;
+    background: ${props => props.selected ? '#48b2ee' : '#f0f8ff'};
+  }
+`;
+
+const FreeShippingBadge = styled.div`
+  background: #28a745;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+`;
+
+const LensSelectionButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 1rem;
+  transition: background 0.2s;
+  
+  &:hover {
+    background: #3a9bd9;
+  }
 `;
 
 const PrescriptionDetailsSection = styled.div`

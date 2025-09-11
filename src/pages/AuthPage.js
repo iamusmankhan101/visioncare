@@ -554,11 +554,15 @@ const AuthPage = () => {
     <PageContainer>
       <LeftPanel>
         <BrandSection>
-          <img src="/images/logo2.png" alt="Eyewearr Logo" style={{
-            maxWidth: '200px',
-            height: 'auto',
-            filter: 'brightness(0) invert(1)'
-          }} />
+          <img 
+            src="/images/logo2.png" 
+            alt="Eyewearr Logo" 
+            style={{
+              maxWidth: '200px',
+              height: 'auto',
+              filter: 'brightness(0) invert(1)'
+            }} 
+          />
         </BrandSection>
         
       </LeftPanel>

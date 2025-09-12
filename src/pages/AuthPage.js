@@ -628,7 +628,7 @@ const AuthPage = () => {
               
 
               <SignUpPrompt>
-                Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('register'); }}>Sign Up</a>
+                Don't have an account? <button type="button" onClick={() => setActiveTab('register')} style={{background: 'none', border: 'none', color: '#48b2ee', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit'}}>Sign Up</button>
               </SignUpPrompt>
             </form>
           ) : (
@@ -713,7 +713,7 @@ const AuthPage = () => {
             
 
               <SignUpPrompt>
-                Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('signin'); }}>Sign In</a>
+                Already have an account? <button type="button" onClick={() => setActiveTab('signin')} style={{background: 'none', border: 'none', color: '#48b2ee', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit'}}>Sign In</button>
               </SignUpPrompt>
             </form>
           )}

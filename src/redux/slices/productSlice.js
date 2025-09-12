@@ -5,7 +5,7 @@ import sampleProducts from '../../utils/addSampleProducts';
 // Async thunks for API operations
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       return await productApi.getAllProducts();
     } catch (error) {

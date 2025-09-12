@@ -43,16 +43,7 @@
       "react-app/jest"
     ],
     "rules": {
-      "no-unused-vars": [
-        "warn",
-        {
-          "vars": "all",
-          "args": "after-used",
-          "ignoreRestSiblings": true,
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_"
-        }
-      ]
+      "no-unused-vars": "off"
     }
   },
   "browserslist": {

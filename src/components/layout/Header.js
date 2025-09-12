@@ -122,18 +122,6 @@ const NavLink = styled(Link)`
   }
 `;
 
-const NavItem = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  
-  &:hover {
-    .dropdown {
-      display: block;
-    }
-  }
-`;
 
 const DropdownIcon = styled.span`
   margin-left: 4px;

@@ -2321,7 +2321,7 @@ const ProductDetailPage = () => {
                   active={selectedImage === index}
                   onClick={() => handleImageSelect(index)}
                 >
-                  <img src={img} alt={`${product.name} view ${index + 1}`} />
+                  <img src={img} alt={product.name + " view " + (index + 1)} />
                 </Thumbnail>
               ))}
             </ThumbnailsContainer>
@@ -2773,7 +2773,7 @@ const ProductDetailPage = () => {
             {/* Left container - Product details */}
             <ProductContainer>
               <ProductDisplay>
-                <img src={product?.image} alt={product?.name} />
+                <img src={product?.image || ''} alt={product?.name || ''} />
                 <div className="product-name">{product?.name}</div>
                 <div className="product-type">{product?.category} Eyeglasses</div>
                 <div style={{ fontWeight: 'bold', color: '#48b2ee', fontSize: '1.2rem', marginTop: '1rem' }}>

@@ -382,6 +382,7 @@ const ProductTitle = styled.h3`
   margin-bottom: 0.5rem;
   font-size: 1rem;
   font-weight: 500;
+
   color: #333;
   font-family: 'Montserrat', sans-serif;
 

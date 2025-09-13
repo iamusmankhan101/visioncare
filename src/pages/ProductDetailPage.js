@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
+import { fetchProductById, fetchProducts } from '../redux/slices/productSlice';
 import { FiShoppingBag } from 'react-icons/fi';
 import { addToCart } from '../redux/slices/cartSlice';
-import { fetchProductById } from '../redux/slices/productSlice';
 import formatPrice from '../utils/formatPrice';
 import * as reviewService from '../services/reviewService';
 
@@ -124,6 +124,7 @@ const ProductBrand = styled.div`
 const ProductTitle = styled.h1`
   font-size: 2rem;
   font-weight: 600;
+  text-align: left;
   margin-bottom: 1rem;
   color: #333;
   
@@ -139,6 +140,7 @@ const PriceContainer = styled.div`
 const CurrentPrice = styled.span`
   font-size: 1.5rem;
   font-weight: 600;
+  text-align: left;
   color: #333;
   margin-right: 1rem;
 `;
@@ -146,6 +148,7 @@ const CurrentPrice = styled.span`
 const OriginalPrice = styled.span`
   font-size: 1.2rem;
   color: #999;
+  text-align:left;
   text-decoration: line-through;
   margin-right: 0.5rem;
 `;
@@ -168,6 +171,7 @@ const DiscountPercentage = styled.span`
 
 const ProductDescription = styled.p`
   color: #666;
+  text-align:left;
   line-height: 1.6;
   margin-bottom: 1.5rem;
 `;
@@ -175,6 +179,7 @@ const ProductDescription = styled.p`
 const ColorLabel = styled.div`
   font-weight: 500;
   margin-bottom: 0.5rem;
+  text-align:left;
   color: #333;
 `;
 
@@ -202,6 +207,7 @@ const ColorSwatch = styled.div`
 const SizeLabel = styled.div`
   font-weight: 500;
   margin-bottom: 0.5rem;
+  text-align:left;
   color: #333;
 `;
 
@@ -278,56 +284,323 @@ const LensSelectionButton = styled.button`
   }
 `;
 
+// About Section Styled Components
+const AboutSection = styled.section`
+  margin: 3rem 0;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+`;
+
+const AboutTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+`;
+
+const TabsContainer = styled.div`
+  width: 100%;
+`;
+
+const TabsHeader = styled.div`
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 1.5rem;
+`;
+
+const Tab = styled.button`
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: ${props => props.active ? '#48b2ee' : '#666'};
+  border-bottom: 2px solid ${props => props.active ? '#48b2ee' : 'transparent'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: #48b2ee;
+  }
+`;
+
+const AboutContent = styled.div`
+  min-height: 200px;
+`;
+
+const TabContent = styled.div`
+  animation: fadeIn 0.3s ease;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+const SpecsContainer = styled.div`
+  display: grid;
+  gap: 1rem;
+`;
+
+const SpecRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const SpecLabel = styled.span`
+  font-weight: 500;
+  color: #666;
+`;
+
+const SpecValue = styled.span`
+  color: #333;
+  font-weight: 500;
+`;
+
+// Related Products Styled Components
+const RelatedProductsSection = styled.section`
+  margin: 3rem 0;
+`;
+
+const RelatedProductsTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+`;
+
+const RelatedProductsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+`;
+
+const RelatedProductCard = styled.div`
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+`;
+
+const ProductImage = styled.div`
+  height: 200px;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`;
+
+const ProductContent = styled.div`
+  padding: 1rem;
+  background-color: white;
+`;
+
+const RelatedProductBrand = styled.div`
+  color: #666;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+`;
+
+const ProductPrice = styled.div`
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+`;
+
+const ColorDot = styled.div`
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: ${props => props.color};
+  border: 1px solid #ddd;
+  margin-right: 0.25rem;
+`;
+
+const DiscountBadge = styled.span`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #e74c3c;
+  color: white;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  z-index: 1;
+`;
+
 const ProductDetailPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  const { status, error } = useSelector(state => state.products);
+  const { items: products, status, error } = useSelector(state => state.products);
   
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedSize, setSelectedSize] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
+  const [activeTab, setActiveTab] = useState('description');
 
-  // Mock product data for demonstration
+  // Fetch product data from API
   useEffect(() => {
-    // Simulate loading product data
-    setTimeout(() => {
-      setProduct({
-        id: id,
-        name: 'Ember',
-        brand: 'EyeBuyDirect',
-        price: 23,
-        image: '/images/eyeglasses.webp',
-        category: 'Prescription',
-        colors: [
-          { name: 'Black', hex: '#000000' },
-          { name: 'Brown', hex: '#8B4513' },
-          { name: 'Silver', hex: '#C0C0C0' }
-        ],
-        sizes: ['S', 'M', 'L'],
-        description: 'Stylish and comfortable eyeglasses perfect for everyday wear.',
-        material: 'Premium Acetate',
-        shape: 'Rectangle',
-        rim: 'Full Rim',
-        weight: '28g'
-      });
-      setSelectedColor('Black');
-    }, 500);
-  }, [id]);
+    if (id) {
+      dispatch(fetchProductById(id));
+    }
+  }, [dispatch, id]);
+
+  // Set product from Redux store when data is loaded
+  useEffect(() => {
+    if (products && products.length > 0) {
+      const foundProduct = products.find(p => p.id === parseInt(id));
+      if (foundProduct) {
+        setProduct(foundProduct);
+        // Set default selections
+        if (foundProduct.colors && foundProduct.colors.length > 0) {
+          setSelectedColor(foundProduct.colors[0].name);
+        }
+        if (foundProduct.sizes && foundProduct.sizes.length > 0) {
+          setSelectedSize(foundProduct.sizes[0]);
+        }
+      }
+    }
+  }, [products, id]);
 
   const openLensModal = () => {
     // Placeholder for lens modal functionality
     console.log('Opening lens selection modal...');
   };
 
-  // Calculate pricing
-  const originalPrice = product?.price || 23;
-  const hasDiscount = product?.discount && product?.discount?.discountPercentage > 0;
+  // Get related products from Redux store (exclude current product)
+  const relatedProducts = products
+    ? products
+        .filter(p => p.id !== parseInt(id)) // Exclude current product
+        .slice(0, 4) // Limit to 4 products
+        .map(p => ({
+          id: p.id,
+          name: p.name,
+          brand: p.brand,
+          price: p.price,
+          originalPrice: p.discount?.hasDiscount ? Math.round(p.price / (1 - p.discount.discountPercentage / 100)) : null,
+          image: p.image,
+          colors: p.colors ? p.colors.map(color => color.hex) : ['#000000'],
+          discount: p.discount?.hasDiscount ? `${p.discount.discountPercentage}% OFF` : null
+        }))
+    : [];
+
+  const renderTabContent = () => {
+    switch(activeTab) {
+      case 'description':
+        return (
+          <TabContent>
+            <p style={{ lineHeight: '1.6', color: '#666', marginBottom: '1rem', textAlign: 'left' }}>
+              {product?.description}
+            </p>
+            <h4 style={{ marginBottom: '0.5rem', color: '#333', textAlign: 'left' }}>Features:</h4>
+            <ul style={{ paddingLeft: '1.5rem', color: '#666', textAlign: 'left' }}>
+              {product?.features?.map((feature, index) => (
+                <li key={index} style={{ marginBottom: '0.25rem' }}>
+                  {typeof feature === 'string' ? feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : feature}
+                </li>
+              )) || (
+                <li style={{ marginBottom: '0.25rem' }}>High-quality construction</li>
+              )}
+            </ul>
+          </TabContent>
+        );
+      case 'specifications':
+        return (
+          <TabContent>
+            <SpecsContainer>
+              <SpecRow>
+                <SpecLabel>Material:</SpecLabel>
+                <SpecValue>{product?.material || 'Premium Quality'}</SpecValue>
+              </SpecRow>
+              <SpecRow>
+                <SpecLabel>Shape:</SpecLabel>
+                <SpecValue>{product?.shape || 'Classic'}</SpecValue>
+              </SpecRow>
+              <SpecRow>
+                <SpecLabel>Rim Type:</SpecLabel>
+                <SpecValue>{product?.rim || 'Full Rim'}</SpecValue>
+              </SpecRow>
+              <SpecRow>
+                <SpecLabel>Category:</SpecLabel>
+                <SpecValue>{product?.category || 'Eyewear'}</SpecValue>
+              </SpecRow>
+              <SpecRow>
+                <SpecLabel>Brand:</SpecLabel>
+                <SpecValue>{product?.brand || 'Premium Brand'}</SpecValue>
+              </SpecRow>
+              <SpecRow>
+                <SpecLabel>Available Sizes:</SpecLabel>
+                <SpecValue>{product?.sizes?.join(', ') || 'Standard'}</SpecValue>
+              </SpecRow>
+            </SpecsContainer>
+          </TabContent>
+        );
+      case 'care':
+        return (
+          <TabContent>
+            <h4 style={{ marginBottom: '1rem', color: '#333', textAlign: 'left' }}>Care Instructions:</h4>
+            <ul style={{ paddingLeft: '1.5rem', color: '#666', lineHeight: '1.6', textAlign: 'left' }}>
+              {product?.careInstructions?.map((instruction, index) => (
+                <li key={index} style={{ marginBottom: '0.5rem' }}>{instruction}</li>
+              )) || [
+                'Clean with microfiber cloth',
+                'Store in protective case',
+                'Avoid extreme temperatures',
+                'Use lens cleaner for stubborn spots'
+              ].map((instruction, index) => (
+                <li key={index} style={{ marginBottom: '0.5rem' }}>{instruction}</li>
+              ))}
+            </ul>
+          </TabContent>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Calculate pricing using actual product data structure
+  const originalPrice = product?.price || 0;
+  const hasDiscount = product?.discount?.hasDiscount && product?.discount?.discountPercentage > 0;
   const discountedPrice = hasDiscount 
     ? originalPrice * (1 - product?.discount?.discountPercentage / 100)
     : originalPrice;
+
+  // Ensure products are loaded for related products
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
 
   if (status === 'loading' || !product) {
     return (
@@ -448,6 +721,85 @@ const ProductDetailPage = () => {
           </div>
         </ProductInfo>
       </ProductLayout>
+
+      {/* About This Product Section */}
+      <AboutSection>
+        <AboutTitle>About this product</AboutTitle>
+        <TabsContainer>
+          <TabsHeader>
+            <Tab 
+              active={activeTab === 'description'} 
+              onClick={() => setActiveTab('description')}
+            >
+              Description
+            </Tab>
+            <Tab 
+              active={activeTab === 'specifications'} 
+              onClick={() => setActiveTab('specifications')}
+            >
+              Specifications
+            </Tab>
+            <Tab 
+              active={activeTab === 'care'} 
+              onClick={() => setActiveTab('care')}
+            >
+              Care Instructions
+            </Tab>
+          </TabsHeader>
+          <AboutContent>
+            {renderTabContent()}
+          </AboutContent>
+        </TabsContainer>
+      </AboutSection>
+
+      {/* Related Products Section */}
+      <RelatedProductsSection>
+        <RelatedProductsTitle>You might also like</RelatedProductsTitle>
+        <RelatedProductsGrid>
+          {relatedProducts.map((relatedProduct) => (
+            <RelatedProductCard 
+              key={relatedProduct.id}
+              onClick={() => navigate(`/products/${relatedProduct.id}`)}
+            >
+              {relatedProduct.discount && (
+                <DiscountBadge>{relatedProduct.discount}</DiscountBadge>
+              )}
+              <ProductImage>
+                <img src={relatedProduct.image} alt={relatedProduct.name} />
+              </ProductImage>
+              <ProductContent>
+                <RelatedProductBrand>{relatedProduct.brand}</RelatedProductBrand>
+                <h3 style={{ 
+                  fontSize: '1rem', 
+                  fontWeight: '600', 
+                  margin: '0.25rem 0', 
+                  color: '#333' 
+                }}>
+                  {relatedProduct.name}
+                </h3>
+                <ProductPrice>
+                  ${relatedProduct.price}
+                  {relatedProduct.originalPrice && (
+                    <span style={{ 
+                      textDecoration: 'line-through', 
+                      color: '#999', 
+                      marginLeft: '0.5rem',
+                      fontSize: '0.9rem'
+                    }}>
+                      ${relatedProduct.originalPrice}
+                    </span>
+                  )}
+                </ProductPrice>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
+                  {relatedProduct.colors.map((color, index) => (
+                    <ColorDot key={index} color={color} />
+                  ))}
+                </div>
+              </ProductContent>
+            </RelatedProductCard>
+          ))}
+        </RelatedProductsGrid>
+      </RelatedProductsSection>
     </PageContainer>
   );
 };

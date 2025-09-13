@@ -1274,9 +1274,7 @@ const HomePage = () => {
                 <StyleImage 
                   src={style.image} 
                   alt={style.name}
-                  onError={(e) => {
-                    e.target.src = '/images/placeholder.jpg';
-                  }}
+                  onError={(e) => e.target.src = '/images/placeholder.jpg'}
                 />
               </StyleImageContainer>
               <StyleName>{style.name}</StyleName>

@@ -162,6 +162,26 @@ const productSlice = createSlice({
       .addCase(deleteProductAsync.fulfilled, (state, action) => {
         state.items = state.items.filter(item => item.id !== action.payload);
         state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
+      })
+      
+      // Handle fetchProductById
+      .addCase(fetchProductById.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        // Update or add the product to the items array
+        const existingIndex = state.items.findIndex(item => item.id === action.payload.id);
+        if (existingIndex !== -1) {
+          state.items[existingIndex] = action.payload;
+        } else {
+          state.items.push(action.payload);
+        }
+        state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
+      })
+      .addCase(fetchProductById.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
       });
   }
 });

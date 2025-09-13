@@ -1220,7 +1220,7 @@ const AdminPage = () => {
                   products.map(product => (
                     <ProductItem key={product.id}>
                       <ProductImage>
-                        <img src={product.image} alt={product.name} />
+                        <img src={product.image} alt="Product image" />
                       </ProductImage>
                       <ProductInfo>
                         <ProductName>{product.name}</ProductName>

@@ -1189,16 +1189,27 @@ const HomePage = () => {
               </WishlistButton>
               
               <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <ProductImage image={product.image}>
-                
-                </ProductImage>
+                <ProductImage image={product.image} />
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
                   <ProductBrand>{product.brand}</ProductBrand>
                   <ProductPrice>{product.price}</ProductPrice>
                   <ColorOptions>
-                    {product.colors && product.colors.filter(color => color.name && color.hex).map((color, index) => (
-                      <ColorSwatch key={index} color={color.hex || color} />
+                    {product.colors && product.colors.map((color, index) => (
+                      <ColorSwatchContainer key={index}>
+                        <ColorSwatch 
+                          color={color.hex || color}
+                          selected={selectedColors[product.id] === index}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleColorSelect(product.id, index);
+                          }}
+                        />
+                        <ColorTooltip>
+                          {color.name || `Color ${index + 1}`}
+                        </ColorTooltip>
+                      </ColorSwatchContainer>
                     ))}
                   </ColorOptions>
                 </ProductContent>
@@ -1232,9 +1243,7 @@ const HomePage = () => {
               </WishlistButton>
               
               <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <ProductImage image={product.image}>
-                 
-                </ProductImage>
+                <ProductImage image={product.image} />
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
                   <ProductBrand>{product.brand}</ProductBrand>
@@ -1245,7 +1254,11 @@ const HomePage = () => {
                         <ColorSwatch 
                           color={color.hex || color}
                           selected={selectedColors[product.id] === index}
-                          onClick={() => handleColorSelect(product.id, index)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleColorSelect(product.id, index);
+                          }}
                         />
                         <ColorTooltip>
                           {color.name || `Color ${index + 1}`}

@@ -735,7 +735,7 @@ const CartPage = () => {
             
             <ItemContent>
               <ItemImage>
-                <img src={item.image} alt={item.name} />
+                <img src={item.image} alt="Cart item" />
               </ItemImage>
               
               <ItemDetails>

@@ -962,10 +962,19 @@ const RelatedProductCard = styled.div`
   }
 `;
 
-const ProductImage = styled.img`
+const ProductImage = styled.div`
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const ProductContent = styled.div`
@@ -1970,7 +1979,7 @@ const ProductDetailPage = () => {
   // Fetch product by ID directly using the thunk
   useEffect(() => {
     setLoading(true);
-    dispatch(fetchProductById(id))
+    dispatch(fetchProductById(parseInt(id)))
       .unwrap()
       .then(productData => {
         setProduct(productData);
@@ -2030,10 +2039,10 @@ const ProductDetailPage = () => {
   const _handleAddToCart = () => {
     if (product) {
       dispatch(addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
+        id: product?.id,
+        name: product?.name,
+        price: product?.price,
+        image: product?.image,
         color: selectedColor,
         size: selectedSize,
         quantity: 1
@@ -2116,7 +2125,7 @@ const ProductDetailPage = () => {
   const originalPrice = product?.price || 23;
   const hasDiscount = product?.discount && product?.discount?.discountPercentage > 0;
   const discountedPrice = hasDiscount 
-    ? originalPrice * (1 - product.discount.discountPercentage / 100)
+    ? originalPrice * (1 - product?.discount?.discountPercentage / 100)
     : originalPrice;
 
   // Debug: Log current state
@@ -2125,9 +2134,22 @@ const ProductDetailPage = () => {
     showLensTypeSelection,
     showPrescriptionMethod,
     isLensModalOpen,
-    modalScreen
+    modalScreen,
+    status,
+    product
   });
 
+  // Handle loading state
+  if (status === 'loading') {
+    content = (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h3>Loading product...</h3>
+          <p>Please wait while we fetch the product details.</p>
+        </div>
+      </div>
+    );
+  }
 
   
   // Show checkout review if requested
@@ -2268,7 +2290,7 @@ const ProductDetailPage = () => {
           <h3>Error loading product</h3>
           <p>{error || 'An unexpected error occurred'}</p>
           <button 
-            onClick={() => dispatch(fetchProductById(id))}
+            onClick={() => dispatch(fetchProductById(parseInt(id)))}
             style={{ padding: '8px 16px', background: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}
           >
             Try Again
@@ -2308,20 +2330,20 @@ const ProductDetailPage = () => {
             {hasDiscount && <DiscountBadge>SALE {product?.discount?.discountPercentage}% OFF</DiscountBadge>}
             <MainImage>
               <img 
-                src={selectedImage === 0 ? product.image : (product.gallery ? product.gallery[selectedImage-1] : productImages[selectedImage])} 
-                alt={product.name} 
+                src={selectedImage === 0 ? product?.image : (product?.gallery ? product?.gallery[selectedImage-1] : productImages[selectedImage])} 
+                alt="Product image" 
                 style={{ opacity: isImageChanging ? 0.5 : 1 }}
               />
             </MainImage>
             
             <ThumbnailsContainer>
-              {[product.image, ...(product.gallery || productImages.slice(1))].slice(0, 6).map((img, index) => (
+              {[product?.image, ...(product?.gallery || productImages.slice(1))].slice(0, 6).map((img, index) => (
                 <Thumbnail 
                   key={index} 
                   active={selectedImage === index}
                   onClick={() => handleImageSelect(index)}
                 >
-                  <img src={img} alt={product.name + " view " + (index + 1)} />
+                  <img src={img} alt="Product view" />
                 </Thumbnail>
               ))}
             </ThumbnailsContainer>
@@ -2331,7 +2353,7 @@ const ProductDetailPage = () => {
           
           <ProductInfo>
             <div>
-              <ProductName>{product.name}</ProductName>
+              <ProductName>{product?.name}</ProductName>
               
               
               <RatingContainer>
@@ -2348,11 +2370,11 @@ const ProductDetailPage = () => {
                 {hasDiscount && <OriginalPrice>{formatPrice(originalPrice)}</OriginalPrice>}
               </PriceContainer>
               
-              {product?.colors && product.colors.length > 0 && (
+              {product?.colors && product?.colors.length > 0 && (
                 <div>
                   <AttributeLabel>Frame Color:</AttributeLabel>
                   <ColorOptions>
-                    {product.colors.filter(colorOption => colorOption.name && colorOption.hex).map((colorOption, index) => (
+                    {product?.colors?.filter(colorOption => colorOption.name && colorOption.hex).map((colorOption, index) => (
                       <ColorOptionButton 
                         key={index}
                         selected={selectedColor === colorOption.name}
@@ -2503,7 +2525,7 @@ const ProductDetailPage = () => {
                 
                 
                 <ProductImage>
-                  <img src={relatedProduct.image} alt={relatedProduct.name} />
+                  <img src={relatedProduct.image} alt="Related product" />
                 </ProductImage>
                 
                 <ProductContent>
@@ -2773,11 +2795,11 @@ const ProductDetailPage = () => {
             {/* Left container - Product details */}
             <ProductContainer>
               <ProductDisplay>
-                <img src={product?.image || ''} alt={product?.name || ''} />
+                <img src={product?.image || ''} alt="Product image" />
                 <div className="product-name">{product?.name}</div>
                 <div className="product-type">{product?.category} Eyeglasses</div>
                 <div style={{ fontWeight: 'bold', color: '#48b2ee', fontSize: '1.2rem', marginTop: '1rem' }}>
-                  {product ? formatPrice(product.price) : ''}
+                  {product ? formatPrice(product?.price) : ''}
                 </div>
               </ProductDisplay>
             </ProductContainer>

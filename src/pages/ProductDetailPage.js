@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { fetchProductById, fetchProducts } from '../redux/slices/productSlice';
-import { FiShoppingBag } from 'react-icons/fi';
 import { addToCart } from '../redux/slices/cartSlice';
+import { FiShoppingBag } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import * as reviewService from '../services/reviewService';
 
@@ -455,10 +455,242 @@ const DiscountBadge = styled.span`
   z-index: 1;
 `;
 
+// Lens Modal Styled Components
+const ModalOverlay = styled.div`
+  position: fixed;
+
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 1500px;
+  width: 99%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    max-width: 95%;
+  }
+`;
+
+const ModalLeftSection = styled.div`
+  flex: 1;
+  background-color: #f8f8f8;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px 0 0 12px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  max-height: 600px;
+  
+  @media (max-width: 768px) {
+    border-radius: 12px 12px 0 0;
+    padding: 1.5rem;
+    position: relative;
+    height: auto;
+    max-height: none;
+  }
+`;
+
+const ModalRightSection = styled.div`
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  max-height: 600px;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    max-height: none;
+    overflow-y: visible;
+  }
+`;
+
+const ProductImageInModal = styled.img`
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    width: 150px;
+    height: 150px;
+  }
+`;
+
+const ProductNameInModal = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+`;
+
+const ProductSubtitleInModal = styled.p`
+  color: #666;
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+`;
+
+const ModalTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0.5rem;
+  border-radius: 50%;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
+
+const LensOptionsGrid = styled.div`
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+`;
+
+const LensOption = styled.div`
+  border: 1px solid ${props => props.selected ? '#d4a574' : '#e0e0e0'};
+  border-radius: 6px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: ${props => props.selected ? '#fdf7f0' : 'white'};
+  
+  &:hover {
+    border-color: #d4a574;
+    background-color: #fdf7f0;
+  }
+`;
+
+const LensOptionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const LensOptionName = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+`;
+
+const LensOptionPrice = styled.span`
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${props => props.free ? '#28a745' : '#48b2ee'};
+`;
+
+const LensOptionBadge = styled.span`
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  
+  ${props => props.type === 'top-pick' && `
+    background-color: #007bff;
+    color: white;
+  `}
+  
+  ${props => props.type === 'new' && `
+    background-color: #28a745;
+    color: white;
+  `}
+`;
+
+const LensOptionBrand = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const BrandLogo = styled.img`
+  height: 20px;
+  margin-left: 0.5rem;
+`;
+
+const LensOptionDescription = styled.p`
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+`;
+
+const ModalButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  ${props => props.primary ? `
+    background-color: #48b2ee;
+    color: white;
+    border: none;
+    
+    &:hover {
+      background-color: #3a9bd8;
+    }
+  ` : `
+    background-color: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+    
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  `}
+`;
+
 const ProductDetailPage = () => {
   const { id } = useParams();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   const { items: products, status, error } = useSelector(state => state.products);
   
@@ -467,6 +699,38 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
+  const [showLensModal, setShowLensModal] = useState(false);
+  const [selectedLensType, setSelectedLensType] = useState(null);
+  
+  // 4-step checkout flow states
+  const [showUsageSelection, setShowUsageSelection] = useState(false);
+  const [showLensTypeSelection, setShowLensTypeSelection] = useState(false);
+  const [showPrescriptionMethod, setShowPrescriptionMethod] = useState(false);
+  const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
+  const [selectedUsage, setSelectedUsage] = useState('');
+  const [selectedLensTypeOption, setSelectedLensTypeOption] = useState('');
+  const [selectedPrescriptionMethod, setSelectedPrescriptionMethod] = useState('');
+  const [showTwoPDNumbers, setShowTwoPDNumbers] = useState(false);
+  const [showLensColorSelection, setShowLensColorSelection] = useState(false);
+  const [selectedLensColor, setSelectedLensColor] = useState('');
+  const [showClearLensOptions, setShowClearLensOptions] = useState(false);
+  const [selectedClearLensOption, setSelectedClearLensOption] = useState('');
+  const [showBlueLightOptions, setShowBlueLightOptions] = useState(false);
+  const [selectedBlueLightOption, setSelectedBlueLightOption] = useState('');
+  const [showTransitionsOptions, setShowTransitionsOptions] = useState(false);
+  const [selectedTransitionsOption, setSelectedTransitionsOption] = useState('');
+  const [showSunOptions, setShowSunOptions] = useState(false);
+  const [selectedSunOption, setSelectedSunOption] = useState('');
+  const [selectedTintStrength, setSelectedTintStrength] = useState('dark-80');
+  const [selectedTintColor, setSelectedTintColor] = useState('gray');
+  const [selectedMirroredColor, setSelectedMirroredColor] = useState('green');
+  const [selectedGradientColor, setSelectedGradientColor] = useState('gray');
+  const [showLensPackage, setShowLensPackage] = useState(false);
+  const [selectedLensPackage, setSelectedLensPackage] = useState('');
+  const [showReviewSelections, setShowReviewSelections] = useState(false);
+  const [showPrescriptionScan, setShowPrescriptionScan] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   // Fetch product data from API
   useEffect(() => {
@@ -493,9 +757,380 @@ const ProductDetailPage = () => {
   }, [products, id]);
 
   const openLensModal = () => {
-    // Placeholder for lens modal functionality
-    console.log('Opening lens selection modal...');
+    handleContinueToUsage();
   };
+
+  const closeLensModal = () => {
+    setShowLensModal(false);
+  };
+
+  const handleLensSelection = (lensType) => {
+    setSelectedLensType(lensType);
+    setShowLensModal(false);
+  };
+
+  // 4-step checkout flow handlers
+  const handleContinueToUsage = () => {
+    setShowUsageSelection(true);
+    setShowLensModal(false);
+  };
+
+  const handleContinueToLensType = () => {
+    setShowUsageSelection(false);
+    
+    // Check if selected usage requires progressive/bifocal lens selection
+    if (selectedUsage === 'bifocal-progressive') {
+      setShowLensTypeSelection(true);
+    } else {
+      // For single-vision, reading, and non-prescription, skip to prescription method
+      setShowPrescriptionMethod(true);
+    }
+  };
+
+  const handleContinueToPrescriptionMethod = () => {
+    setShowLensTypeSelection(false);
+    setShowPrescriptionMethod(true);
+  };
+
+  const handleContinueToPrescriptionForm = () => {
+    setShowPrescriptionMethod(false);
+    setShowPrescriptionForm(true);
+  };
+
+  const closeAllModals = () => {
+    setShowLensModal(false);
+    setShowUsageSelection(false);
+    setShowLensTypeSelection(false);
+    setShowPrescriptionMethod(false);
+    setShowPrescriptionForm(false);
+    setShowLensColorSelection(false);
+    setShowClearLensOptions(false);
+    setShowBlueLightOptions(false);
+    setShowTransitionsOptions(false);
+    setShowSunOptions(false);
+    setShowLensPackage(false);
+    setShowReviewSelections(false);
+    setShowPrescriptionScan(false);
+  };
+
+  // Handle file upload for prescription scanning
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type and size
+      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please upload a JPEG, PNG, or PDF file.');
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        alert('File size must be less than 10MB.');
+        return;
+      }
+      
+      setUploadedFile(file);
+      setIsProcessingImage(true);
+      
+      // Simulate prescription processing
+      setTimeout(() => {
+        setIsProcessingImage(false);
+        // Here you would normally send the file to an OCR service
+        // For now, we'll just show success
+        alert('Prescription scanned successfully! Please review the extracted data.');
+        setShowPrescriptionScan(false);
+        setShowPrescriptionForm(true);
+      }, 2000);
+    }
+  };
+
+  // Handle camera capture
+  const handleCameraCapture = () => {
+    // In a real app, this would open the device camera
+    // For now, we'll just trigger the file input
+    document.getElementById('camera-input').click();
+  };
+
+  // Lens type options
+  const lensOptions = [
+    {
+      id: 'standard',
+      name: 'Standard Lenses',
+      price: 0,
+      description: 'Basic prescription lenses with anti-reflective coating'
+    },
+    {
+      id: 'blue-light',
+      name: 'Blue Light Blocking',
+      price: 49,
+      description: 'Reduces eye strain from digital screens and devices'
+    },
+    {
+      id: 'progressive',
+      name: 'Progressive Lenses',
+      price: 149,
+      description: 'Seamless transition for near, intermediate, and distance vision'
+    },
+    {
+      id: 'photochromic',
+      name: 'Photochromic (Transitions)',
+      price: 99,
+      description: 'Automatically darken in sunlight and clear indoors'
+    }
+  ];
+
+  // Usage options for step 1 - matching the image
+  const usageOptions = [
+    {
+      id: 'single-vision',
+      name: 'Single Vision (Distance)',
+      description: 'General use lenses for common prescriptions and seeing things from distance.'
+    },
+    {
+      id: 'bifocal-progressive',
+      name: 'Bifocal & Progressive',
+      description: 'One pair of glasses corrects vision at near, middle, and far distances.'
+    },
+    {
+      id: 'reading',
+      name: 'Reading',
+      description: 'Lenses that magnify to assist with reading.'
+    },
+    {
+      id: 'non-prescription',
+      name: 'Non-Prescription',
+      description: 'Basic lenses with no vision correction.'
+    }
+  ];
+
+  // Lens type options for step 2 - Progressive and Bifocal options
+  const lensTypeOptions = [
+    {
+      id: 'kodak-intromax',
+      name: 'KODAK IntroMax Lenses',
+      price: 189,
+      description: 'Premium KODAK progressive Lenses with advanced technology for sharper vision, wider viewing, and reduced distortion for ultimate comfort.',
+      badge: 'Top pick',
+      brand: 'KODAK'
+    },
+    {
+      id: 'kodak-introplus',
+      name: 'KODAK IntroPlus Lenses',
+      price: 149,
+      description: 'High-quality KODAK Lenses featuring advanced technology for smooth, clear vision and easy adaptation.',
+      badge: 'New',
+      brand: 'KODAK'
+    },
+    {
+      id: 'premium-progressive',
+      name: 'Premium Progressive',
+      price: 89,
+      description: 'Perfect balance of price and performance, offering smooth, seamless vision across all distances.'
+    },
+    {
+      id: 'progressive',
+      name: 'Progressive',
+      price: 49,
+      description: 'Standard everyday lenses with clear vision for near, intermediate, and distance needs.',
+      selected: true
+    },
+    {
+      id: 'bifocal',
+      name: 'Bifocal',
+      price: 29,
+      description: 'Classic lenses with a visible line, providing separate areas for reading and distance vision.'
+    }
+  ];
+
+  // Prescription method options for step 3
+  const prescriptionMethods = [
+    {
+      id: 'upload',
+      name: 'Upload Prescription',
+      description: 'Upload a photo of your prescription'
+    },
+    {
+      id: 'manual',
+      name: 'Enter Manually',
+      description: 'Type in your prescription details'
+    },
+    {
+      id: 'previous',
+      name: 'Use Previous Prescription',
+      description: 'Select from your saved prescriptions'
+    },
+    {
+      id: 'exam',
+      name: 'Schedule Eye Exam',
+      description: 'Book an appointment with our partners'
+    }
+  ];
+
+  // Lens color options for step 5
+  const lensColorOptions = [
+    {
+      id: 'clear',
+      name: 'Clear',
+      description: 'Transparent lenses for enhanced clarity and everyday use.',
+      icon: '⚪'
+    },
+    {
+      id: 'blue-light',
+      name: 'Blue Light Filtering',
+      description: 'Lenses that designed to reduce exposure to blue-violet light from sun and artificial sources (screens, LEDs, digital devices, etc.).',
+      icon: '🔵',
+      badge: 'Popular'
+    },
+    {
+      id: 'transitions',
+      name: 'Transitions® & Photochromic',
+      description: '2-in-1 lenses that automatically darken when exposed to direct sunlight.',
+      icon: '🌓',
+      badge: "Season's best!"
+    },
+    {
+      id: 'sun',
+      name: 'Sun',
+      description: 'Color tinted lenses with UV protection and polarized options to reduce glare.',
+      icon: '🕶️'
+    }
+  ];
+
+  // Clear lens sub-options
+  const clearLensOptions = [
+    {
+      id: 'kodak-advanced',
+      name: 'KODAK Lens - Advanced',
+      price: 85.95,
+      badges: ['New', 'Up to 25% thinner', 'Great clarity'],
+      description: 'KODAK Clean&CleAR 1.6 Advanced index Lenses with premium anti-reflective, water repellent, easy to clean, and durable, with great clarity for sharper vision.',
+      brand: 'KODAK',
+      logo: true
+    },
+    {
+      id: 'most-popular',
+      name: 'Most Popular Lenses',
+      price: 19.95,
+      badges: ['Up to 20% thinner'],
+      description: 'Quality 1.59 index lenses with UV-protective, anti-scratch, anti-reflective coatings.',
+      icon: '🛡️'
+    },
+    {
+      id: 'standard',
+      name: 'Standard Lenses',
+      price: 6.95,
+      description: 'Quality 1.5 index lenses with anti-scratch and anti-reflective coatings.',
+      icon: '👁️'
+    }
+  ];
+
+  // Blue light filtering sub-options
+  const blueLightOptions = [
+    {
+      id: 'ebdblue-360',
+      name: 'EBDBlue 360™',
+      price: 68.95,
+      priceFrom: true,
+      badge: 'Top pick',
+      description: 'Lenses that offer clarity around the clock by blocking 100% of UV rays during the day, filtering blue-violet light, and reducing glare at night.',
+      brand: 'EBDBlue',
+      logo: 'EBDBLUE360'
+    },
+    {
+      id: 'sightrelax',
+      name: 'SightRelax',
+      price: 85.95,
+      priceFrom: true,
+      description: 'Lenses that offer a visual boost via a magnified portion to relax and relieve digital eye strain while filtering blue-violet light. Produced by Essilor.',
+      brand: 'SightRelax',
+      logo: 'SIGHTRELAX'
+    },
+    {
+      id: 'ebdblue-smart',
+      name: 'EBDBlue Smart 1.6',
+      price: 78.95,
+      description: 'Blue light filtering lenses that change color according to environment to offer responsive UV protection.',
+      brand: 'EBDBlue',
+      logo: 'EBDBLUESMART'
+    },
+    {
+      id: 'ebdblue-plus',
+      name: 'EBDBlue Plus™',
+      price: 22.95,
+      priceFrom: true,
+      description: 'Affordable lenses with advanced blue-violet light filtering technology.',
+      brand: 'EBDBlue',
+      logo: 'EBDBLUEPLUS'
+    }
+  ];
+
+  // Transitions & Photochromic sub-options
+  const transitionsOptions = [
+    {
+      id: 'transitions-gen-s',
+      name: 'Transitions® GEN S™',
+      price: 99,
+      badge: 'New',
+      description: 'Perfect everyday lenses that are ultra responsive, fading back 2x faster than previous generations, with a spectacular color palette and HD vision at speed of your life.',
+      brand: 'Transitions'
+    },
+    {
+      id: 'transitions-xtractive',
+      name: 'Transitions® XTRActive®',
+      price: 139,
+      badge: 'Top pick',
+      description: 'The best extra darkness and protection for light-sensitive wearers. Lens activates outdoors, in the car, and in hot temperatures while indoor clarity is clear with a hint of protective tint.',
+      brand: 'Transitions'
+    },
+    {
+      id: 'transitions-drivewear',
+      name: 'Transitions® Drivewear®',
+      price: 149,
+      description: 'Best adaptive sunglass lenses for driving that change color according to environment with UV and polarized protection for comfort and safety behind the wheel.',
+      brand: 'Transitions'
+    },
+    {
+      id: 'photochromic',
+      name: 'Photochromic',
+      price: 45.95,
+      description: 'Standard lenses that are clear indoors and darken outdoors.',
+      brand: 'Standard'
+    }
+  ];
+
+  // Sun lens sub-options
+  const sunOptions = [
+    {
+      id: 'basic',
+      name: 'Basic',
+      price: 6.95,
+      description: 'Stylish sun tints in a range of colors with UV protection.',
+      icon: '🕶️'
+    },
+    {
+      id: 'polarized',
+      name: 'Polarized',
+      price: 59,
+      description: 'Polarized lenses reduce extra bright light glares and hazy vision. An option that offers superior clarity and eye protection.',
+      icon: '🌟'
+    },
+    {
+      id: 'mirrored',
+      name: 'Mirrored',
+      price: 29,
+      description: 'Reflective lenses that combine fashion and function to reduce the amount of light entering the eye.',
+      icon: '🪞'
+    },
+    {
+      id: 'gradient',
+      name: 'Gradient',
+      price: 12.95,
+      description: 'Combine fashion with function with trendy gradient lenses that go from dark on the top to light on the bottom.',
+      icon: '🌈'
+    }
+  ];
 
   // Get related products from Redux store (exclude current product)
   const relatedProducts = products
@@ -800,6 +1435,2101 @@ const ProductDetailPage = () => {
           ))}
         </RelatedProductsGrid>
       </RelatedProductsSection>
+
+      {/* Step 1: Choose Your Usage */}
+      {showUsageSelection && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowUsageSelection(false);
+                    }}
+                  >
+                    ← Back to {product?.name || 'Vinyl'}
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '0.5rem' }}>Choose your usage</ModalTitle>
+              
+              
+              <LensOptionsGrid>
+                {usageOptions.map((option) => (
+                  <LensOption
+                    key={option.id}
+                    selected={selectedUsage === option.id}
+                    onClick={() => setSelectedUsage(option.id)}
+                    style={{ 
+                      padding: '1.5rem',
+                      border: selectedUsage === option.id ? '2px solid #48b2ee' : '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      marginBottom: '1rem',
+                      cursor: 'pointer',
+                      backgroundColor: selectedUsage === option.id ? '#f8f9fa' : 'white'
+                    }}
+                  >
+                    <div style={{ textAlign: 'left' }}>
+                      <h3 style={{ 
+                        margin: '0 0 0.5rem 0',
+                        fontSize: '1.1rem',
+                        fontWeight: '600',
+                        color: '#333'
+                      }}>
+                        {option.name}
+                      </h3>
+                      <p style={{ 
+                        margin: 0,
+                        fontSize: '0.95rem',
+                        color: '#666',
+                        lineHeight: '1.4'
+                      }}>
+                        {option.description}
+                      </p>
+                    </div>
+                  </LensOption>
+                ))}
+              </LensOptionsGrid>
+              
+              <ModalActions>
+                <ModalButton onClick={closeAllModals}>
+                  Cancel
+                </ModalButton>
+                <ModalButton 
+                  primary 
+                  onClick={handleContinueToLensType}
+                  disabled={!selectedUsage}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Step 2: Choose Lens Type */}
+      {showLensTypeSelection && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span style={{ color: '#48b2ee', fontSize: '0.9rem', marginRight: '0.5rem' }}>
+                    ← Back to {product?.name || 'Vinyl'}
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '0.5rem' }}>Choose Lens Type</ModalTitle>
+              <p style={{ color: '#48b2ee', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                ⓘ Learn about different lens types
+              </p>
+              
+              <LensOptionsGrid>
+                {lensTypeOptions.map((option) => (
+                  <LensOption
+                    key={option.id}
+                    selected={selectedLensTypeOption === option.id || option.selected}
+                    onClick={() => setSelectedLensTypeOption(option.id)}
+                  >
+                    <LensOptionHeader>
+                      <div>
+                        <LensOptionName>
+                          {option.name}
+                          {option.badge && (
+                            <LensOptionBadge type={option.badge === 'Top pick' ? 'top-pick' : 'new'}>
+                              {option.badge}
+                            </LensOptionBadge>
+                          )}
+                          {option.brand && (
+                            <LensOptionBadge type="brand" style={{ backgroundColor: '#ff6b35', color: 'white' }}>
+                              {option.brand}
+                            </LensOptionBadge>
+                          )}
+                        </LensOptionName>
+                      </div>
+                      <LensOptionPrice free={option.price === 0}>
+                        ${option.price}
+                      </LensOptionPrice>
+                    </LensOptionHeader>
+                    <LensOptionDescription>
+                      {option.description}
+                    </LensOptionDescription>
+                  </LensOption>
+                ))}
+              </LensOptionsGrid>
+              
+              <ModalActions>
+                <ModalButton onClick={() => setShowLensTypeSelection(false) || setShowUsageSelection(true)}>
+                  Back
+                </ModalButton>
+                <ModalButton 
+                  primary 
+                  onClick={handleContinueToPrescriptionMethod}
+                  disabled={!selectedLensTypeOption}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Step 3: Prescription Method */}
+      {showPrescriptionMethod && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span style={{ color: '#48b2ee', fontSize: '0.9rem', marginRight: '0.5rem' }}>
+                    ← Usage
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '1.5rem' }}>How would you like to add your prescription?</ModalTitle>
+              
+              <LensOptionsGrid>
+                <LensOption
+                  selected={selectedPrescriptionMethod === 'previous'}
+                  onClick={() => setSelectedPrescriptionMethod('previous')}
+                  style={{ marginBottom: '1rem' }}
+                >
+                  <LensOptionHeader>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontSize: '1.2rem', marginRight: '0.75rem' }}>🕒</span>
+                      <LensOptionName>Choose from previous</LensOptionName>
+                    </div>
+                  </LensOptionHeader>
+                </LensOption>
+
+                <LensOption
+                  selected={selectedPrescriptionMethod === 'manual'}
+                  onClick={() => {
+                    setSelectedPrescriptionMethod('manual');
+                    setShowPrescriptionMethod(false);
+                    setShowPrescriptionForm(true);
+                  }}
+                  style={{ marginBottom: '1rem' }}
+                >
+                  <LensOptionHeader>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontSize: '1.2rem', marginRight: '0.75rem' }}>📝</span>
+                      <LensOptionName>Add new</LensOptionName>
+                    </div>
+                  </LensOptionHeader>
+                </LensOption>
+
+                <LensOption
+                  key="scan"
+                  selected={selectedPrescriptionMethod === 'scan'}
+                  onClick={() => {
+                    setSelectedPrescriptionMethod('scan');
+                    setShowPrescriptionScan(true);
+                    setShowPrescriptionMethod(false);
+                  }}
+                  style={{ marginBottom: '1rem', position: 'relative' }}
+                >
+                  <LensOptionBadge style={{ 
+                    position: 'absolute', 
+                    top: '0.5rem', 
+                    right: '0.5rem',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    padding: '0.2rem 0.4rem'
+                  }}>
+                    New
+                  </LensOptionBadge>
+                  <LensOptionHeader>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ fontSize: '1.2rem', marginRight: '0.75rem' }}>📷</span>
+                      <LensOptionName>Scan your prescription</LensOptionName>
+                    </div>
+                  </LensOptionHeader>
+                </LensOption>
+              </LensOptionsGrid>
+              
+              <div style={{ 
+                textAlign: 'right', 
+                marginTop: '2rem',
+                paddingTop: '1rem',
+                borderTop: '1px solid #eee'
+              }}>
+                
+              </div>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Step 4: Prescription Form */}
+      {showPrescriptionForm && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowPrescriptionMethod(false);
+                      setShowLensTypeSelection(true);
+                    }}
+                  >
+                    ← Input Method
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '0.5rem' }}>Enter your prescription</ModalTitle>
+             
+              <div style={{ marginBottom: '1.5rem' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: '0.5rem 0', fontSize: '0.9rem', color: '#666' }}></th>
+                      <th style={{ textAlign: 'center', padding: '0.5rem', fontSize: '0.9rem', color: '#666' }}>SPH</th>
+                      <th style={{ textAlign: 'center', padding: '0.5rem', fontSize: '0.9rem', color: '#666' }}>CYL</th>
+                      <th style={{ textAlign: 'center', padding: '0.5rem', fontSize: '0.9rem', color: '#666' }}>AXIS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '0.5rem 0', fontSize: '0.9rem', color: '#333' }}>
+                        <strong>OD</strong><br/>
+                        <span style={{ fontSize: '0.8rem', color: '#666' }}>right eye</span>
+                      </td>
+                      <td style={{ padding: '0.25rem' }}>
+                        <select style={{ 
+                          width: '100%', 
+                          padding: '0.5rem', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '4px',
+                          fontSize: '0.9rem'
+                        }}>
+                          <option>0.00</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '0.25rem' }}>
+                        <select style={{ 
+                          width: '100%', 
+                          padding: '0.5rem', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '4px',
+                          fontSize: '0.9rem'
+                        }}>
+                          <option>0.00</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '0.25rem' }}>
+                        <input 
+                          type="text" 
+                          placeholder="---"
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.5rem', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '4px',
+                            fontSize: '0.9rem',
+                            textAlign: 'center'
+                          }}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.5rem 0', fontSize: '0.9rem', color: '#333' }}>
+                        <strong>OS</strong><br/>
+                        <span style={{ fontSize: '0.8rem', color: '#666' }}>left eye</span>
+                      </td>
+                      <td style={{ padding: '0.25rem' }}>
+                        <select style={{ 
+                          width: '100%', 
+                          padding: '0.5rem', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '4px',
+                          fontSize: '0.9rem'
+                        }}>
+                          <option>0.00</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '0.25rem' }}>
+                        <select style={{ 
+                          width: '100%', 
+                          padding: '0.5rem', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '4px',
+                          fontSize: '0.9rem'
+                        }}>
+                          <option>0.00</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '0.25rem' }}>
+                        <input 
+                          type="text" 
+                          placeholder="---"
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.5rem', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '4px',
+                            fontSize: '0.9rem',
+                            textAlign: 'center'
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#333', marginRight: '0.5rem' }}>
+                    <strong>PD</strong> ⓘ
+                  </span>
+                  {!showTwoPDNumbers ? (
+                    <select style={{ 
+                      padding: '0.5rem', 
+                      border: '1px solid #ddd', 
+                      borderRadius: '4px',
+                      fontSize: '0.9rem',
+                      marginRight: '1rem'
+                    }}>
+                      <option>63</option>
+                    </select>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <select style={{ 
+                          padding: '0.5rem', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '4px',
+                          fontSize: '0.9rem',
+                          width: '80px'
+                        }}>
+                          <option>31.5</option>
+                        </select>
+                        <span style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>OD</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <select style={{ 
+                          padding: '0.5rem', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '4px',
+                          fontSize: '0.9rem',
+                          width: '80px'
+                        }}>
+                          <option>31.5</option>
+                        </select>
+                        <span style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>OS</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    id="pdNumbers" 
+                    checked={showTwoPDNumbers}
+                    onChange={(e) => setShowTwoPDNumbers(e.target.checked)}
+                    style={{ marginRight: '0.5rem' }} 
+                  />
+                  <label htmlFor="pdNumbers" style={{ fontSize: '0.9rem', color: '#666' }}>
+                    2 PD numbers
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <button style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: '#48b2ee', 
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}>
+                  More options ˅
+                </button>
+              </div>
+
+              <ModalActions>
+                <ModalButton 
+                  primary 
+                  onClick={() => {
+                    setShowPrescriptionForm(false);
+                    setShowLensColorSelection(true);
+                  }}
+                  style={{ 
+                    backgroundColor: '#48b2ee', 
+                    width: '100%',
+                    padding: '0.75rem 1.5rem'
+                  }}
+                >
+                  Save & Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Step 5: Lens Color Selection */}
+      {showLensColorSelection && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowLensColorSelection(false);
+                      setShowPrescriptionForm(true);
+                    }}
+                  >
+                    ← Prescription
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '1.5rem' }}>Choose Lens Color</ModalTitle>
+              
+              <LensOptionsGrid>
+                {lensColorOptions.map((option) => (
+                  <LensOption
+                    key={option.id}
+                    selected={selectedLensColor === option.id}
+                    onClick={() => {
+                      setSelectedLensColor(option.id);
+                      if (option.id === 'clear') {
+                        setShowClearLensOptions(true);
+                        setShowLensColorSelection(false);
+                      } else if (option.id === 'blue-light') {
+                        setShowBlueLightOptions(true);
+                        setShowLensColorSelection(false);
+                      } else if (option.id === 'transitions') {
+                        setShowTransitionsOptions(true);
+                        setShowLensColorSelection(false);
+                      } else if (option.id === 'sun') {
+                        setShowSunOptions(true);
+                        setShowLensColorSelection(false);
+                      }
+                    }}
+                    style={{ marginBottom: '1rem', position: 'relative' }}
+                  >
+                    {option.badge && (
+                      <LensOptionBadge 
+                        type={option.badge === 'Popular' ? 'top-pick' : 'new'} 
+                        style={{ 
+                          position: 'absolute', 
+                          top: '0.5rem', 
+                          right: '0.5rem',
+                          backgroundColor: option.badge === 'Popular' ? '#007bff' : '#ff6b35',
+                          color: 'white',
+                          fontSize: '0.7rem',
+                          padding: '0.2rem 0.4rem'
+                        }}
+                      >
+                        {option.badge}
+                      </LensOptionBadge>
+                    )}
+                    <LensOptionHeader>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontSize: '1.5rem', marginRight: '0.75rem' }}>{option.icon}</span>
+                        <LensOptionName>{option.name}</LensOptionName>
+                      </div>
+                    </LensOptionHeader>
+                    <LensOptionDescription>
+                      {option.description}
+                    </LensOptionDescription>
+                  </LensOption>
+                ))}
+              </LensOptionsGrid>
+              
+              <ModalActions>
+                <ModalButton 
+                  primary 
+                  onClick={closeAllModals}
+                  disabled={!selectedLensColor}
+                  style={{ backgroundColor: '#48b2ee' }}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Prescription Scan Modal */}
+      {showPrescriptionScan && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', position: 'relative' }}>
+            <CloseButton 
+              onClick={closeAllModals}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                zIndex: 10,
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#666',
+                width: '30px',
+                height: '30px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              ×
+            </CloseButton>
+            
+            <div style={{ padding: '2rem', textAlign: 'left' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <span style={{ 
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  padding: '0.3rem 0.6rem',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold'
+                }}>
+                  New
+                </span>
+              </div>
+              
+              <ModalTitle style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>
+                Scan your prescription
+              </ModalTitle>
+              
+              <p style={{ 
+                color: '#666', 
+                marginBottom: '2rem',
+                fontSize: '1.1rem'
+              }}>
+                Take a photo of your prescription or choose a file.
+              </p>
+              
+              {/* File Upload Area */}
+              <div 
+                style={{
+                  border: '2px dashed #d4a574',
+                  borderRadius: '8px',
+                  padding: '4rem 2rem',
+                  marginBottom: '1.5rem',
+                  backgroundColor: '#fefefe',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  minHeight: '200px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onClick={() => document.getElementById('file-upload').click()}
+              >
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept="image/jpeg,image/png,application/pdf"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
+                
+                {isProcessingImage ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+                    <p style={{ color: '#666', margin: 0 }}>Processing your prescription...</p>
+                  </div>
+                ) : uploadedFile ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
+                    <p style={{ color: '#28a745', fontWeight: 'bold', margin: '0 0 0.5rem 0' }}>
+                      {uploadedFile.name}
+                    </p>
+                    <p style={{ color: '#666', fontSize: '0.9rem', margin: 0 }}>
+                      File uploaded successfully
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ 
+                      width: '60px',
+                      height: '60px',
+                      backgroundColor: '#e8f4fd',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1.5rem auto',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        backgroundColor: '#48b2ee',
+                        borderRadius: '4px',
+                        position: 'relative'
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 0,
+                          height: 0,
+                          borderLeft: '6px solid transparent',
+                          borderRight: '6px solid transparent',
+                          borderBottom: '8px solid #ff4757'
+                        }}></div>
+                      </div>
+                    </div>
+                    <p style={{ 
+                      color: '#d4a574',
+                      fontSize: '1rem',
+                      fontWeight: '500',
+                      margin: 0
+                    }}>
+                      jpeg, png, pdf. max 10 MB
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Camera Option */}
+              <div style={{ marginBottom: '2rem' }}>
+                <button
+                  onClick={handleCameraCapture}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#d4a574',
+                    fontSize: '1.1rem',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  Or use camera
+                </button>
+                <input
+                  id="camera-input"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            </div>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Clear Lens Options Modal */}
+      {showClearLensOptions && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowClearLensOptions(false);
+                      setShowLensColorSelection(true);
+                    }}
+                  >
+                    ← Lens Color
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '1.5rem' }}>Clear Lens Options</ModalTitle>
+              
+              <LensOptionsGrid>
+                {clearLensOptions.map((option) => (
+                  <LensOption
+                    key={option.id}
+                    selected={selectedClearLensOption === option.id}
+                    onClick={() => setSelectedClearLensOption(option.id)}
+                    style={{ marginBottom: '1rem', position: 'relative', padding: '1.5rem' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {option.logo && (
+                          <div style={{ 
+                            backgroundColor: '#ff6b35', 
+                            color: 'white', 
+                            padding: '0.25rem 0.5rem', 
+                            borderRadius: '4px', 
+                            fontSize: '0.8rem', 
+                            fontWeight: 'bold',
+                            marginRight: '0.75rem'
+                          }}>
+                            KODAK
+                          </div>
+                        )}
+                        {option.icon && (
+                          <span style={{ fontSize: '1.5rem', marginRight: '0.75rem' }}>{option.icon}</span>
+                        )}
+                        <div>
+                          <LensOptionName style={{ fontSize: '1.1rem', fontWeight: '600' }}>
+                            {option.name}
+                          </LensOptionName>
+                          {option.badges && (
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                              {option.badges.map((badge, index) => (
+                                <LensOptionBadge 
+                                  key={index}
+                                  type={badge === 'New' ? 'new' : 'feature'}
+                                  style={{ 
+                                    backgroundColor: badge === 'New' ? '#28a745' : '#17a2b8',
+                                    color: 'white',
+                                    fontSize: '0.7rem',
+                                    padding: '0.2rem 0.4rem'
+                                  }}
+                                >
+                                  {badge}
+                                </LensOptionBadge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <LensOptionPrice style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
+                          ${option.price}
+                        </LensOptionPrice>
+                      </div>
+                    </div>
+                    <LensOptionDescription style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>
+                      {option.description}
+                    </LensOptionDescription>
+                  </LensOption>
+                ))}
+              </LensOptionsGrid>
+              
+              <ModalActions>
+                <ModalButton onClick={() => {
+                  setShowClearLensOptions(false);
+                  setShowLensColorSelection(true);
+                }}>
+                  Back
+                </ModalButton>
+                <ModalButton 
+                  primary 
+                  onClick={closeAllModals}
+                  disabled={!selectedClearLensOption}
+                  style={{ backgroundColor: '#48b2ee' }}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Blue Light Filtering Options Modal */}
+      {showBlueLightOptions && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowBlueLightOptions(false);
+                      setShowLensColorSelection(true);
+                    }}
+                  >
+                    ← Lens Color
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '1.5rem' }}>Blue Light Filtering Options</ModalTitle>
+              
+              <LensOptionsGrid>
+                {blueLightOptions.map((option) => (
+                  <LensOption
+                    key={option.id}
+                    selected={selectedBlueLightOption === option.id}
+                    onClick={() => setSelectedBlueLightOption(option.id)}
+                    style={{ marginBottom: '1rem', position: 'relative', padding: '1.5rem' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <div style={{ 
+                          backgroundColor: '#007bff', 
+                          color: 'white', 
+                          padding: '0.5rem', 
+                          borderRadius: '8px', 
+                          fontSize: '0.7rem', 
+                          fontWeight: 'bold',
+                          marginRight: '1rem',
+                          minWidth: '60px',
+                          textAlign: 'center'
+                        }}>
+                          {option.logo}
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <LensOptionName style={{ fontSize: '1.1rem', fontWeight: '600', marginRight: '0.5rem' }}>
+                              {option.name}
+                            </LensOptionName>
+                            {option.badge && (
+                              <LensOptionBadge 
+                                type="top-pick"
+                                style={{ 
+                                  backgroundColor: '#007bff',
+                                  color: 'white',
+                                  fontSize: '0.7rem',
+                                  padding: '0.2rem 0.4rem'
+                                }}
+                              >
+                                {option.badge}
+                              </LensOptionBadge>
+                            )}
+                          </div>
+                          <LensOptionPrice style={{ fontSize: '1rem', fontWeight: '600', color: '#333', marginBottom: '0.5rem' }}>
+                            {option.priceFrom ? 'From ' : ''}${option.price}
+                          </LensOptionPrice>
+                        </div>
+                      </div>
+                    </div>
+                    <LensOptionDescription style={{ fontSize: '0.9rem', lineHeight: '1.5', color: '#666' }}>
+                      {option.description}
+                    </LensOptionDescription>
+                  </LensOption>
+                ))}
+              </LensOptionsGrid>
+              
+              <ModalActions>
+                <ModalButton onClick={() => {
+                  setShowBlueLightOptions(false);
+                  setShowLensColorSelection(true);
+                }}>
+                  Back
+                </ModalButton>
+                <ModalButton 
+                  primary 
+                  onClick={closeAllModals}
+                  disabled={!selectedBlueLightOption}
+                  style={{ backgroundColor: '#48b2ee' }}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Transitions & Photochromic Options Modal */}
+      {showTransitionsOptions && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowTransitionsOptions(false);
+                      setShowLensColorSelection(true);
+                    }}
+                  >
+                    ← Lens Color
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '1.5rem' }}>Transitions & Photochromic Options</ModalTitle>
+              
+              <LensOptionsGrid>
+                {transitionsOptions.map((option) => (
+                  <LensOption
+                    key={option.id}
+                    selected={selectedTransitionsOption === option.id}
+                    onClick={() => setSelectedTransitionsOption(option.id)}
+                    style={{ marginBottom: '1rem', position: 'relative', padding: '1.5rem' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <LensOptionName style={{ fontSize: '1.1rem', fontWeight: '600', marginRight: '0.5rem' }}>
+                            {option.name}
+                          </LensOptionName>
+                          {option.badge && (
+                            <LensOptionBadge 
+                              type={option.badge === 'Top pick' ? 'top-pick' : 'new'}
+                              style={{ 
+                                backgroundColor: option.badge === 'Top pick' ? '#007bff' : '#28a745',
+                                color: 'white',
+                                fontSize: '0.7rem',
+                                padding: '0.2rem 0.4rem'
+                              }}
+                            >
+                              {option.badge}
+                            </LensOptionBadge>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <LensOptionPrice style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
+                          ${option.price}
+                        </LensOptionPrice>
+                      </div>
+                    </div>
+                    <LensOptionDescription style={{ fontSize: '0.9rem', lineHeight: '1.5', color: '#666' }}>
+                      {option.description}
+                    </LensOptionDescription>
+                  </LensOption>
+                ))}
+              </LensOptionsGrid>
+              
+              <ModalActions>
+                <ModalButton onClick={() => {
+                  setShowTransitionsOptions(false);
+                  setShowLensColorSelection(true);
+                }}>
+                  Back
+                </ModalButton>
+                <ModalButton 
+                  primary 
+                  onClick={closeAllModals}
+                  disabled={!selectedTransitionsOption}
+                  style={{ backgroundColor: '#48b2ee' }}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Sun Options Modal */}
+      {showSunOptions && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowSunOptions(false);
+                      setShowLensColorSelection(true);
+                    }}
+                  >
+                    ← Lens Color
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '1.5rem' }}>Sun Protection Options</ModalTitle>
+              
+              <LensOptionsGrid>
+                {sunOptions.map((option) => (
+                  <LensOption
+                    key={option.id}
+                    selected={selectedSunOption === option.id}
+                    onClick={() => setSelectedSunOption(option.id)}
+                    style={{ marginBottom: '1rem', position: 'relative', padding: '1.5rem' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {option.icon && (
+                          <span style={{ fontSize: '1.5rem', marginRight: '0.75rem' }}>{option.icon}</span>
+                        )}
+                        <div>
+                          <LensOptionName style={{ fontSize: '1.1rem', fontWeight: '600' }}>
+                            {option.name}
+                          </LensOptionName>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <LensOptionPrice style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
+                          ${option.price}
+                        </LensOptionPrice>
+                      </div>
+                    </div>
+                    <LensOptionDescription style={{ fontSize: '0.9rem', lineHeight: '1.5', color: '#666' }}>
+                      {option.description}
+                    </LensOptionDescription>
+                    
+                    {/* Tint options for Basic selection */}
+                    {option.id === 'basic' && selectedSunOption === 'basic' && (
+                      <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
+                        {/* Tint Strength */}
+                        <div style={{ marginBottom: '1.5rem' }}>
+                          <h4 style={{ 
+                            margin: '0 0 0.75rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: '#333'
+                          }}>
+                            Tint Strength: <span style={{ color: '#666', fontWeight: '400' }}>Dark (80%)</span>
+                          </h4>
+                          <div style={{ display: 'flex', gap: '1rem' }}>
+                            {[
+                              { id: 'dark-80', label: 'Dark (80%)', checked: true },
+                              { id: 'medium-50', label: 'Medium (50%)', checked: false },
+                              { id: 'light-20', label: 'Light (20%)', checked: false }
+                            ].map((strength) => (
+                              <label 
+                                key={strength.id}
+                                style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  cursor: 'pointer',
+                                  fontSize: '0.95rem'
+                                }}
+                              >
+                                <input
+                                  type="radio"
+                                  name="tintStrength"
+                                  value={strength.id}
+                                  checked={selectedTintStrength === strength.id}
+                                  onChange={(e) => setSelectedTintStrength(e.target.value)}
+                                  style={{ 
+                                    marginRight: '0.5rem',
+                                    accentColor: '#48b2ee'
+                                  }}
+                                />
+                                {strength.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Color Selection */}
+                        <div>
+                          <h4 style={{ 
+                            margin: '0 0 0.75rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: '#333'
+                          }}>
+                            Color: <span style={{ color: '#666', fontWeight: '400' }}>Gray</span>
+                          </h4>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            {[
+                              { id: 'gray', color: '#4a4a4a', name: 'Gray' },
+                              { id: 'brown', color: '#8b4513', name: 'Brown' },
+                              { id: 'green', color: '#2d5016', name: 'Green' },
+                              { id: 'purple', color: '#663399', name: 'Purple' },
+                              { id: 'blue', color: '#1e3a8a', name: 'Blue' },
+                              { id: 'amber', color: '#92400e', name: 'Amber' },
+                              { id: 'bronze', color: '#a16207', name: 'Bronze' },
+                              { id: 'rose', color: '#9f1239', name: 'Rose' },
+                              { id: 'teal', color: '#0f766e', name: 'Teal' },
+                              { id: 'burgundy', color: '#7c2d12', name: 'Burgundy' }
+                            ].map((color) => (
+                              <button
+                                key={color.id}
+                                onClick={() => setSelectedTintColor(color.id)}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '50%',
+                                  backgroundColor: color.color,
+                                  border: selectedTintColor === color.id ? '3px solid #48b2ee' : '2px solid #ddd',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  outline: 'none',
+                                  boxShadow: selectedTintColor === color.id ? '0 0 0 2px rgba(72, 178, 238, 0.2)' : 'none'
+                                }}
+                                title={color.name}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Tint options for Polarized selection */}
+                    {option.id === 'polarized' && selectedSunOption === 'polarized' && (
+                      <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          {/* Basic tint option */}
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            padding: '1rem',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            backgroundColor: '#fafafa'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <span style={{ 
+                                fontSize: '1rem', 
+                                fontWeight: '500',
+                                color: '#333'
+                              }}>
+                                Basic tint
+                              </span>
+                              <div style={{
+                                width: '16px',
+                                height: '16px',
+                                borderRadius: '50%',
+                                backgroundColor: '#666',
+                                border: '2px solid #ccc',
+                                marginLeft: '0.5rem',
+                                cursor: 'help'
+                              }} title="Basic polarized tint"></div>
+                            </div>
+                            <span style={{ 
+                              fontSize: '1.1rem', 
+                              fontWeight: '600',
+                              color: '#333'
+                            }}>
+                              $59
+                            </span>
+                          </div>
+                          
+                          {/* Mirrored tint option */}
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            padding: '1rem',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            backgroundColor: '#fafafa'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <span style={{ 
+                                fontSize: '1rem', 
+                                fontWeight: '500',
+                                color: '#333'
+                              }}>
+                                Mirrored tint
+                              </span>
+                              <div style={{
+                                width: '16px',
+                                height: '16px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(45deg, #c0c0c0, #808080)',
+                                border: '2px solid #ccc',
+                                marginLeft: '0.5rem',
+                                cursor: 'help'
+                              }} title="Mirrored polarized tint"></div>
+                            </div>
+                            <span style={{ 
+                              fontSize: '1.1rem', 
+                              fontWeight: '600',
+                              color: '#333'
+                            }}>
+                              $88
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Color options for Mirrored selection */}
+                    {option.id === 'mirrored' && selectedSunOption === 'mirrored' && (
+                      <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
+                        <div>
+                          <h4 style={{ 
+                            margin: '0 0 0.75rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: '#333'
+                          }}>
+                            Color: <span style={{ color: '#666', fontWeight: '400' }}>Green</span>
+                          </h4>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            {[
+                              { id: 'silver', color: 'linear-gradient(45deg, #c0c0c0, #808080)', name: 'Silver' },
+                              { id: 'gold', color: 'linear-gradient(45deg, #ffd700, #b8860b)', name: 'Gold' },
+                              { id: 'blue', color: 'linear-gradient(45deg, #4169e1, #1e3a8a)', name: 'Blue' },
+                              { id: 'purple', color: 'linear-gradient(45deg, #9370db, #663399)', name: 'Purple' },
+                              { id: 'green', color: 'linear-gradient(45deg, #32cd32, #228b22)', name: 'Green' }
+                            ].map((color) => (
+                              <button
+                                key={color.id}
+                                onClick={() => setSelectedMirroredColor(color.id)}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '50%',
+                                  background: color.color,
+                                  border: selectedMirroredColor === color.id ? '3px solid #48b2ee' : '2px solid #ddd',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  outline: 'none',
+                                  boxShadow: selectedMirroredColor === color.id ? '0 0 0 2px rgba(72, 178, 238, 0.2)' : 'none'
+                                }}
+                                title={color.name}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Gradient options for Gradient selection */}
+                    {option.id === 'gradient' && selectedSunOption === 'gradient' && (
+                      <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
+                        {/* Tint Strength */}
+                        <div style={{ marginBottom: '1.5rem' }}>
+                          <h4 style={{ 
+                            margin: '0 0 0.75rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: '#333'
+                          }}>
+                            Tint Strength: <span style={{ color: '#666', fontWeight: '400', fontStyle: 'italic' }}>80% to 10% gradient</span>
+                          </h4>
+                        </div>
+                        
+                        {/* Color Selection */}
+                        <div>
+                          <h4 style={{ 
+                            margin: '0 0 0.75rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: '#333'
+                          }}>
+                            Color: <span style={{ color: '#666', fontWeight: '400' }}>Gray</span>
+                          </h4>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            {[
+                              { id: 'gray', gradient: 'linear-gradient(to bottom, #4a4a4a, rgba(74, 74, 74, 0.1))', name: 'Gray' },
+                              { id: 'brown', gradient: 'linear-gradient(to bottom, #8b4513, rgba(139, 69, 19, 0.1))', name: 'Brown' },
+                              { id: 'green', gradient: 'linear-gradient(to bottom, #2d5016, rgba(45, 80, 22, 0.1))', name: 'Green' },
+                              { id: 'purple', gradient: 'linear-gradient(to bottom, #663399, rgba(102, 51, 153, 0.1))', name: 'Purple' },
+                              { id: 'blue', gradient: 'linear-gradient(to bottom, #1e3a8a, rgba(30, 58, 138, 0.1))', name: 'Blue' }
+                            ].map((color) => (
+                              <button
+                                key={color.id}
+                                onClick={() => setSelectedGradientColor(color.id)}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '50%',
+                                  background: color.gradient,
+                                  border: selectedGradientColor === color.id ? '3px solid #48b2ee' : '2px solid #ddd',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  outline: 'none',
+                                  boxShadow: selectedGradientColor === color.id ? '0 0 0 2px rgba(72, 178, 238, 0.2)' : 'none'
+                                }}
+                                title={color.name}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </LensOption>
+                ))}
+              </LensOptionsGrid>
+              
+              <ModalActions>
+                <ModalButton onClick={() => {
+                  setShowSunOptions(false);
+                  setShowLensColorSelection(true);
+                }}>
+                  Back
+                </ModalButton>
+                <ModalButton 
+                  primary 
+                  onClick={() => {
+                    setShowSunOptions(false);
+                    setShowLensPackage(true);
+                  }}
+                  disabled={!selectedSunOption}
+                  style={{ backgroundColor: '#48b2ee' }}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Lens Package Selection Modal */}
+      {showLensPackage && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowLensPackage(false);
+                      setShowSunOptions(true);
+                    }}
+                  >
+                    ← Sun Protection
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '0.5rem' }}>Choose a lens package</ModalTitle>
+              
+              <div style={{ 
+                backgroundColor: '#fff8e1', 
+                border: '1px solid #ffd54f',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <span style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>⭐</span>
+                <span style={{ fontSize: '0.9rem', color: '#333' }}>
+                  All our lenses include <strong>scratch-resistant</strong> and <strong>anti-reflective</strong> coatings.
+                </span>
+              </div>
+              
+              <LensOptionsGrid>
+                {/* Standard Lenses */}
+                <LensOption
+                  selected={selectedLensPackage === 'standard'}
+                  onClick={() => setSelectedLensPackage('standard')}
+                  style={{ 
+                    padding: '1.5rem',
+                    border: selectedLensPackage === 'standard' ? '2px solid #48b2ee' : '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    marginBottom: '1rem',
+                    cursor: 'pointer',
+                    backgroundColor: selectedLensPackage === 'standard' ? '#f8f9fa' : 'white'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ marginRight: '1rem' }}>
+                        <div style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          backgroundColor: '#f0f0f0',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <span style={{ fontSize: '1.2rem' }}>👓</span>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 style={{ 
+                          margin: '0 0 0.25rem 0',
+                          fontSize: '1.1rem',
+                          fontWeight: '600',
+                          color: '#333'
+                        }}>
+                          Standard Lenses
+                        </h3>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '0.8rem', color: '#666' }}>Up to 25% thinner</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ 
+                        fontSize: '1.2rem', 
+                        fontWeight: '700',
+                        color: '#333'
+                      }}>
+                        PKR 42.95
+                      </span>
+                    </div>
+                  </div>
+                  <p style={{ 
+                    margin: 0,
+                    fontSize: '0.9rem',
+                    color: '#666',
+                    lineHeight: '1.4'
+                  }}>
+                    Quality 1.6 index lenses with UV-protective, anti-scratch, anti-reflective coatings.
+                  </p>
+                </LensOption>
+
+                {/* Most Popular Lenses */}
+                <LensOption
+                  selected={selectedLensPackage === 'popular'}
+                  onClick={() => setSelectedLensPackage('popular')}
+                  style={{ 
+                    padding: '1.5rem',
+                    border: selectedLensPackage === 'popular' ? '2px solid #48b2ee' : '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    marginBottom: '1rem',
+                    cursor: 'pointer',
+                    backgroundColor: selectedLensPackage === 'popular' ? '#f8f9fa' : 'white'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ marginRight: '1rem' }}>
+                        <div style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          backgroundColor: '#f0f0f0',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <span style={{ fontSize: '1.2rem' }}>👓</span>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 style={{ 
+                          margin: '0 0 0.25rem 0',
+                          fontSize: '1.1rem',
+                          fontWeight: '600',
+                          color: '#333'
+                        }}>
+                          Most Popular Lenses
+                        </h3>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '0.8rem', color: '#666' }}>Up to 30% thinner</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ 
+                        fontSize: '1.2rem', 
+                        fontWeight: '700',
+                        color: '#333'
+                      }}>
+                        PKR 72.95
+                      </span>
+                    </div>
+                  </div>
+                  <p style={{ 
+                    margin: 0,
+                    fontSize: '0.9rem',
+                    color: '#666',
+                    lineHeight: '1.4'
+                  }}>
+                    Quality 1.67 index lenses with UV-protective, anti-scratch, anti-reflective coatings.
+                  </p>
+                </LensOption>
+              </LensOptionsGrid>
+              
+              <div style={{ 
+                textAlign: 'center', 
+                marginTop: '1.5rem',
+                paddingTop: '1rem',
+                borderTop: '1px solid #eee'
+              }}>
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#48b2ee',
+                    fontSize: '0.9rem',
+                    textDecoration: 'underline',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Or customize your lenses
+                </button>
+              </div>
+              
+              <ModalActions>
+                <ModalButton 
+                  primary 
+                  onClick={() => {
+                    setShowLensPackage(false);
+                    setShowReviewSelections(true);
+                  }}
+                  disabled={!selectedLensPackage}
+                  style={{ backgroundColor: '#48b2ee' }}
+                >
+                  Continue
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Review Selections Modal */}
+      {showReviewSelections && (
+        <ModalOverlay onClick={closeAllModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ 
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => {
+                      setShowReviewSelections(false);
+                      setShowLensPackage(true);
+                    }}
+                  >
+                    ← Back to Edit
+                  </span>
+                </div>
+                <CloseButton onClick={closeAllModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '0.5rem' }}>Review your selections</ModalTitle>
+              
+              <div style={{ 
+                fontSize: '0.85rem',
+                color: '#666',
+                marginBottom: '1.5rem',
+                lineHeight: '1.4'
+              }}>
+                All orders include <strong>14-Day Free Returns</strong>, <strong>24/7 Customer Service</strong>, and can be reimbursed with <strong>FSA & HSA</strong>.
+              </div>
+              
+              {/* Product Details */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.5rem'
+                }}>
+                  <span style={{ fontSize: '1rem', fontWeight: '500', color: '#333' }}>
+                    {product?.name || 'Vinyl'} | {product?.brand || 'Black'} | {product?.size || 'Medium'}
+                  </span>
+                  <span style={{ fontSize: '1rem', fontWeight: '500', color: '#333' }}>
+                    PKR {product?.price || '59'}
+                  </span>
+                </div>
+                
+                {/* Usage Selection */}
+                {selectedUsage && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '1rem'
+                  }}>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      • Usage: {selectedUsage === 'everyday' && 'Everyday Wear'}
+                      {selectedUsage === 'computer' && 'Computer Work'}
+                      {selectedUsage === 'reading' && 'Reading & Close Work'}
+                      {selectedUsage === 'outdoor' && 'Outdoor Activities'}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      Free
+                    </span>
+                  </div>
+                )}
+                
+                {/* Lens Type Selection */}
+                {selectedLensTypeOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '1rem'
+                  }}>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      • Lens Type: {selectedLensTypeOption === 'standard' && 'Standard'}
+                      {selectedLensTypeOption === 'blue-light' && 'Blue Light Blocking'}
+                      {selectedLensTypeOption === 'progressive' && 'Progressive'}
+                      {selectedLensTypeOption === 'photochromic' && 'Photochromic'}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      {selectedLensTypeOption === 'standard' && 'Free'}
+                      {selectedLensTypeOption === 'blue-light' && 'PKR 49'}
+                      {selectedLensTypeOption === 'progressive' && 'PKR 149'}
+                      {selectedLensTypeOption === 'photochromic' && 'PKR 99'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Prescription Method */}
+                {selectedPrescriptionMethod && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '1rem'
+                  }}>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      • Prescription: {selectedPrescriptionMethod === 'upload' && 'Upload Prescription'}
+                      {selectedPrescriptionMethod === 'manual' && 'Enter Manually'}
+                      {selectedPrescriptionMethod === 'previous' && 'Use Previous Prescription'}
+                      {selectedPrescriptionMethod === 'exam' && 'Schedule Eye Exam'}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      Free
+                    </span>
+                  </div>
+                )}
+                
+                {/* Lens Color Selection */}
+                {selectedLensColor && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '1rem'
+                  }}>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      • Lens Color: {selectedLensColor === 'clear' && 'Clear'}
+                      {selectedLensColor === 'blue-light' && 'Blue Light Filtering'}
+                      {selectedLensColor === 'transitions' && 'Transitions'}
+                      {selectedLensColor === 'sun' && 'Sun Protection'}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      Free
+                    </span>
+                  </div>
+                )}
+                
+                {/* Clear Lens Options */}
+                {selectedClearLensOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '2rem'
+                  }}>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                      ◦ Clear Lens: {selectedClearLensOption}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                      Free
+                    </span>
+                  </div>
+                )}
+                
+                {/* Blue Light Options */}
+                {selectedBlueLightOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '2rem'
+                  }}>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                      ◦ Blue Light: {selectedBlueLightOption}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                      {selectedBlueLightOption === 'EBDBlue 360™' && 'PKR 89'}
+                      {selectedBlueLightOption === 'SightRelax' && 'PKR 49'}
+                      {selectedBlueLightOption === 'EBDBlue Smart' && 'PKR 69'}
+                      {selectedBlueLightOption === 'EBDBlue Plus™' && 'PKR 109'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Transitions Options */}
+                {selectedTransitionsOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '2rem'
+                  }}>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                      ◦ Transitions: {selectedTransitionsOption}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                      {selectedTransitionsOption === 'GEN S™' && 'PKR 149'}
+                      {selectedTransitionsOption === 'XTRActive®' && 'PKR 179'}
+                      {selectedTransitionsOption === 'Drivewear®' && 'PKR 199'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Sun Protection Options */}
+                {selectedSunOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '2rem'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.85rem', color: '#999' }}>
+                        ◦ Sun Protection: {selectedSunOption === 'basic' && 'Basic Tint'}
+                        {selectedSunOption === 'polarized' && 'Polarized'}
+                        {selectedSunOption === 'mirrored' && 'Mirrored'}
+                        {selectedSunOption === 'gradient' && 'Gradient'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#bbb', paddingLeft: '0.5rem' }}>
+                        {selectedSunOption === 'basic' && `Color: ${selectedTintColor}, Strength: ${selectedTintStrength}`}
+                        {selectedSunOption === 'mirrored' && `Color: ${selectedMirroredColor}`}
+                        {selectedSunOption === 'gradient' && `Color: ${selectedGradientColor}`}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                      {selectedSunOption === 'basic' && 'PKR 7'}
+                      {selectedSunOption === 'polarized' && 'PKR 59'}
+                      {selectedSunOption === 'mirrored' && 'PKR 29'}
+                      {selectedSunOption === 'gradient' && 'PKR 13'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Lens Package */}
+                {selectedLensPackage && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                    paddingLeft: '1rem'
+                  }}>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      • Lens Package: {selectedLensPackage === 'standard' ? 'Standard Lenses' : 'Most Popular Lenses'}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                      PKR {selectedLensPackage === 'standard' ? '43' : '73'}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Subtotal */}
+              <div style={{ 
+                borderTop: '1px solid #eee',
+                paddingTop: '1rem',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.75rem'
+                }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                    Subtotal
+                  </span>
+                  <span style={{ fontSize: '1.4rem', fontWeight: '700', color: '#333' }}>
+                    PKR {(() => {
+                      let total = parseFloat(product?.price || 59);
+                      
+                      // Add lens type pricing
+                      if (selectedLensTypeOption === 'blue-light') total += 49;
+                      if (selectedLensTypeOption === 'progressive') total += 149;
+                      if (selectedLensTypeOption === 'photochromic') total += 99;
+                      
+                      // Add blue light option pricing
+                      if (selectedBlueLightOption === 'EBDBlue 360™') total += 89;
+                      if (selectedBlueLightOption === 'SightRelax') total += 49;
+                      if (selectedBlueLightOption === 'EBDBlue Smart') total += 69;
+                      if (selectedBlueLightOption === 'EBDBlue Plus™') total += 109;
+                      
+                      // Add transitions option pricing
+                      if (selectedTransitionsOption === 'GEN S™') total += 149;
+                      if (selectedTransitionsOption === 'XTRActive®') total += 179;
+                      if (selectedTransitionsOption === 'Drivewear®') total += 199;
+                      
+                      // Add sun protection pricing
+                      if (selectedSunOption === 'basic') total += 7;
+                      if (selectedSunOption === 'polarized') total += 59;
+                      if (selectedSunOption === 'mirrored') total += 29;
+                      if (selectedSunOption === 'gradient') total += 13;
+                      
+                      // Add lens package pricing
+                      if (selectedLensPackage === 'standard') total += 43;
+                      if (selectedLensPackage === 'popular') total += 73;
+                      
+                      return Math.round(total);
+                    })()}
+                  </span>
+                </div>
+                
+                <div style={{ 
+                  fontSize: '0.8rem', 
+                  color: '#666',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+            
+                
+                  
+                </div>
+              </div>
+              
+              <ModalActions>
+                <ModalButton 
+                  primary 
+                  onClick={() => {
+                    // Calculate final price
+                    let finalPrice = parseFloat(product?.price || 59);
+                    
+                    // Add lens type pricing
+                    if (selectedLensTypeOption === 'blue-light') finalPrice += 49;
+                    if (selectedLensTypeOption === 'progressive') finalPrice += 149;
+                    if (selectedLensTypeOption === 'photochromic') finalPrice += 99;
+                    
+                    // Add blue light option pricing
+                    if (selectedBlueLightOption === 'EBDBlue 360™') finalPrice += 89;
+                    if (selectedBlueLightOption === 'SightRelax') finalPrice += 49;
+                    if (selectedBlueLightOption === 'EBDBlue Smart') finalPrice += 69;
+                    if (selectedBlueLightOption === 'EBDBlue Plus™') finalPrice += 109;
+                    
+                    // Add transitions option pricing
+                    if (selectedTransitionsOption === 'GEN S™') finalPrice += 149;
+                    if (selectedTransitionsOption === 'XTRActive®') finalPrice += 179;
+                    if (selectedTransitionsOption === 'Drivewear®') finalPrice += 199;
+                    
+                    // Add sun protection pricing
+                    if (selectedSunOption === 'basic') finalPrice += 7;
+                    if (selectedSunOption === 'polarized') finalPrice += 59;
+                    if (selectedSunOption === 'mirrored') finalPrice += 29;
+                    if (selectedSunOption === 'gradient') finalPrice += 13;
+                    
+                    // Add lens package pricing
+                    if (selectedLensPackage === 'standard') finalPrice += 43;
+                    if (selectedLensPackage === 'popular') finalPrice += 73;
+
+                    // Create cart item with all selections
+                    const cartItem = {
+                      id: product?.id || id,
+                      name: product?.name || 'Vinyl',
+                      brand: product?.brand || 'Black',
+                      size: product?.size || 'Medium',
+                      image: product?.image || '/images/eyeglasses.webp',
+                      price: Math.round(finalPrice),
+                      originalPrice: product?.price || 59,
+                      quantity: 1,
+                      customizations: {
+                        usage: selectedUsage,
+                        lensType: selectedLensTypeOption,
+                        prescriptionMethod: selectedPrescriptionMethod,
+                        lensColor: selectedLensColor,
+                        clearLensOption: selectedClearLensOption,
+                        blueLightOption: selectedBlueLightOption,
+                        transitionsOption: selectedTransitionsOption,
+                        sunOption: selectedSunOption,
+                        tintColor: selectedTintColor,
+                        tintStrength: selectedTintStrength,
+                        mirroredColor: selectedMirroredColor,
+                        gradientColor: selectedGradientColor,
+                        lensPackage: selectedLensPackage
+                      }
+                    };
+
+                    // Add to cart
+                    dispatch(addToCart(cartItem));
+                    
+                    // Navigate to cart page
+                    navigate('/cart');
+                  }}
+                  style={{ 
+                    backgroundColor: '#d4a574',
+                    width: '100%',
+                    padding: '1rem',
+                    fontSize: '1rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  Confirm & add to cart
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 };

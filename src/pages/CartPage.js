@@ -739,16 +739,119 @@ const CartPage = () => {
               </ItemImage>
               
               <ItemDetails>
-                <ItemName>{item.name} ({formatPrice(item.price)})</ItemName>
+                <ItemName>{item.name} | {item.brand} | {item.size}</ItemName>
                 
                 <ItemSpecs>
                   <SpecLine>
-                    <span className="label">{item.selectedColor || 'Matte Black'} {item.selectedSize || 'Large'}</span>
-                    <span className="value">{formatPrice(item.price)}</span>
+                    <span className="label">Base Price</span>
+                    <span className="value">PKR {item.originalPrice}</span>
                   </SpecLine>
-                  <SpecLine>
-                    <span className="label">{item.lensType || 'Single Vision Distance'} (Details)</span>
-                    <span className="value">Free</span>
+                  
+                  {item.customizations?.usage && (
+                    <SpecLine>
+                      <span className="label">• Usage: {
+                        item.customizations.usage === 'everyday' ? 'Everyday Wear' :
+                        item.customizations.usage === 'computer' ? 'Computer Work' :
+                        item.customizations.usage === 'reading' ? 'Reading & Close Work' :
+                        item.customizations.usage === 'outdoor' ? 'Outdoor Activities' : 
+                        item.customizations.usage
+                      }</span>
+                      <span className="value">Free</span>
+                    </SpecLine>
+                  )}
+                  
+                  {item.customizations?.lensType && (
+                    <SpecLine>
+                      <span className="label">• Lens Type: {
+                        item.customizations.lensType === 'standard' ? 'Standard' :
+                        item.customizations.lensType === 'blue-light' ? 'Blue Light Blocking' :
+                        item.customizations.lensType === 'progressive' ? 'Progressive' :
+                        item.customizations.lensType === 'photochromic' ? 'Photochromic' :
+                        item.customizations.lensType
+                      }</span>
+                      <span className="value">
+                        {item.customizations.lensType === 'standard' ? 'Free' :
+                         item.customizations.lensType === 'blue-light' ? 'PKR 49' :
+                         item.customizations.lensType === 'progressive' ? 'PKR 149' :
+                         item.customizations.lensType === 'photochromic' ? 'PKR 99' : 'Free'}
+                      </span>
+                    </SpecLine>
+                  )}
+                  
+                  {item.customizations?.prescriptionMethod && (
+                    <SpecLine>
+                      <span className="label">• Prescription: {
+                        item.customizations.prescriptionMethod === 'upload' ? 'Upload Prescription' :
+                        item.customizations.prescriptionMethod === 'manual' ? 'Enter Manually' :
+                        item.customizations.prescriptionMethod === 'previous' ? 'Use Previous Prescription' :
+                        item.customizations.prescriptionMethod === 'exam' ? 'Schedule Eye Exam' :
+                        item.customizations.prescriptionMethod
+                      }</span>
+                      <span className="value">Free</span>
+                    </SpecLine>
+                  )}
+                  
+                  {item.customizations?.blueLightOption && (
+                    <SpecLine>
+                      <span className="label">  ◦ Blue Light: {item.customizations.blueLightOption}</span>
+                      <span className="value">
+                        {item.customizations.blueLightOption === 'EBDBlue 360™' ? 'PKR 89' :
+                         item.customizations.blueLightOption === 'SightRelax' ? 'PKR 49' :
+                         item.customizations.blueLightOption === 'EBDBlue Smart' ? 'PKR 69' :
+                         item.customizations.blueLightOption === 'EBDBlue Plus™' ? 'PKR 109' : 'Free'}
+                      </span>
+                    </SpecLine>
+                  )}
+                  
+                  {item.customizations?.transitionsOption && (
+                    <SpecLine>
+                      <span className="label">  ◦ Transitions: {item.customizations.transitionsOption}</span>
+                      <span className="value">
+                        {item.customizations.transitionsOption === 'GEN S™' ? 'PKR 149' :
+                         item.customizations.transitionsOption === 'XTRActive®' ? 'PKR 179' :
+                         item.customizations.transitionsOption === 'Drivewear®' ? 'PKR 199' : 'Free'}
+                      </span>
+                    </SpecLine>
+                  )}
+                  
+                  {item.customizations?.sunOption && (
+                    <SpecLine>
+                      <span className="label">  ◦ Sun Protection: {
+                        item.customizations.sunOption === 'basic' ? 'Basic Tint' :
+                        item.customizations.sunOption === 'polarized' ? 'Polarized' :
+                        item.customizations.sunOption === 'mirrored' ? 'Mirrored' :
+                        item.customizations.sunOption === 'gradient' ? 'Gradient' :
+                        item.customizations.sunOption
+                      }
+                      {item.customizations.tintColor && ` (${item.customizations.tintColor})`}
+                      {item.customizations.mirroredColor && ` (${item.customizations.mirroredColor})`}
+                      {item.customizations.gradientColor && ` (${item.customizations.gradientColor})`}
+                      </span>
+                      <span className="value">
+                        {item.customizations.sunOption === 'basic' ? 'PKR 7' :
+                         item.customizations.sunOption === 'polarized' ? 'PKR 59' :
+                         item.customizations.sunOption === 'mirrored' ? 'PKR 29' :
+                         item.customizations.sunOption === 'gradient' ? 'PKR 13' : 'Free'}
+                      </span>
+                    </SpecLine>
+                  )}
+                  
+                  {item.customizations?.lensPackage && (
+                    <SpecLine>
+                      <span className="label">• Lens Package: {
+                        item.customizations.lensPackage === 'standard' ? 'Standard Lenses' :
+                        item.customizations.lensPackage === 'popular' ? 'Most Popular Lenses' :
+                        item.customizations.lensPackage
+                      }</span>
+                      <span className="value">
+                        PKR {item.customizations.lensPackage === 'standard' ? '43' : '73'}
+                      </span>
+                    </SpecLine>
+                  )}
+                  
+                  <SpecLine style={{ borderTop: '1px solid #eee', paddingTop: '0.5rem', marginTop: '0.5rem', fontWeight: '600' }}>
+                    <span className="label">Total Price</span>
+                    <span className="value">PKR {Math.round(item.price)}</span>
                   </SpecLine>
                 </ItemSpecs>
 

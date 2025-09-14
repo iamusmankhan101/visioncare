@@ -12,6 +12,8 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ContactPage from './pages/ContactPage';
 import AdminPage from './pages/AdminPage';
+import LensesPage from './pages/LensesPage';
+import LensProductDetailPage from './pages/LensProductDetailPage';
 import { CartProvider } from './context/CartContext';
 import LoginPage from './pages/LoginPage'; // Import the new LoginPage component
 import AuthPage from './pages/AuthPage';
@@ -34,6 +36,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/products" element={<ProductListingPage />} />
               <Route path="/products/:id" element={<ProductDetailPage />} />
+              <Route path="/lenses" element={<LensesPage />} />
+              <Route path="/lenses/:id" element={<LensProductDetailPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-confirmation" element={<OrderConfirmationPage />} />

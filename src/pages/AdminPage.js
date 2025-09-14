@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { addProduct, updateProduct, deleteProduct, removeAllProducts, resetFilters, createProductAsync, updateProductAsync, deleteProductAsync, fetchProducts } from '../redux/slices/productSlice';
-import sampleProducts from '../utils/addSampleProducts';
+import sampleProducts, { sampleLensProducts } from '../utils/addSampleProducts';
 import OrderManagement from '../components/admin/OrderManagement';
 
 // Styled Components
@@ -347,18 +347,25 @@ const AdminPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
+  // Get authentication state from Redux
+  const { isAuthenticated, user } = useSelector(state => state.auth);
+  
+  // Debug logging
+  console.log('AdminPage - Auth State:', { isAuthenticated, user });
+  
   // Check if user is authenticated and redirect if not logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      navigate('/login');
+    console.log('AdminPage useEffect - isAuthenticated:', isAuthenticated);
+    if (!isAuthenticated) {
+      console.log('AdminPage - Redirecting to /auth because not authenticated');
+      navigate('/auth');
       return;
     }
     
+    console.log('AdminPage - User is authenticated, allowing access');
     // Allow access to admin page for any authenticated user
     setIsLoading(false);
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
   
   // Get products from Redux store
   const { items: products, loading } = useSelector(state => state.products);
@@ -400,7 +407,7 @@ const AdminPage = () => {
   });
   
   // Available options for form selects
-  const categories = ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses'];
+  const categories = ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
   const materials = ['Metal', 'Plastic', 'Titanium', 'Acetate', 'Wood', 'Other'];
   const shapes = ['Round', 'Square', 'Rectangle', 'Cat Eye', 'Aviator', 'Oval', 'Geometric', 'Other'];
   const rimOptions = ['Full Rim', 'Semi-Rimless', 'Rimless', 'Half Rim'];
@@ -489,6 +496,20 @@ const AdminPage = () => {
       ...productData,
       featured: !productData.featured
     });
+  };
+  
+  const addSampleProducts = () => {
+    sampleProducts.forEach(product => {
+      dispatch(addProduct(product));
+    });
+    alert('Sample products added successfully!');
+  };
+
+  const addSampleLensProducts = () => {
+    sampleLensProducts.forEach(product => {
+      dispatch(addProduct(product));
+    });
+    alert('Sample lens products added successfully!');
   };
   
   // Add these new handler functions
@@ -1265,6 +1286,14 @@ const AdminPage = () => {
                   disabled={isLoading}
                 >
                   {isLoading ? 'Updating...' : 'Add Styles to Existing Products'}
+                </SubmitButton>
+                
+                <SubmitButton 
+                  onClick={addSampleLensProducts}
+                  style={{ backgroundColor: '#3498db' }}
+                  disabled={isLoading}
+                >
+                  Add Sample Lens Products
                 </SubmitButton>
                 
                 <SubmitButton 

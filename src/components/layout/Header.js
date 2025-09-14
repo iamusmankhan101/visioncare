@@ -139,7 +139,7 @@ const Dropdown = styled.div`
   z-index: 1;
   border-radius: 4px;
   padding: 0.5rem 0;
-  margin-top: 0.5rem;
+  margin-top: 0px;
 `;
 
 const DropdownLink = styled(Link)`
@@ -162,6 +162,17 @@ const NavItem = styled.div`
   
   &:hover ${Dropdown} {
     display: block;
+  }
+  
+  &:hover::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: transparent;
+    z-index: 2;
   }
 `;
 
@@ -874,16 +885,16 @@ const Header = () => {
         <NavLink to="/products?category=eyeglasses">Eyeglasses</NavLink>
         <NavLink to="/products?category=sunglasses">Sunglasses</NavLink>
         <NavItem>
-          <NavButton>
+          <NavLink to="/lenses">
             Lenses
             <DropdownIcon>
               <FiChevronDown />
             </DropdownIcon>
-          </NavButton>
+          </NavLink>
           <Dropdown>
-            <DropdownLink to="/products?category=contact-lenses">Contact Lenses</DropdownLink>
-            <DropdownLink to="/products?category=transparent-lenses">Transparent Lenses</DropdownLink>
-            <DropdownLink to="/products?category=colored-lenses">Colored Lenses</DropdownLink>
+            <DropdownLink to="/lenses?category=contact-lenses">Contact Lenses</DropdownLink>
+            <DropdownLink to="/lenses?category=transparent-lenses">Transparent Lenses</DropdownLink>
+            <DropdownLink to="/lenses?category=colored-lenses">Colored Lenses</DropdownLink>
           </Dropdown>
         </NavItem>
         <NavLink to="/products?gender=men">Men</NavLink>
@@ -1049,9 +1060,9 @@ const Header = () => {
           <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)}>Home</MobileNavLink>
           <MobileNavLink to="/products?category=eyeglasses" onClick={() => setMobileMenuOpen(false)}>Eyeglasses</MobileNavLink>
           <MobileNavLink to="/products?category=sunglasses" onClick={() => setMobileMenuOpen(false)}>Sunglasses</MobileNavLink>
-          <MobileNavLink to="/products?category=contact-lenses" onClick={() => setMobileMenuOpen(false)}>Contact Lenses</MobileNavLink>
-          <MobileNavLink to="/products?category=transparent-lenses" onClick={() => setMobileMenuOpen(false)}>Transparent Lenses</MobileNavLink>
-          <MobileNavLink to="/products?category=colored-lenses" onClick={() => setMobileMenuOpen(false)}>Colored Lenses</MobileNavLink>
+          <MobileNavLink to="/lenses?category=contact-lenses" onClick={() => setMobileMenuOpen(false)}>Contact Lenses</MobileNavLink>
+          <MobileNavLink to="/lenses?category=transparent-lenses" onClick={() => setMobileMenuOpen(false)}>Transparent Lenses</MobileNavLink>
+          <MobileNavLink to="/lenses?category=colored-lenses" onClick={() => setMobileMenuOpen(false)}>Colored Lenses</MobileNavLink>
           <MobileNavLink to="/products?gender=men" onClick={() => setMobileMenuOpen(false)}>Men</MobileNavLink>
           <MobileNavLink to="/products?gender=women" onClick={() => setMobileMenuOpen(false)}>Women</MobileNavLink>
           <MobileNavLink to="/contact" onClick={() => setMobileMenuOpen(false)}>Contact</MobileNavLink>

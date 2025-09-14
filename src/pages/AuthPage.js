@@ -486,10 +486,13 @@ const AuthPage = () => {
       setTimeout(() => {
         // Mock successful login
         const userData = {
-          id: Date.now(),
-          email: formData.email,
-          firstName: formData.email.split('@')[0],
-          lastName: ''
+          user: {
+            id: Date.now(),
+            email: formData.email,
+            firstName: formData.email.split('@')[0],
+            lastName: '',
+            name: formData.email.split('@')[0]
+          }
         };
         
         dispatch(loginSuccess(userData));
@@ -519,11 +522,15 @@ const AuthPage = () => {
     try {
       // Simulate API call
       setTimeout(() => {
+        // Mock successful registration
         const userData = {
-          id: Date.now(),
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName
+          user: {
+            id: Date.now(),
+            email: formData.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            name: `${formData.firstName} ${formData.lastName}`
+          }
         };
         
         dispatch(registerSuccess(userData));
@@ -534,21 +541,6 @@ const AuthPage = () => {
     }
   };
 
-  const handleSocialLogin = (provider) => {
-    dispatch(loginStart());
-    // Mock social login
-    setTimeout(() => {
-      const userData = {
-        id: Date.now(),
-        email: `user@${provider}.com`,
-        firstName: 'User',
-        lastName: provider.charAt(0).toUpperCase() + provider.slice(1)
-      };
-      
-      dispatch(loginSuccess(userData));
-      navigate('/account', { replace: true });
-    }, 1000);
-  };
 
   return (
     <PageContainer>

@@ -6,19 +6,26 @@ import productReducer from './slices/productSlice';
 import authReducer from './slices/authSlice';
 import wishlistReducer from './slices/wishlistSlice';
 
-// We'll keep using persist for the cart but not for products
+// Persist config for cart
 const cartPersistConfig = {
   key: 'cart',
   storage,
 };
 
+// Persist config for auth
+const authPersistConfig = {
+  key: 'auth',
+  storage,
+};
+
 const persistedCartReducer = persistReducer(cartPersistConfig, cartReducer);
+const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 
 export const store = configureStore({
   reducer: {
     cart: persistedCartReducer,
     products: productReducer, // No longer persisted since we'll fetch from API
-    auth: authReducer,
+    auth: persistedAuthReducer,
     wishlist: wishlistReducer,
   },
   middleware: (getDefaultMiddleware) =>

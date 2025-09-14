@@ -122,7 +122,6 @@ const NavLink = styled(Link)`
   }
 `;
 
-
 const DropdownIcon = styled.span`
   margin-left: 4px;
   display: flex;
@@ -154,6 +153,33 @@ const DropdownLink = styled(Link)`
   &:hover {
     background-color: #f8f8f8;
     color: #ff6b00;
+  }
+`;
+
+const NavItem = styled.div`
+  position: relative;
+  display: inline-block;
+  
+  &:hover ${Dropdown} {
+    display: block;
+  }
+`;
+
+const NavButton = styled.button`
+  background: none;
+  border: none;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  
+  &:hover {
+    color: #48b2ee;
   }
 `;
 
@@ -488,9 +514,36 @@ const IconLink = styled(Link)`
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   
   &:hover {
     color: #48b2ee;
+  }
+`;
+
+const CartBadge = styled.span`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 18px;
+  padding: 0;
+  
+  @media (max-width: 768px) {
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    top: -6px;
+    right: -6px;
   }
 `;
 
@@ -683,6 +736,7 @@ const Header = () => {
   
   const { items: products } = useSelector(state => state.products);
   const { user, isAuthenticated } = useSelector(state => state.auth);
+  const { totalQuantity } = useSelector(state => state.cart);
   
   // Fetch products when component mounts
   useEffect(() => {
@@ -819,6 +873,19 @@ const Header = () => {
         <NavLink to="/">Home</NavLink>
         <NavLink to="/products?category=eyeglasses">Eyeglasses</NavLink>
         <NavLink to="/products?category=sunglasses">Sunglasses</NavLink>
+        <NavItem>
+          <NavButton>
+            Lenses
+            <DropdownIcon>
+              <FiChevronDown />
+            </DropdownIcon>
+          </NavButton>
+          <Dropdown>
+            <DropdownLink to="/products?category=contact-lenses">Contact Lenses</DropdownLink>
+            <DropdownLink to="/products?category=transparent-lenses">Transparent Lenses</DropdownLink>
+            <DropdownLink to="/products?category=colored-lenses">Colored Lenses</DropdownLink>
+          </Dropdown>
+        </NavItem>
         <NavLink to="/products?gender=men">Men</NavLink>
         <NavLink to="/products?gender=women">Women</NavLink>
         <NavLink to="/contact">Contact</NavLink>
@@ -945,7 +1012,10 @@ const Header = () => {
           )}
         </div>
         <IconLink to="/wishlist"><FiHeart /></IconLink>
-        <IconLink to="/cart"><FiShoppingBag /></IconLink>
+        <IconLink to="/cart">
+          <FiShoppingBag />
+          {totalQuantity > 0 && <CartBadge>{totalQuantity}</CartBadge>}
+        </IconLink>
       </IconGroup>
       
       {/* Mobile Menu Background */}
@@ -979,6 +1049,9 @@ const Header = () => {
           <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)}>Home</MobileNavLink>
           <MobileNavLink to="/products?category=eyeglasses" onClick={() => setMobileMenuOpen(false)}>Eyeglasses</MobileNavLink>
           <MobileNavLink to="/products?category=sunglasses" onClick={() => setMobileMenuOpen(false)}>Sunglasses</MobileNavLink>
+          <MobileNavLink to="/products?category=contact-lenses" onClick={() => setMobileMenuOpen(false)}>Contact Lenses</MobileNavLink>
+          <MobileNavLink to="/products?category=transparent-lenses" onClick={() => setMobileMenuOpen(false)}>Transparent Lenses</MobileNavLink>
+          <MobileNavLink to="/products?category=colored-lenses" onClick={() => setMobileMenuOpen(false)}>Colored Lenses</MobileNavLink>
           <MobileNavLink to="/products?gender=men" onClick={() => setMobileMenuOpen(false)}>Men</MobileNavLink>
           <MobileNavLink to="/products?gender=women" onClick={() => setMobileMenuOpen(false)}>Women</MobileNavLink>
           <MobileNavLink to="/contact" onClick={() => setMobileMenuOpen(false)}>Contact</MobileNavLink>

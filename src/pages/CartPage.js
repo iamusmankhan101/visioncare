@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { removeFromCart, clearCart } from '../redux/slices/cartSlice';
+import { removeFromCart, increaseQuantity, decreaseQuantity, clearCart } from '../redux/slices/cartSlice';
 import formatPrice from '../utils/formatPrice';
 
 // Styled Components
@@ -92,6 +92,57 @@ const RemoveButton = styled.button`
   &:hover {
     color: #666;
   }
+`;
+
+const QuantityControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+`;
+
+const QuantityButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #3a9de8;
+  }
+  
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const QuantityDisplay = styled.div`
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+  color: #333;
+`;
+
+const QuantityLabel = styled.span`
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
 `;
 
 const ItemContent = styled.div`
@@ -327,7 +378,7 @@ const CheckoutButton = styled.button`
   transition: background-color 0.2s;
   
   &:hover {
-    background-color: #a07828;
+    background-color: #3a9de8;
   }
 `;
 
@@ -385,15 +436,16 @@ const PromoCodeInput = styled.div`
   }
   
   button {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
+    background-color: #48b2ee;
+    color: white;
+    border: 1px solid #48b2ee;
     border-radius: 6px;
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
     cursor: pointer;
     
     &:hover {
-      background-color: #e0e0e0;
+      background-color: #3a9de8;
     }
   }
 `;
@@ -499,7 +551,7 @@ const ContinueShoppingButton = styled.button`
   }
   
   &:hover {
-    background-color: #48b2ee;
+    background-color: #3a9de8;
   }
 `;
 
@@ -526,7 +578,7 @@ const SignInButton = styled.button`
   }
   
   &:hover {
-    background-color: #48b2ee;
+    background-color: #3a9de8;
   }
 `;
 
@@ -602,6 +654,14 @@ const CartPage = () => {
 
   const handleRemoveItem = (itemKey) => {
     dispatch(removeFromCart(itemKey));
+  };
+
+  const handleIncreaseQuantity = (itemKey) => {
+    dispatch(increaseQuantity(itemKey));
+  };
+
+  const handleDecreaseQuantity = (itemKey) => {
+    dispatch(decreaseQuantity(itemKey));
   };
 
   const handleAddOnChange = (itemId, addOnType, checked, price = 0) => {
@@ -855,7 +915,19 @@ const CartPage = () => {
                   </SpecLine>
                 </ItemSpecs>
 
-              
+                <QuantityControls>
+                  <QuantityLabel>Quantity:</QuantityLabel>
+                  <QuantityButton 
+                    onClick={() => handleDecreaseQuantity(item.itemKey)}
+                    disabled={item.quantity <= 1}
+                  >
+                    −
+                  </QuantityButton>
+                  <QuantityDisplay>{item.quantity}</QuantityDisplay>
+                  <QuantityButton onClick={() => handleIncreaseQuantity(item.itemKey)}>
+                    +
+                  </QuantityButton>
+                </QuantityControls>
               
               </ItemDetails>
             </ItemContent>

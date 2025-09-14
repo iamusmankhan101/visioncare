@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProducts } from '../redux/slices/productSlice';
 import { addToCart } from '../redux/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
-import { FiShoppingBag, FiHeart } from 'react-icons/fi';
+import { FiShoppingBag, FiHeart, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import styled from 'styled-components';
 
@@ -785,11 +785,14 @@ const RightButton = styled(CarouselButton)`
 
 const HomePage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items: products, status: loading, error } = useSelector(state => state.products);
+  const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [testimonialSlide, setTestimonialSlide] = useState(0);
   const [selectedColors, setSelectedColors] = useState({});
+  const [wishlistModal, setWishlistModal] = useState({ isOpen: false, type: '', product: null });
 
   // Testimonial data
   const testimonials = [
@@ -871,6 +874,15 @@ const HomePage = () => {
   const wishlistItems = useSelector(state => state.wishlist?.items || []);
   
   const handleWishlistToggle = (product) => {
+    if (!isAuthenticated) {
+      setWishlistModal({
+        isOpen: true,
+        type: 'signin',
+        product: product
+      });
+      return;
+    }
+
     const isInWishlist = wishlistItems.some(item => item.id === product.id);
     
     if (isInWishlist) {
@@ -882,7 +894,27 @@ const HomePage = () => {
         price: product.price,
         image: product.image
       }));
+      
+      setWishlistModal({
+        isOpen: true,
+        type: 'success',
+        product: product
+      });
     }
+  };
+
+  const closeModal = () => {
+    setWishlistModal({ isOpen: false, type: '', product: null });
+  };
+
+  const handleSignIn = () => {
+    closeModal();
+    navigate('/auth');
+  };
+
+  const handleViewWishlist = () => {
+    closeModal();
+    navigate('/wishlist');
   };
 
   const isInWishlist = (productId) => {
@@ -1362,6 +1394,50 @@ const HomePage = () => {
         </NewsletterContainer>
       </NewsletterSection>
       
+      {/* Wishlist Modal */}
+      {wishlistModal.isOpen && (
+        <ModalOverlay onClick={closeModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalCloseButton onClick={closeModal}>
+              <FiX />
+            </ModalCloseButton>
+            
+            {wishlistModal.type === 'signin' ? (
+              <>
+                <ModalIcon>❤️</ModalIcon>
+                <ModalTitle>Sign In Required</ModalTitle>
+                <ModalMessage>
+                  Please sign in to save this product to your wishlist and access it later.
+                </ModalMessage>
+                <div>
+                  <ModalButton onClick={handleSignIn}>
+                    Sign In
+                  </ModalButton>
+                  <ModalButton className="secondary" onClick={closeModal}>
+                    Cancel
+                  </ModalButton>
+                </div>
+              </>
+            ) : (
+              <>
+                <ModalIcon success>✓</ModalIcon>
+                <ModalTitle>Added to Wishlist!</ModalTitle>
+                <ModalMessage>
+                  "{wishlistModal.product?.name}" has been saved to your wishlist.
+                </ModalMessage>
+                <div>
+                  <ModalButton onClick={handleViewWishlist}>
+                    View Wishlist
+                  </ModalButton>
+                  <ModalButton className="secondary" onClick={closeModal}>
+                    Continue Shopping
+                  </ModalButton>
+                </div>
+              </>
+            )}
+          </ModalContent>
+        </ModalOverlay>
+      )}
       </div>
     );
   }
@@ -2099,6 +2175,91 @@ const NewsletterDisclaimer = styled.p`
   @media (max-width: 480px) {
     font-size: 0.7rem;
     line-height: 1.3;
+  }
+`;
+
+// Wishlist Modal Components
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+`;
+
+const ModalCloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  
+  &:hover {
+    color: #333;
+  }
+`;
+
+const ModalIcon = styled.div`
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: ${props => props.success ? '#4CAF50' : '#ff4757'};
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #333;
+`;
+
+const ModalMessage = styled.p`
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+`;
+
+const ModalButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 0.5rem;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #3a9bd9;
+  }
+  
+  &.secondary {
+    background: #f5f5f5;
+    color: #333;
+    
+    &:hover {
+      background: #e0e0e0;
+    }
   }
 `;
 

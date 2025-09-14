@@ -17,6 +17,7 @@ import LoginPage from './pages/LoginPage'; // Import the new LoginPage component
 import AuthPage from './pages/AuthPage';
 import AccountPage from './pages/AccountPage';
 import WishlistPage from './pages/WishlistPage';
+import NotFoundPage from './pages/NotFoundPage';
 import debugOrders from './utils/debugOrders';
 
 // Add debug function to window
@@ -42,7 +43,7 @@ function App() {
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/auth" element={<AuthPage />} />
-              <Route path="*" element={<div>404 Not Found</div>} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
           <Footer />

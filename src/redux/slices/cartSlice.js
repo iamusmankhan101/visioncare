@@ -50,6 +50,51 @@ const cartSlice = createSlice({
         0
       );
     },
+    updateQuantity(state, action) {
+      const { itemKey, quantity } = action.payload;
+      const existingItem = state.items.find(item => item.itemKey === itemKey);
+      
+      if (existingItem && quantity > 0) {
+        existingItem.quantity = quantity;
+        existingItem.totalPrice = existingItem.price * quantity;
+      }
+      
+      state.totalQuantity = state.items.reduce((total, item) => total + item.quantity, 0);
+      state.totalAmount = state.items.reduce(
+        (total, item) => total + item.totalPrice,
+        0
+      );
+    },
+    increaseQuantity(state, action) {
+      const itemKey = action.payload;
+      const existingItem = state.items.find(item => item.itemKey === itemKey);
+      
+      if (existingItem) {
+        existingItem.quantity += 1;
+        existingItem.totalPrice = existingItem.price * existingItem.quantity;
+      }
+      
+      state.totalQuantity = state.items.reduce((total, item) => total + item.quantity, 0);
+      state.totalAmount = state.items.reduce(
+        (total, item) => total + item.totalPrice,
+        0
+      );
+    },
+    decreaseQuantity(state, action) {
+      const itemKey = action.payload;
+      const existingItem = state.items.find(item => item.itemKey === itemKey);
+      
+      if (existingItem && existingItem.quantity > 1) {
+        existingItem.quantity -= 1;
+        existingItem.totalPrice = existingItem.price * existingItem.quantity;
+      }
+      
+      state.totalQuantity = state.items.reduce((total, item) => total + item.quantity, 0);
+      state.totalAmount = state.items.reduce(
+        (total, item) => total + item.totalPrice,
+        0
+      );
+    },
     clearCart(state) {
       state.items = [];
       state.totalQuantity = 0;
@@ -58,5 +103,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, increaseQuantity, decreaseQuantity, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

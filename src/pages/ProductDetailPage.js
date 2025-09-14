@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { fetchProductById, fetchProducts } from '../redux/slices/productSlice';
 import { addToCart } from '../redux/slices/cartSlice';
-import { FiShoppingBag } from 'react-icons/fi';
+import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
+import { FiShoppingBag, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import * as reviewService from '../services/reviewService';
 
@@ -693,14 +694,19 @@ const ProductDetailPage = () => {
   const dispatch = useDispatch();
   
   const { items: products, status, error } = useSelector(state => state.products);
+  const { items: wishlistItems } = useSelector(state => state.wishlist);
+  const { isAuthenticated, prescriptions } = useSelector(state => state.auth);
   
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
-  const [showLensModal, setShowLensModal] = useState(false);
+  const [wishlistModal, setWishlistModal] = useState({ isOpen: false, type: '', product: null });
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showPrescriptionSelector, setShowPrescriptionSelector] = useState(false);
   const [selectedLensType, setSelectedLensType] = useState(null);
+  const [selectedPrescription, setSelectedPrescription] = useState(null);
   
   // 4-step checkout flow states
   const [showUsageSelection, setShowUsageSelection] = useState(false);
@@ -760,29 +766,57 @@ const ProductDetailPage = () => {
     handleContinueToUsage();
   };
 
-  const closeLensModal = () => {
-    setShowLensModal(false);
+  const handleViewWishlist = () => {
+    setWishlistModal({ isOpen: false, type: '', product: null });
+    navigate('/wishlist');
+  };
+
+  const closeModal = () => {
+    setWishlistModal({ isOpen: false, type: '', product: null });
+  };
+
+  const handleSignInSuccess = () => {
+    // In a real app, this would be handled by the auth system
+    // For now, just simulate successful authentication without sample data
+    dispatch({
+      type: 'auth/loginSuccess',
+      payload: {
+        user: { id: '1', name: 'User', email: 'user@example.com' },
+        prescriptions: [] // Empty array - user will see "No Saved Prescriptions" message
+      }
+    });
+    
+    setShowSignInModal(false);
+    setShowPrescriptionSelector(true);
+    setSelectedPrescriptionMethod('previous');
+    setShowPrescriptionMethod(false);
+  };
+
+  const closePrescriptionModals = () => {
+    setShowSignInModal(false);
+    setShowPrescriptionSelector(false);
   };
 
   const handleLensSelection = (lensType) => {
     setSelectedLensType(lensType);
-    setShowLensModal(false);
   };
 
   // 4-step checkout flow handlers
   const handleContinueToUsage = () => {
     setShowUsageSelection(true);
-    setShowLensModal(false);
   };
 
   const handleContinueToLensType = () => {
     setShowUsageSelection(false);
     
-    // Check if selected usage requires progressive/bifocal lens selection
     if (selectedUsage === 'bifocal-progressive') {
       setShowLensTypeSelection(true);
+    } else if (selectedUsage === 'non-prescription') {
+      // For non-prescription, skip prescription method and go directly to lens color selection
+      setSelectedPrescriptionMethod('non-prescription');
+      setShowLensColorSelection(true);
     } else {
-      // For single-vision, reading, and non-prescription, skip to prescription method
+      // For single-vision and reading, go to prescription method
       setShowPrescriptionMethod(true);
     }
   };
@@ -798,7 +832,6 @@ const ProductDetailPage = () => {
   };
 
   const closeAllModals = () => {
-    setShowLensModal(false);
     setShowUsageSelection(false);
     setShowLensTypeSelection(false);
     setShowPrescriptionMethod(false);
@@ -1593,7 +1626,10 @@ const ProductDetailPage = () => {
               </LensOptionsGrid>
               
               <ModalActions>
-                <ModalButton onClick={() => setShowLensTypeSelection(false) || setShowUsageSelection(true)}>
+                <ModalButton onClick={() => {
+                  setShowLensTypeSelection(false);
+                  setShowUsageSelection(true);
+                }}>
                   Back
                 </ModalButton>
                 <ModalButton 
@@ -1639,7 +1675,15 @@ const ProductDetailPage = () => {
               <LensOptionsGrid>
                 <LensOption
                   selected={selectedPrescriptionMethod === 'previous'}
-                  onClick={() => setSelectedPrescriptionMethod('previous')}
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      setShowSignInModal(true);
+                    } else {
+                      setSelectedPrescriptionMethod('previous');
+                      setShowPrescriptionSelector(true);
+                      setShowPrescriptionMethod(false);
+                    }
+                  }}
                   style={{ marginBottom: '1rem' }}
                 >
                   <LensOptionHeader>
@@ -1697,14 +1741,18 @@ const ProductDetailPage = () => {
                 </LensOption>
               </LensOptionsGrid>
               
-              <div style={{ 
-                textAlign: 'right', 
-                marginTop: '2rem',
-                paddingTop: '1rem',
-                borderTop: '1px solid #eee'
-              }}>
-                
-              </div>
+              <ModalActions>
+                <ModalButton onClick={() => {
+                  setShowPrescriptionMethod(false);
+                  if (selectedUsage === 'bifocal-progressive') {
+                    setShowLensTypeSelection(true);
+                  } else {
+                    setShowUsageSelection(true);
+                  }
+                }}>
+                  Back
+                </ModalButton>
+              </ModalActions>
             </ModalRightSection>
           </ModalContent>
         </ModalOverlay>
@@ -2032,11 +2080,14 @@ const ProductDetailPage = () => {
               <ModalActions>
                 <ModalButton 
                   primary 
-                  onClick={closeAllModals}
+                  onClick={() => {
+                    setShowLensColorSelection(false);
+                    setShowReviewSelections(true);
+                  }}
                   disabled={!selectedLensColor}
                   style={{ backgroundColor: '#48b2ee' }}
                 >
-                  Continue
+                  Continue to Review
                 </ModalButton>
               </ModalActions>
             </ModalRightSection>
@@ -2322,11 +2373,14 @@ const ProductDetailPage = () => {
                 </ModalButton>
                 <ModalButton 
                   primary 
-                  onClick={closeAllModals}
+                  onClick={() => {
+                    setShowClearLensOptions(false);
+                    setShowReviewSelections(true);
+                  }}
                   disabled={!selectedClearLensOption}
                   style={{ backgroundColor: '#48b2ee' }}
                 >
-                  Continue
+                  Continue to Review
                 </ModalButton>
               </ModalActions>
             </ModalRightSection>
@@ -2436,11 +2490,14 @@ const ProductDetailPage = () => {
                 </ModalButton>
                 <ModalButton 
                   primary 
-                  onClick={closeAllModals}
+                  onClick={() => {
+                    setShowBlueLightOptions(false);
+                    setShowReviewSelections(true);
+                  }}
                   disabled={!selectedBlueLightOption}
                   style={{ backgroundColor: '#48b2ee' }}
                 >
-                  Continue
+                  Continue to Review
                 </ModalButton>
               </ModalActions>
             </ModalRightSection>
@@ -2537,11 +2594,14 @@ const ProductDetailPage = () => {
                 </ModalButton>
                 <ModalButton 
                   primary 
-                  onClick={closeAllModals}
+                  onClick={() => {
+                    setShowTransitionsOptions(false);
+                    setShowReviewSelections(true);
+                  }}
                   disabled={!selectedTransitionsOption}
                   style={{ backgroundColor: '#48b2ee' }}
                 >
-                  Continue
+                  Continue to Review
                 </ModalButton>
               </ModalActions>
             </ModalRightSection>
@@ -2669,7 +2729,20 @@ const ProductDetailPage = () => {
                             fontWeight: '600',
                             color: '#333'
                           }}>
-                            Color: <span style={{ color: '#666', fontWeight: '400' }}>Gray</span>
+                            Color: <span style={{ color: '#666', fontWeight: '400' }}>
+                              {[
+                                { id: 'gray', name: 'Gray' },
+                                { id: 'brown', name: 'Brown' },
+                                { id: 'green', name: 'Green' },
+                                { id: 'purple', name: 'Purple' },
+                                { id: 'blue', name: 'Blue' },
+                                { id: 'amber', name: 'Amber' },
+                                { id: 'bronze', name: 'Bronze' },
+                                { id: 'rose', name: 'Rose' },
+                                { id: 'teal', name: 'Teal' },
+                                { id: 'burgundy', name: 'Burgundy' }
+                              ].find(color => color.id === selectedTintColor)?.name || 'Gray'}
+                            </span>
                           </h4>
                           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                             {[
@@ -2852,7 +2925,15 @@ const ProductDetailPage = () => {
                             fontWeight: '600',
                             color: '#333'
                           }}>
-                            Color: <span style={{ color: '#666', fontWeight: '400' }}>Gray</span>
+                            Color: <span style={{ color: '#666', fontWeight: '400' }}>
+                              {[
+                                { id: 'gray', name: 'Gray' },
+                                { id: 'brown', name: 'Brown' },
+                                { id: 'green', name: 'Green' },
+                                { id: 'purple', name: 'Purple' },
+                                { id: 'blue', name: 'Blue' }
+                              ].find(color => color.id === selectedGradientColor)?.name || 'Gray'}
+                            </span>
                           </h4>
                           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                             {[
@@ -2898,12 +2979,12 @@ const ProductDetailPage = () => {
                   primary 
                   onClick={() => {
                     setShowSunOptions(false);
-                    setShowLensPackage(true);
+                    setShowReviewSelections(true);
                   }}
                   disabled={!selectedSunOption}
                   style={{ backgroundColor: '#48b2ee' }}
                 >
-                  Continue
+                  Continue to Review
                 </ModalButton>
               </ModalActions>
             </ModalRightSection>
@@ -3130,7 +3211,7 @@ const ProductDetailPage = () => {
 
       {/* Review Selections Modal */}
       {showReviewSelections && (
-        <ModalOverlay onClick={closeAllModals}>
+        <ModalOverlay onClick={(e) => e.stopPropagation()}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalLeftSection>
               <ProductImageInModal 
@@ -3164,288 +3245,179 @@ const ProductDetailPage = () => {
                 <CloseButton onClick={closeAllModals}>×</CloseButton>
               </ModalHeader>
               
-              <ModalTitle style={{ marginBottom: '0.5rem' }}>Review your selections</ModalTitle>
+              <ModalTitle style={{ marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.5rem', fontWeight: '600' }}>Review your selections</ModalTitle>
               
               <div style={{ 
-                fontSize: '0.85rem',
-                color: '#666',
-                marginBottom: '1.5rem',
-                lineHeight: '1.4'
+                fontSize: '0.9rem',
+                color: '#888',
+                marginBottom: '2rem',
+                textAlign: 'center',
+                lineHeight: '1.5'
               }}>
-                All orders include <strong>14-Day Free Returns</strong>, <strong>24/7 Customer Service</strong>, and can be reimbursed with <strong>FSA & HSA</strong>.
+                All orders include <strong style={{ color: '#666' }}>14-Day Free Returns, 24/7 Customer Service</strong>, and can be reimbursed with <strong style={{ color: '#666' }}>FSA & HSA</strong>.
               </div>
+
+              {/* Prescription Details Table */}
+              {selectedPrescription && (
+                <div style={{ marginBottom: '2rem' }}>
+                  <h3 style={{ 
+                    fontSize: '1.1rem', 
+                    fontWeight: '600', 
+                    color: '#888', 
+                    marginBottom: '1rem',
+                    textAlign: 'center'
+                  }}>
+                    Prescription Details
+                  </h3>
+                  <table style={{ 
+                    width: '100%', 
+                    borderCollapse: 'collapse',
+                    border: '1px solid #e0e0e0',
+                    marginBottom: '1rem'
+                  }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8f9fa' }}>
+                        <th style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontSize: '0.9rem', fontWeight: '600' }}></th>
+                        <th style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontSize: '0.9rem', fontWeight: '600' }}>SPH</th>
+                        <th style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontSize: '0.9rem', fontWeight: '600' }}>CYL</th>
+                        <th style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontSize: '0.9rem', fontWeight: '600' }}>Axis</th>
+                        <th style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontSize: '0.9rem', fontWeight: '600' }}>ADD</th>
+                        <th style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontSize: '0.9rem', fontWeight: '600' }}>PD</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontWeight: '600' }}>OD</td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                          {selectedPrescription.rightEye?.sph || '0.00'}
+                        </td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                          {selectedPrescription.rightEye?.cyl || '0.00'}
+                        </td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                          {selectedPrescription.rightEye?.axis || '-'}
+                        </td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>-</td>
+                        <td rowSpan="2" style={{ 
+                          padding: '0.75rem', 
+                          border: '1px solid #e0e0e0', 
+                          textAlign: 'center', 
+                          verticalAlign: 'middle',
+                          fontSize: '1.1rem',
+                          fontWeight: '600'
+                        }}>
+                          {selectedPrescription.pd || '63'}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', fontWeight: '600' }}>OS</td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                          {selectedPrescription.leftEye?.sph || '-1.00'}
+                        </td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                          {selectedPrescription.leftEye?.cyl || '0.00'}
+                        </td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                          {selectedPrescription.leftEye?.axis || '-'}
+                        </td>
+                        <td style={{ padding: '0.75rem', border: '1px solid #e0e0e0', textAlign: 'center' }}>-</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
               
               {/* Product Details */}
-              <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ marginBottom: '2rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '1rem',
+                  fontSize: '1.1rem',
+                  fontWeight: '600'
+                }}>
+                  <span style={{ color: '#333' }}>
+                    {product?.name || 'Vinyl'} | {product?.brand || 'Black'} | {product?.size || 'Medium'}
+                  </span>
+                  <span style={{ color: '#333' }}>
+                    {formatPrice(product?.price || 59)}
+                  </span>
+                </div>
+                
+                {/* Usage Selection */}
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between', 
                   alignItems: 'center',
                   marginBottom: '0.5rem'
                 }}>
-                  <span style={{ fontSize: '1rem', fontWeight: '500', color: '#333' }}>
-                    {product?.name || 'Vinyl'} | {product?.brand || 'Black'} | {product?.size || 'Medium'}
+                  <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                    • Single Vision Distance
                   </span>
-                  <span style={{ fontSize: '1rem', fontWeight: '500', color: '#333' }}>
-                    PKR {product?.price || '59'}
+                  <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                    Free
                   </span>
                 </div>
                 
-                {/* Usage Selection */}
-                {selectedUsage && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '1rem'
-                  }}>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      • Usage: {selectedUsage === 'everyday' && 'Everyday Wear'}
-                      {selectedUsage === 'computer' && 'Computer Work'}
-                      {selectedUsage === 'reading' && 'Reading & Close Work'}
-                      {selectedUsage === 'outdoor' && 'Outdoor Activities'}
-                    </span>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      Free
-                    </span>
-                  </div>
-                )}
-                
-                {/* Lens Type Selection */}
-                {selectedLensTypeOption && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '1rem'
-                  }}>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      • Lens Type: {selectedLensTypeOption === 'standard' && 'Standard'}
-                      {selectedLensTypeOption === 'blue-light' && 'Blue Light Blocking'}
-                      {selectedLensTypeOption === 'progressive' && 'Progressive'}
-                      {selectedLensTypeOption === 'photochromic' && 'Photochromic'}
-                    </span>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      {selectedLensTypeOption === 'standard' && 'Free'}
-                      {selectedLensTypeOption === 'blue-light' && 'PKR 49'}
-                      {selectedLensTypeOption === 'progressive' && 'PKR 149'}
-                      {selectedLensTypeOption === 'photochromic' && 'PKR 99'}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Prescription Method */}
-                {selectedPrescriptionMethod && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '1rem'
-                  }}>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      • Prescription: {selectedPrescriptionMethod === 'upload' && 'Upload Prescription'}
-                      {selectedPrescriptionMethod === 'manual' && 'Enter Manually'}
-                      {selectedPrescriptionMethod === 'previous' && 'Use Previous Prescription'}
-                      {selectedPrescriptionMethod === 'exam' && 'Schedule Eye Exam'}
-                    </span>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      Free
-                    </span>
-                  </div>
-                )}
-                
-                {/* Lens Color Selection */}
-                {selectedLensColor && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '1rem'
-                  }}>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      • Lens Color: {selectedLensColor === 'clear' && 'Clear'}
-                      {selectedLensColor === 'blue-light' && 'Blue Light Filtering'}
-                      {selectedLensColor === 'transitions' && 'Transitions'}
-                      {selectedLensColor === 'sun' && 'Sun Protection'}
-                    </span>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      Free
-                    </span>
-                  </div>
-                )}
-                
-                {/* Clear Lens Options */}
-                {selectedClearLensOption && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '2rem'
-                  }}>
-                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
-                      ◦ Clear Lens: {selectedClearLensOption}
-                    </span>
-                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
-                      Free
-                    </span>
-                  </div>
-                )}
-                
-                {/* Blue Light Options */}
-                {selectedBlueLightOption && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '2rem'
-                  }}>
-                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
-                      ◦ Blue Light: {selectedBlueLightOption}
-                    </span>
-                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
-                      {selectedBlueLightOption === 'EBDBlue 360™' && 'PKR 89'}
-                      {selectedBlueLightOption === 'SightRelax' && 'PKR 49'}
-                      {selectedBlueLightOption === 'EBDBlue Smart' && 'PKR 69'}
-                      {selectedBlueLightOption === 'EBDBlue Plus™' && 'PKR 109'}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Transitions Options */}
-                {selectedTransitionsOption && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '2rem'
-                  }}>
-                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
-                      ◦ Transitions: {selectedTransitionsOption}
-                    </span>
-                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
-                      {selectedTransitionsOption === 'GEN S™' && 'PKR 149'}
-                      {selectedTransitionsOption === 'XTRActive®' && 'PKR 179'}
-                      {selectedTransitionsOption === 'Drivewear®' && 'PKR 199'}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Sun Protection Options */}
-                {selectedSunOption && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '2rem'
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#999' }}>
-                        ◦ Sun Protection: {selectedSunOption === 'basic' && 'Basic Tint'}
-                        {selectedSunOption === 'polarized' && 'Polarized'}
-                        {selectedSunOption === 'mirrored' && 'Mirrored'}
-                        {selectedSunOption === 'gradient' && 'Gradient'}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#bbb', paddingLeft: '0.5rem' }}>
-                        {selectedSunOption === 'basic' && `Color: ${selectedTintColor}, Strength: ${selectedTintStrength}`}
-                        {selectedSunOption === 'mirrored' && `Color: ${selectedMirroredColor}`}
-                        {selectedSunOption === 'gradient' && `Color: ${selectedGradientColor}`}
-                      </div>
-                    </div>
-                    <span style={{ fontSize: '0.85rem', color: '#999' }}>
-                      {selectedSunOption === 'basic' && 'PKR 7'}
-                      {selectedSunOption === 'polarized' && 'PKR 59'}
-                      {selectedSunOption === 'mirrored' && 'PKR 29'}
-                      {selectedSunOption === 'gradient' && 'PKR 13'}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Lens Package */}
-                {selectedLensPackage && (
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: '0.5rem',
-                    paddingLeft: '1rem'
-                  }}>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      • Lens Package: {selectedLensPackage === 'standard' ? 'Standard Lenses' : 'Most Popular Lenses'}
-                    </span>
-                    <span style={{ fontSize: '0.9rem', color: '#666' }}>
-                      PKR {selectedLensPackage === 'standard' ? '43' : '73'}
-                    </span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Subtotal */}
-              <div style={{ 
-                borderTop: '1px solid #eee',
-                paddingTop: '1rem',
-                marginBottom: '1.5rem'
-              }}>
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between', 
                   alignItems: 'center',
-                  marginBottom: '0.75rem'
+                  marginBottom: '0.5rem'
                 }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
-                    Subtotal
+                  <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                    • Clear Lenses
                   </span>
-                  <span style={{ fontSize: '1.4rem', fontWeight: '700', color: '#333' }}>
-                    PKR {(() => {
-                      let total = parseFloat(product?.price || 59);
-                      
-                      // Add lens type pricing
-                      if (selectedLensTypeOption === 'blue-light') total += 49;
-                      if (selectedLensTypeOption === 'progressive') total += 149;
-                      if (selectedLensTypeOption === 'photochromic') total += 99;
-                      
-                      // Add blue light option pricing
-                      if (selectedBlueLightOption === 'EBDBlue 360™') total += 89;
-                      if (selectedBlueLightOption === 'SightRelax') total += 49;
-                      if (selectedBlueLightOption === 'EBDBlue Smart') total += 69;
-                      if (selectedBlueLightOption === 'EBDBlue Plus™') total += 109;
-                      
-                      // Add transitions option pricing
-                      if (selectedTransitionsOption === 'GEN S™') total += 149;
-                      if (selectedTransitionsOption === 'XTRActive®') total += 179;
-                      if (selectedTransitionsOption === 'Drivewear®') total += 199;
-                      
-                      // Add sun protection pricing
-                      if (selectedSunOption === 'basic') total += 7;
-                      if (selectedSunOption === 'polarized') total += 59;
-                      if (selectedSunOption === 'mirrored') total += 29;
-                      if (selectedSunOption === 'gradient') total += 13;
-                      
-                      // Add lens package pricing
-                      if (selectedLensPackage === 'standard') total += 43;
-                      if (selectedLensPackage === 'popular') total += 73;
-                      
-                      return Math.round(total);
-                    })()}
+                  <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                    
                   </span>
                 </div>
                 
                 <div style={{ 
-                  fontSize: '0.8rem', 
-                  color: '#666',
-                  display: 'flex',
-                  alignItems: 'center'
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '1.5rem'
                 }}>
-            
+                  <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                    • KODAK Lens - Standard
+                  </span>
+                  <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                    {formatPrice(4995)}
+                  </span>
+                </div>
                 
+                {/* Subtotal Section */}
+                <div style={{ 
+                  borderTop: '1px solid #e0e0e0',
+                  paddingTop: '1rem',
+                  marginTop: '1rem'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '1rem'
+                  }}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#333' }}>
+                      Subtotal
+                    </span>
+                    <span style={{ fontSize: '1.3rem', fontWeight: '700', color: '#333' }}>
+                      {formatPrice(10895)}
+                    </span>
+                  </div>
                   
+                  <div style={{ 
+                    fontSize: '0.85rem', 
+                    color: '#666', 
+                    marginBottom: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                   
+                  </div>
                 </div>
               </div>
               
@@ -3453,46 +3425,20 @@ const ProductDetailPage = () => {
                 <ModalButton 
                   primary 
                   onClick={() => {
-                    // Calculate final price
-                    let finalPrice = parseFloat(product?.price || 59);
-                    
-                    // Add lens type pricing
-                    if (selectedLensTypeOption === 'blue-light') finalPrice += 49;
-                    if (selectedLensTypeOption === 'progressive') finalPrice += 149;
-                    if (selectedLensTypeOption === 'photochromic') finalPrice += 99;
-                    
-                    // Add blue light option pricing
-                    if (selectedBlueLightOption === 'EBDBlue 360™') finalPrice += 89;
-                    if (selectedBlueLightOption === 'SightRelax') finalPrice += 49;
-                    if (selectedBlueLightOption === 'EBDBlue Smart') finalPrice += 69;
-                    if (selectedBlueLightOption === 'EBDBlue Plus™') finalPrice += 109;
-                    
-                    // Add transitions option pricing
-                    if (selectedTransitionsOption === 'GEN S™') finalPrice += 149;
-                    if (selectedTransitionsOption === 'XTRActive®') finalPrice += 179;
-                    if (selectedTransitionsOption === 'Drivewear®') finalPrice += 199;
-                    
-                    // Add sun protection pricing
-                    if (selectedSunOption === 'basic') finalPrice += 7;
-                    if (selectedSunOption === 'polarized') finalPrice += 59;
-                    if (selectedSunOption === 'mirrored') finalPrice += 29;
-                    if (selectedSunOption === 'gradient') finalPrice += 13;
-                    
-                    // Add lens package pricing
-                    if (selectedLensPackage === 'standard') finalPrice += 43;
-                    if (selectedLensPackage === 'popular') finalPrice += 73;
+                    // Calculate total price
+                    const basePrice = product?.price || 59;
+                    const lensPrice = 4995;
+                    const totalPrice = basePrice + lensPrice;
 
-                    // Create cart item with all selections
                     const cartItem = {
-                      id: product?.id || id,
+                      id: product?.id || Date.now(),
                       name: product?.name || 'Vinyl',
-                      brand: product?.brand || 'Black',
-                      size: product?.size || 'Medium',
+                      price: totalPrice,
                       image: product?.image || '/images/eyeglasses.webp',
-                      price: Math.round(finalPrice),
-                      originalPrice: product?.price || 59,
                       quantity: 1,
-                      customizations: {
+                      color: selectedColor,
+                      size: selectedSize,
+                      lensOptions: {
                         usage: selectedUsage,
                         lensType: selectedLensTypeOption,
                         prescriptionMethod: selectedPrescriptionMethod,
@@ -3505,7 +3451,8 @@ const ProductDetailPage = () => {
                         tintStrength: selectedTintStrength,
                         mirroredColor: selectedMirroredColor,
                         gradientColor: selectedGradientColor,
-                        lensPackage: selectedLensPackage
+                        lensPackage: selectedLensPackage,
+                        prescription: selectedPrescription
                       }
                     };
 
@@ -3516,7 +3463,7 @@ const ProductDetailPage = () => {
                     navigate('/cart');
                   }}
                   style={{ 
-                    backgroundColor: '#d4a574',
+                    backgroundColor: '#48b2ee',
                     width: '100%',
                     padding: '1rem',
                     fontSize: '1rem',
@@ -3524,6 +3471,178 @@ const ProductDetailPage = () => {
                   }}
                 >
                   Confirm & add to cart
+                </ModalButton>
+              </ModalActions>
+            </ModalRightSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Sign In Modal for Prescription Selection */}
+      {showSignInModal && (
+        <ModalOverlay onClick={closePrescriptionModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <CloseButton onClick={closePrescriptionModals}>×</CloseButton>
+            
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👤</div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '1rem', color: '#333' }}>
+                Sign In Required
+              </h3>
+              <p style={{ color: '#666', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                Please sign in to access your saved prescriptions and choose from your previous orders.
+              </p>
+              <div>
+                <button
+                  style={{
+                    background: '#48b2ee',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.75rem 1.5rem',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    margin: '0 0.5rem',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onClick={() => {
+                    // Instead of navigating to auth page, simulate sign-in success
+                    // In a real app, this would trigger the auth flow and return here
+                    handleSignInSuccess();
+                  }}
+                >
+                  Sign In
+                </button>
+                <button
+                  style={{
+                    background: '#f5f5f5',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.75rem 1.5rem',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    margin: '0 0.5rem',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onClick={closePrescriptionModals}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Prescription Selector Modal */}
+      {showPrescriptionSelector && (
+        <ModalOverlay onClick={closePrescriptionModals}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalLeftSection>
+              <ProductImageInModal 
+                src={product?.image || '/images/eyeglasses.webp'} 
+                alt={product?.name || 'Product'} 
+              />
+              <ProductNameInModal>{product?.name || 'Vinyl'}</ProductNameInModal>
+              <ProductSubtitleInModal>
+                {product?.shape || 'Square'} {product?.brand || 'Black'} Eyeglasses
+              </ProductSubtitleInModal>
+            </ModalLeftSection>
+            
+            <ModalRightSection>
+              <ModalHeader>
+                <div>
+                  <span 
+                    style={{ color: '#48b2ee', fontSize: '0.9rem', marginRight: '0.5rem', cursor: 'pointer' }}
+                    onClick={() => {
+                      setShowPrescriptionSelector(false);
+                      setShowPrescriptionMethod(true);
+                    }}
+                  >
+                    ← Back to Prescription Method
+                  </span>
+                </div>
+                <CloseButton onClick={closePrescriptionModals}>×</CloseButton>
+              </ModalHeader>
+              
+              <ModalTitle style={{ marginBottom: '1.5rem' }}>Choose from your saved prescriptions</ModalTitle>
+              
+              <div style={{ marginBottom: '2rem' }}>
+                {prescriptions && prescriptions.length > 0 ? (
+                  prescriptions.map((prescription, index) => (
+                    <div 
+                      key={prescription.id || index}
+                      style={{ 
+                        border: selectedPrescription?.id === prescription.id ? '2px solid #48b2ee' : '1px solid #e0e0e0', 
+                        borderRadius: '8px', 
+                        padding: '1rem', 
+                        marginBottom: '1rem',
+                        cursor: 'pointer',
+                        backgroundColor: selectedPrescription?.id === prescription.id ? '#f8f9ff' : 'white'
+                      }}
+                      onClick={() => setSelectedPrescription(prescription)}
+                    >
+                      <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                        {prescription.name || `Prescription ${index + 1}`}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                        OD: SPH {prescription.rightEye?.sph || 'N/A'}, CYL {prescription.rightEye?.cyl || 'N/A'}, AXIS {prescription.rightEye?.axis || 'N/A'}°
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                        OS: SPH {prescription.leftEye?.sph || 'N/A'}, CYL {prescription.leftEye?.cyl || 'N/A'}, AXIS {prescription.leftEye?.axis || 'N/A'}°
+                      </div>
+                      {prescription.pd && (
+                        <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                          PD: {prescription.pd}mm
+                        </div>
+                      )}
+                      <div style={{ fontSize: '0.8rem', color: '#999' }}>
+                        Added: {prescription.dateAdded ? new Date(prescription.dateAdded).toLocaleDateString() : 'Unknown'}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '2rem', 
+                    color: '#666',
+                    border: '1px dashed #ddd',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>👓</div>
+                    <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>No Saved Prescriptions</div>
+                    <div style={{ fontSize: '0.9rem' }}>
+                      You haven't saved any prescriptions yet. Add your first prescription to get started.
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <ModalActions>
+                <ModalButton onClick={() => {
+                  setShowPrescriptionSelector(false);
+                  setShowPrescriptionMethod(true);
+                }}>
+                  Back
+                </ModalButton>
+                <ModalButton 
+                  primary 
+                  disabled={!selectedPrescription}
+                  onClick={() => {
+                    if (selectedPrescription) {
+                      setShowPrescriptionSelector(false);
+                      setShowLensColorSelection(true);
+                    }
+                  }}
+                  style={{
+                    opacity: selectedPrescription ? 1 : 0.5,
+                    cursor: selectedPrescription ? 'pointer' : 'not-allowed'
+                  }}
+                >
+                  Continue with Selected
                 </ModalButton>
               </ModalActions>
             </ModalRightSection>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { fetchProducts, setFilters, resetFilters, setSortOption, initializeFilteredItems } from '../redux/slices/productSlice';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -8,7 +8,7 @@ import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice
 // Import formatPrice utility
 import formatPrice from '../utils/formatPrice';
 // At the top of the file, keep only one import for the icons
-import { FiHeart } from 'react-icons/fi';
+import { FiHeart, FiX } from 'react-icons/fi';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -166,8 +166,8 @@ const PriceInputs = styled.div`
 // Update the ProductGrid styling to better match the image
 const ProductGrid = styled.div`
   display: grid;
-  grid-template-columns: ${props => props.viewMode === 'list' ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))'};
-  gap: ${props => props.viewMode === 'list' ? '0.75rem' : '1.5rem'};
+  grid-template-columns: ${props => props.viewMode === 'list' ? '1fr' : 'repeat(3, 1fr)'};
+  gap: ${props => props.viewMode === 'list' ? '0.75rem' : '0.75rem'};
   flex: 1;
   min-width: 0;
   
@@ -178,69 +178,50 @@ const ProductGrid = styled.div`
 `;
 
 const ProductCard = styled.div`
-  background: #f5f5f5;
-  border-radius: ${props => props.viewMode === 'list' ? '8px' : '12px'};
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
   position: relative;
-  height:375px;
   display: flex;
-  flex-direction: ${props => props.viewMode === 'list' ? 'row' : 'column'};
-  align-items: ${props => props.viewMode === 'list' ? 'center' : 'stretch'};
-  width: ${props => props.viewMode === 'list' ? '100%' : 'auto'};
-  min-height: ${props => props.viewMode === 'list' ? '120px' : 'auto'};
+  flex-direction: column;
+  padding: 15px;
+  height: fit-content;
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(-5px);
   }
   
   @media (max-width: 768px) {
-    display: flex;
-    flex-direction: column;
-    width: auto;
-    min-height: auto;
+    padding: 12px;
   }
 
   @media (max-width: 480px) {
-    height: auto;
-    padding-bottom:10px;
+    padding: 10px;
+  }
 `;
 
 // Update the ProductImage styling
 const ProductImage = styled.div`
-  height: ${props => props.viewMode === 'list' ? '210px' : '210px'};
-  width: ${props => props.viewMode === 'list' ? '120px' : '100%'};
+  height: 200px;
   background-color: #f5f5f5;
-  background-image: url(${props => props.image});
+  background-image: ${props => props.image ? `url(${props.image})` : 'none'};
   background-size: contain;
-  background-repeat: no-repeat;
   background-position: center;
+  background-repeat: no-repeat;
+  margin-bottom: 15px;
+  border-radius: 8px;
   position: relative;
-  border-radius: 6px;
-  margin-bottom: ${props => props.viewMode === 'list' ? '0' : '4px'};
-  margin-right: ${props => props.viewMode === 'list' ? '0.8rem' : '0'};
-  flex-shrink: 0;
   
   @media (max-width: 768px) {
-    height: 80px;
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 4px;
-  }
-    @media (max-width: 480px) {
-    height: 100px;
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 4px;
+    height: 150px;
+    margin-bottom: 12px;
   }
   
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: transform 0.3s ease;
+  @media (max-width: 480px) {
+    height: 120px;
+    margin-bottom: 10px;
   }
 `;
 
@@ -302,23 +283,33 @@ const WishlistButton = styled.button`
 `;
 
 const ProductContent = styled.div`
-  padding: 0.4rem;
-  flex: 1;
+  padding: 0.5rem;
+  text-align: left;
+  background-color: #fff;
+  border-radius: 10px;
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 120px;
+  
+  @media (max-width: 768px) {
+    padding: 0.4rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.3rem;
+  }
 `;
 
 const ProductTitle = styled.h3`
-  font-size: 0.8rem;
-  margin-bottom: 0.05rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #333;
+  font-family: 'Montserrat', sans-serif;
   line-height: 1.2;
   
   @media (max-width: 480px) {
-    font-size: 0.65rem;
+    font-size: 12px;
   }
 `;
 
@@ -394,32 +385,65 @@ const ViewToggleButton = styled.button`
 `;
 
 const ProductBrand = styled.p`
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: #666;
-  margin: 0 0 0.25rem 0;
+  margin-bottom: 0.5rem;
   font-weight: 400;
+  
+  @media (max-width: 480px) {
+    font-size: 9px;
+  }
 `;
 
-const ProductPrice = styled.div`
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #48b2ee;
+const ProductPrice = styled.p`
+  font-weight: 600;
+  color: #333;
   margin-bottom: 0.25rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
 `;
 
 const ColorOptions = styled.div`
   display: flex;
-  gap: 0.25rem;
-  margin-top: 0.25rem;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
 `;
 
 const ColorSwatch = styled.div`
-  width: 12px;
-  height: 12px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background-color: ${props => props.color || '#ccc'};
-  border: 1px solid #ddd;
+  background-color: ${props => props.color};
+  border: 2px solid ${props => props.selected ? '#48b2ee' : '#ddd'};
   cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: ${props => props.color === '#F0F8FF' || props.color === '#FFFFFF' ? 'inset 0 0 0 1px rgba(0,0,0,0.1)' : 'none'};
+  
+  &:hover {
+    transform: scale(1.15);
+    border-color: #48b2ee;
+    box-shadow: 0 2px 8px rgba(192, 138, 51, 0.3);
+  }
+  
+  &:after {
+    content: '${props => props.selected ? '✓' : ''}';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: ${props => props.color === '#F0F8FF' || props.color === '#FFFFFF' ? '#333' : 'white'};
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: ${props => props.color === '#F0F8FF' || props.color === '#FFFFFF' ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'};
+  }
 `;
 
 const MobileFilterModal = styled.div`
@@ -648,15 +672,104 @@ const MobileResultsCount = styled.span`
   color: #666;
 `;
 
+// Wishlist Modal Components
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+`;
+
+const ModalCloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  
+  &:hover {
+    color: #333;
+  }
+`;
+
+const ModalIcon = styled.div`
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: ${props => props.success ? '#4CAF50' : '#ff4757'};
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #333;
+`;
+
+const ModalMessage = styled.p`
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+`;
+
+const ModalButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 0.5rem;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #3a9bd9;
+  }
+  
+  &.secondary {
+    background: #f5f5f5;
+    color: #333;
+    
+    &:hover {
+      background: #e0e0e0;
+    }
+  }
+`;
+
 
 const ProductListingPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const location = useLocation();
   const { items, filteredItems, filters, sortOption } = useSelector(state => state.products);
+  const { isAuthenticated } = useSelector(state => state.auth);
+  const wishlist = useSelector(state => state.wishlist.items);
   
   const [minPrice, setMinPrice] = useState(filters.priceRange.min);
   const [maxPrice, setMaxPrice] = useState(filters.priceRange.max);
   const [showFilters, setShowFilters] = useState(false);
+  const [wishlistModal, setWishlistModal] = useState({ isOpen: false, type: '', product: null });
   
   // State for collapsible filter sections
   const [expandedSections, setExpandedSections] = useState({
@@ -669,7 +782,7 @@ const ProductListingPage = () => {
     fit: false
   });
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [activeQuickFilter, setActiveQuickFilter] = useState('best-sellers');
+  const [activeQuickFilter, setActiveQuickFilter] = useState('all');
   const [mobileExpandedSections, setMobileExpandedSections] = useState({
     glassesType: false,
     gender: false,
@@ -692,6 +805,15 @@ const ProductListingPage = () => {
   const wishlistItems = useSelector(state => state.wishlist?.items || []);
   
   const handleWishlistToggle = (product) => {
+    if (!isAuthenticated) {
+      setWishlistModal({
+        isOpen: true,
+        type: 'signin',
+        product: product
+      });
+      return;
+    }
+
     const isInWishlist = wishlistItems.some(item => item.id === product.id);
     
     if (isInWishlist) {
@@ -703,7 +825,27 @@ const ProductListingPage = () => {
         price: product.price,
         image: product.image
       }));
+      
+      setWishlistModal({
+        isOpen: true,
+        type: 'success',
+        product: product
+      });
     }
+  };
+
+  const closeModal = () => {
+    setWishlistModal({ isOpen: false, type: '', product: null });
+  };
+
+  const handleSignIn = () => {
+    closeModal();
+    navigate('/auth');
+  };
+
+  const handleViewWishlist = () => {
+    closeModal();
+    navigate('/wishlist');
   };
 
   const isInWishlist = (productId) => {
@@ -715,6 +857,16 @@ const ProductListingPage = () => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('ProductListingPage Debug:', {
+      itemsCount: items.length,
+      filteredItemsCount: filteredItems.length,
+      filters,
+      sortOption
+    });
+  }, [items, filteredItems, filters, sortOption]);
+
   // Get category, search, featured, best-sellers, and style from URL query params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -725,7 +877,7 @@ const ProductListingPage = () => {
     
     
     const newFilters = {};
-    let newActiveQuickFilter = 'best-sellers'; // default
+    let newActiveQuickFilter = 'all'; // default
     
     if (categoryParam) {
       newFilters.category = categoryParam;
@@ -761,10 +913,8 @@ const ProductListingPage = () => {
       dispatch(setFilters(newFilters));
     }
     
-    // Only initialize if we have items
-    if (items.length > 0) {
-      dispatch(initializeFilteredItems());
-    }
+    // Always initialize filtered items after setting filters
+    dispatch(initializeFilteredItems());
   }, [dispatch, location.search, items.length]);
   
   
@@ -1300,7 +1450,7 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
-                  {filteredItems.map(product => (
+                  {(filteredItems.length > 0 ? filteredItems : items).map(product => (
                     <ProductCard key={product.id}>
                                   {product.discount && <DiscountBadge>{typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}</DiscountBadge>}
                                   <ListingCategoryBadge>{product.category}</ListingCategoryBadge>
@@ -1323,10 +1473,10 @@ const ProductListingPage = () => {
                                     <ProductContent>
                                       <ProductTitle>{product.name}</ProductTitle>
                                       <ProductBrand>{product.brand}</ProductBrand>
-                                      <ProductPrice>PKR {product.price}</ProductPrice>
+                                      <ProductPrice>{formatPrice(product.price)}</ProductPrice>
                                       <ColorOptions>
-                                        {product.colors && product.colors.filter(color => color.name && color.hex).map((color, index) => (
-                                          <ColorSwatch key={index} color={color.hex || color} />
+                                        {product.colors && product.colors.map((color, index) => (
+                                          <ColorSwatch key={index} color={color.hex || color.name} />
                                         ))}
                                       </ColorOptions>
                                     </ProductContent>
@@ -1522,6 +1672,51 @@ const ProductListingPage = () => {
           Apply
         </MobileApplyButton>
       </MobileFilterModal>
+      
+      {/* Wishlist Modal */}
+      {wishlistModal.isOpen && (
+        <ModalOverlay onClick={closeModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalCloseButton onClick={closeModal}>
+              <FiX />
+            </ModalCloseButton>
+            
+            {wishlistModal.type === 'signin' ? (
+              <>
+                <ModalIcon>❤️</ModalIcon>
+                <ModalTitle>Sign In Required</ModalTitle>
+                <ModalMessage>
+                  Please sign in to save this product to your wishlist and access it later.
+                </ModalMessage>
+                <div>
+                  <ModalButton onClick={handleSignIn}>
+                    Sign In
+                  </ModalButton>
+                  <ModalButton className="secondary" onClick={closeModal}>
+                    Cancel
+                  </ModalButton>
+                </div>
+              </>
+            ) : (
+              <>
+                <ModalIcon success>✓</ModalIcon>
+                <ModalTitle>Added to Wishlist!</ModalTitle>
+                <ModalMessage>
+                  "{wishlistModal.product?.name}" has been saved to your wishlist.
+                </ModalMessage>
+                <div>
+                  <ModalButton onClick={handleViewWishlist}>
+                    View Wishlist
+                  </ModalButton>
+                  <ModalButton className="secondary" onClick={closeModal}>
+                    Continue Shopping
+                  </ModalButton>
+                </div>
+              </>
+            )}
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 };

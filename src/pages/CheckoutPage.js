@@ -5,113 +5,130 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { sendOrderConfirmationEmail } from '../services/emailService';
 import { saveOrder } from '../services/orderService';
+import formatPrice from '../utils/formatPrice';
 
-// Styled Components
-const PageContainer = styled.div`
+const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #333;
-  background-color: #f8f9fa;
-  display: flex;
+`;
+
+const Title = styled.h1`
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+`;
+
+const CheckoutContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 400px;
   gap: 2rem;
   
   @media (max-width: 768px) {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 1rem;
-    padding: 1rem;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 0.5rem;
   }
 `;
 
-const LeftPanel = styled.div`
-  flex: 1;
-  background-color: #fff;
+const FormSection = styled.div`
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+const OrderSummary = styled.div`
+  background: white;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   height: fit-content;
-  
-  @media (max-width: 768px) {
-    padding: 1.5rem;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 1rem;
-    border-radius: 4px;
-  }
-`;
-
-const RightPanel = styled.div`
-  width: 400px;
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  height: fit-content;
-  
-  @media (max-width: 768px) {
-    width: 100%;
-    padding: 1.5rem;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 1rem;
-    border-radius: 4px;
-    width:91%
-  }
-`;
-
-const Section = styled.div`
-  margin-bottom: 2rem;
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
   color: #333;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
   
-  @media (max-width: 480px) {
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
+  &:focus {
+    outline: none;
+    border-color: #48b2ee;
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  box-sizing: border-box;
+  
+  &:focus {
+    outline: none;
+    border-color: #48b2ee;
   }
 `;
 
 const FormRow = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-bottom: 1rem;
   
   @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  @media (max-width: 480px) {
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    grid-template-columns: 1fr;
   }
 `;
 
-const OrderSummaryTitle = styled.h2`
-  font-size: 1.5rem;
+const CheckoutButton = styled.button`
+  width: 100%;
+  background-color: #48b2ee;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #333;
+  cursor: pointer;
+  margin-top: 2rem;
+  transition: background-color 0.2s;
   
-  @media (max-width: 480px) {
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
+  &:hover {
+    background-color: #3a9de8;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
 `;
 
-const ProductItem = styled.div`
+const OrderItem = styled.div`
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
   border-bottom: 1px solid #eee;
@@ -119,59 +136,25 @@ const ProductItem = styled.div`
   &:last-child {
     border-bottom: none;
   }
-  
-  @media (max-width: 480px) {
-    padding: 0.75rem 0;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
 `;
 
-const ProductImage = styled.div`
-  width: 60px;
-  height: 60px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  margin-right: 1rem;
-  background-image: url(${props => props.image});
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  
-  @media (max-width: 480px) {
-    width: 50px;
-    height: 50px;
-    margin-right: 0.75rem;
-  }
-`;
-
-const ProductDetails = styled.div`
+const ItemInfo = styled.div`
   flex: 1;
 `;
 
-const ProductName = styled.div`
-  font-weight: 600;
+const ItemName = styled.div`
+  font-weight: 500;
   margin-bottom: 0.25rem;
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-  }
 `;
 
-const ProductMeta = styled.div`
+const ItemDetails = styled.div`
   font-size: 0.9rem;
   color: #666;
 `;
 
-const ProductPrice = styled.div`
+const ItemPrice = styled.div`
   font-weight: 600;
   color: #333;
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-    align-self: flex-end;
-  }
 `;
 
 const SummaryRow = styled.div`
@@ -186,443 +169,229 @@ const SummaryRow = styled.div`
     border-top: 1px solid #eee;
     margin-top: 1rem;
   }
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-    
-    &.total {
-      font-size: 1rem;
-    }
-  }
+`;
+
+const DiscountSection = styled.div`
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
 `;
 
 const DiscountInput = styled.div`
   display: flex;
   gap: 0.5rem;
-  margin: 1rem 0;
-  
-  @media (max-width: 480px) {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
+  margin-top: 0.5rem;
 `;
 
 const DiscountCode = styled.input`
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.5rem;
   border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 4px;
 `;
 
 const ApplyButton = styled.button`
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background-color: #48b2ee;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  
-  &:hover {
-    background-color: #555;
-  }
-`;
-
-const FormGroup = styled.div`
-  flex: 1;
-  margin-bottom: 1rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
-  box-sizing: border-box;
-  
-  &:focus {
-    outline: none;
-    border-color: #48b2ee;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 0.65rem;
-    font-size: 0.95rem;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
-  background-color: white;
-  box-sizing: border-box;
-  
-  &:focus {
-    outline: none;
-    border-color: #48b2ee;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 0.65rem;
-    font-size: 0.95rem;
-  }
-`;
-
-const PhoneInputContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const CountryCode = styled.select`
-  width: 80px;
-  padding: 0.75rem 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
-  background-color: white;
-  box-sizing: border-box;
-`;
-
-const CheckboxContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-`;
-
-const Checkbox = styled.input`
-  width: auto;
-`;
-
-const CheckboxLabel = styled.label`
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0;
-`;
-
-const ShippingOption = styled.div`
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 1rem;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  
-  &:hover {
-    border-color: #48b2ee;
-  }
-  
-  ${props => props.selected && `
-    border-color: #48b2ee;
-    background-color: #f8f9fa;
-  `}
-`;
-
-const RadioInput = styled.input`
-  margin-right: 0.5rem;
-`;
-
-const ShippingDetails = styled.div`
-  flex: 1;
-`;
-
-const ShippingTitle = styled.div`
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-`;
-
-const ShippingTime = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-`;
-
-const ShippingPrice = styled.div`
-  font-weight: 600;
-  color: #333;
-`;
-
-const PaymentOption = styled.div`
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 1rem;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    border-color: #48b2ee;
-  }
-  
-  ${props => props.selected && `
-    border-color: #48b2ee;
-    background-color: #f8f9fa;
-  `}
-`;
-
-const PaymentTitle = styled.div`
-  font-weight: 600;
-  margin-left: 0.5rem;
-`;
-
-const SubmitButton = styled.button`
-  width: 100%;
-  padding: 1rem;
-  background-color: #48b2ee;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 2rem;
   
   &:hover {
     background-color: #3a9de8;
   }
+`;
+
+const PaymentSection = styled.div`
+  margin-top: 2rem;
+`;
+
+const PaymentOption = styled.div`
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
   
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+  &:hover {
+    border-color: #48b2ee;
+  }
+`;
+
+const PaymentHeader = styled.div`
+  padding: 1rem;
+  background-color: ${props => props.selected ? '#f8f9ff' : '#f8f9fa'};
+  border-bottom: ${props => props.selected ? '1px solid #48b2ee' : 'none'};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #f0f8ff;
+  }
+`;
+
+const PaymentTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const PaymentRadio = styled.input`
+  width: 18px;
+  height: 18px;
+  accent-color: #48b2ee;
+`;
+
+const PaymentIcon = styled.div`
+  font-size: 1.2rem;
+`;
+
+const AccordionIcon = styled.div`
+  font-size: 1rem;
+  color: #666;
+  transform: ${props => props.expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
+  transition: transform 0.3s ease;
+`;
+
+const PaymentContent = styled.div`
+  max-height: ${props => props.expanded ? '400px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background-color: white;
+`;
+
+const PaymentForm = styled.div`
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+`;
+
+const CardFormRow = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const CODInfo = styled.div`
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #eee;
+  
+  h4 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 1rem;
   }
   
-  @media (max-width: 480px) {
-    padding: 0.875rem;
-    font-size: 1rem;
-    margin-top: 1.5rem;
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  ul {
+    margin: 0.5rem 0 0 1rem;
+    color: #666;
+    font-size: 0.9rem;
+    
+    li {
+      margin-bottom: 0.25rem;
+    }
   }
 `;
 
 const CheckoutPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const [selectedShipping, setSelectedShipping] = useState('standard');
-  const [selectedPayment, setSelectedPayment] = useState('cod');
-  const [saveInfo, setSaveInfo] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
+  const [selectedPayment, setSelectedPayment] = useState('card');
   const navigate = useNavigate();
   const cartItems = useSelector(state => state.cart.items) || [];
 
-  // Sample cart items for display
-  const sampleItems = [
-    {
-      id: 1,
-      name: 'Dining Chair Eaton • 105',
-      meta: 'Armchair, Lemon Finish | Color: Antique',
-      price: 952,
-      image: '/images/chair1.jpg'
-    },
-    {
-      id: 2,
-      name: 'Dining Chair Edmund 194',
-      meta: 'Armchair, Lemon Finish | Color: Copper Color',
-      price: 1490,
-      image: '/images/chair2.jpg'
-    },
-    {
-      id: 3,
-      name: 'Dining Chair Okavango-231',
-      meta: 'Armchair, Metal | Color: Black',
-      price: 1306,
-      image: '/images/chair3.jpg'
-    }
-  ];
-
-  const displayItems = cartItems.length > 0 ? cartItems : sampleItems;
-  
-  // Calculate accurate pricing
-  const subtotal = displayItems.reduce((sum, item) => {
+  // Calculate totals
+  const subtotal = cartItems.reduce((sum, item) => {
     const itemPrice = parseFloat(item.price?.toString().replace(/[^\d.-]/g, '')) || 0;
     const quantity = item.quantity || 1;
     return sum + (itemPrice * quantity);
   }, 0);
-  
-  // Calculate shipping cost with free shipping logic
-  const calculateShippingCost = () => {
-    if (subtotal >= 5000) {
-      return 0; // Free shipping for orders above PKR 5,000
-    }
-    return selectedShipping === 'standard' ? 200 : 500;
-  };
-  
-  const shippingCost = calculateShippingCost();
-  
-  // Apply discount based on discount code
-  const applyDiscount = (code, subtotal) => {
-    const discountCodes = {
-      'SAVE10': 0.10, // 10% off
-      'SAVE20': 0.20, // 20% off
-      'WELCOME': 0.15, // 15% off for new customers
-      'EYEWEAR50': 50, // Fixed PKR 50 off
-      'EYEWEAR100': 100 // Fixed PKR 100 off
-    };
-    
-    if (discountCodes[code.toUpperCase()]) {
-      const discountValue = discountCodes[code.toUpperCase()];
-      if (discountValue < 1) {
-        // Percentage discount
-        return subtotal * discountValue;
-      } else {
-        // Fixed amount discount
-        return Math.min(discountValue, subtotal);
-      }
-    }
-    return 0;
-  };
-  
+
+  // Shipping logic: PKR 200 if order below PKR 5000, free above
+  const shipping = subtotal < 5000 ? 200 : 0;
+  const total = subtotal + shipping;
+
   const [appliedDiscount, setAppliedDiscount] = useState(0);
-  const [discountApplied, setDiscountApplied] = useState(false);
-  
+
   const handleApplyDiscount = () => {
-    const discount = applyDiscount(discountCode, subtotal);
-    setAppliedDiscount(discount);
-    setDiscountApplied(true);
-    if (discount > 0) {
-      alert(`Discount applied! You saved PKR ${discount.toFixed(2)}`);
+    // Simple discount logic
+    if (discountCode.toUpperCase() === 'SAVE10') {
+      setAppliedDiscount(subtotal * 0.1);
+    } else if (discountCode.toUpperCase() === 'WELCOME') {
+      setAppliedDiscount(25);
     } else {
-      alert('Invalid discount code');
       setAppliedDiscount(0);
-      setDiscountApplied(false);
+      alert('Invalid discount code');
     }
   };
-  
-  const total = subtotal + shippingCost - appliedDiscount;
+
+  const finalTotal = total - appliedDiscount;
 
   const onSubmit = async (data) => {
-    console.log('Order submitted:', {
-      ...data,
-      shipping: selectedShipping,
-      payment: selectedPayment,
-      items: displayItems,
-      total
-    });
-    
-    // Validate required fields
-    if (!data.firstName || !data.lastName || !data.address || !data.city || !data.state || !data.zipCode || !data.phone || !data.countryCode || !data.email) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    
     const orderData = {
       orderNumber: `EW${Date.now().toString().slice(-6)}`,
-      items: displayItems,
-      subtotal: subtotal,
+      items: cartItems,
+      subtotal,
+      shipping,
       discount: appliedDiscount,
-      discountCode: discountApplied ? discountCode : null,
-      shipping: shippingCost,
-      total: total,
+      total: finalTotal,
       customerInfo: data,
-      shippingAddress: {
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        postalCode: data.zipCode,
-        country: data.countryCode
-      },
-      paymentMethod: selectedPayment === 'cod' ? 'Cash on Delivery' : 'Card Payment'
+      paymentMethod: selectedPayment
     };
-    
+
     try {
-      // Save order to database
-      const savedOrder = await saveOrder(orderData);
-      console.log('Order saved successfully:', savedOrder);
-      
-      // Send confirmation email
-      const emailResult = await sendOrderConfirmationEmail(orderData);
-      if (emailResult.success) {
-        console.log('Confirmation email sent successfully');
-      } else {
-        console.error('Failed to send confirmation email:', emailResult.error);
-        // Still proceed with order even if email fails
-      }
+      await saveOrder(orderData);
+      await sendOrderConfirmationEmail(orderData);
+      navigate('/order-confirmation', { state: { orderData } });
     } catch (error) {
       console.error('Order processing error:', error);
-      // Still proceed to confirmation page even if there are errors
+      alert('There was an error processing your order. Please try again.');
     }
-    
-    // Navigate to order confirmation page with order data
-    navigate('/order-confirmation', {
-      state: {
-        orderData: orderData
-      }
-    });
   };
 
   return (
-    <PageContainer>
-      <LeftPanel>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Delivery Address Section */}
-          <Section>
-            <SectionTitle>Delivery Address</SectionTitle>
+    <Container>
+      <Title>Checkout</Title>
+      <CheckoutContainer>
+        <FormSection>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <SectionTitle>Billing Information</SectionTitle>
             
             <FormRow>
               <FormGroup>
-                <Label>First name</Label>
+                <Label>First Name</Label>
                 <Input 
-                  {...register('firstName', { required: true })}
-                  placeholder="Enter first name"
+                  {...register('firstName', { required: 'First name is required' })}
+                  placeholder="John"
                 />
+                {errors.firstName && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.firstName.message}</span>}
               </FormGroup>
               <FormGroup>
-                <Label>Last name</Label>
+                <Label>Last Name</Label>
                 <Input 
-                  {...register('lastName', { required: true })}
-                  placeholder="Enter last name"
+                  {...register('lastName', { required: 'Last name is required' })}
+                  placeholder="Doe"
                 />
-              </FormGroup>
-            </FormRow>
-
-            <FormGroup>
-              <Label>Address</Label>
-              <Input 
-                {...register('address', { required: true })}
-                placeholder="Enter delivery address"
-              />
-            </FormGroup>
-
-            <FormRow>
-              <FormGroup>
-                <Label>City</Label>
-                <Select {...register('city', { required: true })}>
-                  <option value="">Select</option>
-                  <option value="karachi">Karachi</option>
-                  <option value="lahore">Lahore</option>
-                  <option value="islamabad">Islamabad</option>
-                  <option value="rawalpindi">Rawalpindi</option>
-                  <option value="faisalabad">Faisalabad</option>
-                  <option value="multan">Multan</option>
-                </Select>
-              </FormGroup>
-              <FormGroup>
-                <Label>State</Label>
-                <Select {...register('state', { required: true })}>
-                  <option value="">Select</option>
-                  <option value="sindh">Sindh</option>
-                  <option value="punjab">Punjab</option>
-                  <option value="kpk">KPK</option>
-                  <option value="balochistan">Balochistan</option>
-                </Select>
-              </FormGroup>
-              <FormGroup>
-                <Label>Zip code</Label>
-                <Input 
-                  {...register('zipCode', { required: true })}
-                  placeholder="Enter zip code"
-                />
+                {errors.lastName && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.lastName.message}</span>}
               </FormGroup>
             </FormRow>
 
@@ -630,195 +399,254 @@ const CheckoutPage = () => {
               <Label>Email</Label>
               <Input 
                 {...register('email', { 
-                  required: true,
+                  required: 'Email is required',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                     message: "Invalid email address"
                   }
                 })}
                 type="email"
-                placeholder="Enter your email address"
+                placeholder="john@example.com"
               />
+              {errors.email && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.email.message}</span>}
             </FormGroup>
 
             <FormGroup>
               <Label>Phone</Label>
-              <PhoneInputContainer>
-                <CountryCode {...register('countryCode', { required: true })}>
-                  <option value="">Select</option>
-                  <option value="+92">+92</option>
-                  <option value="+1">+1</option>
-                  <option value="+44">+44</option>
-                </CountryCode>
-                <Input 
-                  {...register('phone', { required: true })}
-                  placeholder="Enter your phone number"
-                  style={{ flex: 1 }}
-                />
-              </PhoneInputContainer>
+              <Input 
+                {...register('phone', { required: 'Phone number is required' })}
+                placeholder="+1 (555) 123-4567"
+              />
+              {errors.phone && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.phone.message}</span>}
             </FormGroup>
 
-            <CheckboxContainer>
-              <Checkbox 
-                type="checkbox"
-                checked={saveInfo}
-                onChange={(e) => setSaveInfo(e.target.checked)}
+            <SectionTitle style={{marginTop: '2rem'}}>Shipping Address</SectionTitle>
+            
+            <FormGroup>
+              <Label>Address</Label>
+              <Input 
+                {...register('address', { required: 'Address is required' })}
+                placeholder="123 Main Street"
               />
-              <CheckboxLabel>Save this information for next time</CheckboxLabel>
-            </CheckboxContainer>
-          </Section>
+              {errors.address && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.address.message}</span>}
+            </FormGroup>
 
-          {/* Shipping Method Section */}
-          <Section>
-            <SectionTitle>Shipping method</SectionTitle>
-            
-            {subtotal >= 5000 && (
-              <div style={{ 
-                background: '#d4edda', 
-                border: '1px solid #c3e6cb', 
-                borderRadius: '8px', 
-                padding: '0.75rem', 
-                marginBottom: '1rem',
-                color: '#155724'
-              }}>
-                🎉 <strong>Congratulations!</strong> You qualify for FREE shipping!
-              </div>
-            )}
-            
-            <ShippingOption 
-              selected={selectedShipping === 'standard'}
-              onClick={() => setSelectedShipping('standard')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <RadioInput 
-                  type="radio"
-                  name="shipping"
-                  checked={selectedShipping === 'standard'}
-                  onChange={() => setSelectedShipping('standard')}
+            <FormRow>
+              <FormGroup>
+                <Label>City</Label>
+                <Input 
+                  {...register('city', { required: 'City is required' })}
+                  placeholder="New York"
                 />
-                <ShippingDetails>
-                  <ShippingTitle>Standard shipping</ShippingTitle>
-                  <ShippingTime>3-5 days</ShippingTime>
-                </ShippingDetails>
-              </div>
-              <ShippingPrice>
-                {subtotal >= 5000 ? (
-                  <span style={{ color: '#28a745' }}>FREE</span>
-                ) : (
-                  'PKR 200'
+                {errors.city && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.city.message}</span>}
+              </FormGroup>
+              <FormGroup>
+                <Label>State</Label>
+                <Select {...register('state', { required: 'State is required' })}>
+                  <option value="">Select State</option>
+                  <option value="NY">New York</option>
+                  <option value="CA">California</option>
+                  <option value="TX">Texas</option>
+                  <option value="FL">Florida</option>
+                </Select>
+                {errors.state && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.state.message}</span>}
+              </FormGroup>
+            </FormRow>
+
+            <FormRow>
+              <FormGroup>
+                <Label>ZIP Code</Label>
+                <Input 
+                  {...register('zipCode', { required: 'ZIP code is required' })}
+                  placeholder="10001"
+                />
+                {errors.zipCode && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.zipCode.message}</span>}
+              </FormGroup>
+              <FormGroup>
+                <Label>Country</Label>
+                <Select {...register('country', { required: 'Country is required' })} defaultValue="US">
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="UK">United Kingdom</option>
+                </Select>
+                {errors.country && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.country.message}</span>}
+              </FormGroup>
+            </FormRow>
+
+            <PaymentSection>
+              <SectionTitle>Payment Information</SectionTitle>
+              
+              {/* Credit Card Payment Option */}
+              <PaymentOption>
+                <PaymentHeader 
+                  selected={selectedPayment === 'card'}
+                  onClick={() => setSelectedPayment('card')}
+                >
+                  <PaymentTitle>
+                    <PaymentRadio
+                      type="radio"
+                      name="payment"
+                      value="card"
+                      checked={selectedPayment === 'card'}
+                      onChange={(e) => setSelectedPayment(e.target.value)}
+                    />
+                    <PaymentIcon>💳</PaymentIcon>
+                    Credit / Debit Card
+                  </PaymentTitle>
+                  <AccordionIcon expanded={selectedPayment === 'card'}>
+                    ▼
+                  </AccordionIcon>
+                </PaymentHeader>
+                
+                <PaymentContent expanded={selectedPayment === 'card'}>
+                  <PaymentForm>
+                    <FormGroup>
+                      <Label>Card Number</Label>
+                      <Input 
+                        {...register('cardNumber', { 
+                          required: selectedPayment === 'card' ? 'Card number is required' : false 
+                        })}
+                        placeholder="1234 5678 9012 3456"
+                      />
+                      {errors.cardNumber && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cardNumber.message}</span>}
+                    </FormGroup>
+
+                    <CardFormRow>
+                      <FormGroup>
+                        <Label>Expiry Date</Label>
+                        <Input 
+                          {...register('expiryDate', { 
+                            required: selectedPayment === 'card' ? 'Expiry date is required' : false 
+                          })}
+                          placeholder="MM/YY"
+                        />
+                        {errors.expiryDate && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.expiryDate.message}</span>}
+                      </FormGroup>
+                      <FormGroup>
+                        <Label>CVV</Label>
+                        <Input 
+                          {...register('cvv', { 
+                            required: selectedPayment === 'card' ? 'CVV is required' : false 
+                          })}
+                          placeholder="123"
+                        />
+                        {errors.cvv && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cvv.message}</span>}
+                      </FormGroup>
+                    </CardFormRow>
+
+                    <FormGroup>
+                      <Label>Cardholder Name</Label>
+                      <Input 
+                        {...register('cardholderName', { 
+                          required: selectedPayment === 'card' ? 'Cardholder name is required' : false 
+                        })}
+                        placeholder="John Doe"
+                      />
+                      {errors.cardholderName && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cardholderName.message}</span>}
+                    </FormGroup>
+                  </PaymentForm>
+                </PaymentContent>
+              </PaymentOption>
+
+              {/* Cash on Delivery Option */}
+              <PaymentOption>
+                <PaymentHeader 
+                  selected={selectedPayment === 'cod'}
+                  onClick={() => setSelectedPayment('cod')}
+                >
+                  <PaymentTitle>
+                    <PaymentRadio
+                      type="radio"
+                      name="payment"
+                      value="cod"
+                      checked={selectedPayment === 'cod'}
+                      onChange={(e) => setSelectedPayment(e.target.value)}
+                    />
+                    <PaymentIcon>💵</PaymentIcon>
+                    Cash on Delivery (COD)
+                  </PaymentTitle>
+                  <AccordionIcon expanded={selectedPayment === 'cod'}>
+                    ▼
+                  </AccordionIcon>
+                </PaymentHeader>
+                
+                <PaymentContent expanded={selectedPayment === 'cod'}>
+                  <CODInfo>
+                    <h4>Cash on Delivery</h4>
+                    <p>Pay with cash when your order arrives.</p>
+                  </CODInfo>
+                </PaymentContent>
+              </PaymentOption>
+            </PaymentSection>
+
+            <CheckoutButton type="submit">
+              Complete Order
+            </CheckoutButton>
+          </form>
+        </FormSection>
+
+        <OrderSummary>
+          <SectionTitle>Order Summary</SectionTitle>
+          
+          {cartItems.length === 0 ? (
+            <div style={{textAlign: 'center', color: '#666', padding: '2rem'}}>
+              Your cart is empty
+            </div>
+          ) : (
+            <>
+              {cartItems.map((item) => (
+                <OrderItem key={item.id}>
+                  <ItemInfo>
+                    <ItemName>{item.name}</ItemName>
+                    <ItemDetails>
+                      {item.selectedColor && `Color: ${item.selectedColor}`}
+                      {item.selectedSize && ` • Size: ${item.selectedSize}`}
+                      {item.quantity && ` • Qty: ${item.quantity}`}
+                    </ItemDetails>
+                  </ItemInfo>
+                  <ItemPrice>{formatPrice(item.price * (item.quantity || 1))}</ItemPrice>
+                </OrderItem>
+              ))}
+
+              <DiscountSection>
+                <div style={{marginBottom: '0.5rem', fontWeight: '500'}}>Discount Code</div>
+                <DiscountInput>
+                  <DiscountCode
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    placeholder="Enter code"
+                  />
+                  <ApplyButton onClick={handleApplyDiscount}>
+                    Apply
+                  </ApplyButton>
+                </DiscountInput>
+              </DiscountSection>
+
+              <div style={{marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee'}}>
+                <SummaryRow>
+                  <span>Subtotal</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </SummaryRow>
+                <SummaryRow>
+                  <span>Shipping</span>
+                  <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                </SummaryRow>
+                {appliedDiscount > 0 && (
+                  <SummaryRow>
+                    <span>Discount</span>
+                    <span style={{color: 'green'}}>-{formatPrice(appliedDiscount)}</span>
+                  </SummaryRow>
                 )}
-              </ShippingPrice>
-            </ShippingOption>
-
-            <ShippingOption 
-              selected={selectedShipping === 'expedited'}
-              onClick={() => setSelectedShipping('expedited')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <RadioInput 
-                  type="radio"
-                  name="shipping"
-                  checked={selectedShipping === 'expedited'}
-                  onChange={() => setSelectedShipping('expedited')}
-                />
-                <ShippingDetails>
-                  <ShippingTitle>Expedited shipping</ShippingTitle>
-                  <ShippingTime>1-2 days</ShippingTime>
-                </ShippingDetails>
+                <SummaryRow className="total">
+                  <span>Total</span>
+                  <span>{formatPrice(finalTotal)}</span>
+                </SummaryRow>
               </div>
-              <ShippingPrice>PKR 500</ShippingPrice>
-            </ShippingOption>
-            
-            {subtotal < 5000 && (
-              <div style={{ 
-                background: '#fff3cd', 
-                border: '1px solid #ffeaa7', 
-                borderRadius: '8px', 
-                padding: '0.75rem', 
-                marginTop: '1rem',
-                color: '#856404',
-                fontSize: '0.9rem'
-              }}>
-                💡 Add PKR {(5000 - subtotal).toFixed(2)} more to your order to get <strong>FREE shipping</strong>!
-              </div>
-            )}
-          </Section>
-
-          {/* Payment Section */}
-          <Section>
-            <SectionTitle>Payment</SectionTitle>
-            
-            <PaymentOption 
-              selected={selectedPayment === 'cod'}
-              onClick={() => setSelectedPayment('cod')}
-            >
-              <RadioInput 
-                type="radio"
-                name="payment"
-                checked={selectedPayment === 'cod'}
-                onChange={() => setSelectedPayment('cod')}
-              />
-              <PaymentTitle>Cash on Delivery</PaymentTitle>
-            </PaymentOption>
-          </Section>
-
-          <SubmitButton type="submit">
-            Pay now
-          </SubmitButton>
-        </form>
-      </LeftPanel>
-
-      <RightPanel>
-        <OrderSummaryTitle>Order Summary</OrderSummaryTitle>
-        
-        {displayItems.map((item) => (
-          <ProductItem key={item.id}>
-            <ProductImage image={item.image} />
-            <ProductDetails>
-              <ProductName>{item.name}</ProductName>
-              <ProductMeta>{item.meta || item.brand}</ProductMeta>
-            </ProductDetails>
-            <ProductPrice>PKR {item.price}</ProductPrice>
-          </ProductItem>
-        ))}
-
-        <DiscountInput>
-          <DiscountCode 
-            placeholder="Discount code or gift card"
-            value={discountCode}
-            onChange={(e) => setDiscountCode(e.target.value)}
-          />
-          <ApplyButton onClick={handleApplyDiscount}>Apply</ApplyButton>
-        </DiscountInput>
-
-        <div style={{ marginTop: '1.5rem' }}>
-          <SummaryRow>
-            <span>Subtotal</span>
-            <span>PKR {subtotal.toFixed(2)}</span>
-          </SummaryRow>
-          <SummaryRow>
-            <span>Shipping</span>
-            <span>
-              {shippingCost === 0 ? (
-                <span style={{ color: '#28a745' }}>FREE</span>
-              ) : (
-                `PKR ${shippingCost.toFixed(2)}`
-              )}
-            </span>
-          </SummaryRow>
-          {appliedDiscount > 0 && (
-            <SummaryRow>
-              <span>Discount {discountApplied && `(${discountCode.toUpperCase()})`}</span>
-              <span style={{ color: '#28a745' }}>-PKR {appliedDiscount.toFixed(2)}</span>
-            </SummaryRow>
+            </>
           )}
-          <SummaryRow className="total">
-            <span>Total</span>
-            <span>PKR {total.toFixed(2)}</span>
-          </SummaryRow>
-        </div>
-      </RightPanel>
-    </PageContainer>
+        </OrderSummary>
+      </CheckoutContainer>
+    </Container>
   );
 };
 

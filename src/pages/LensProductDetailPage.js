@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { addToCart } from '../redux/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
 import formatPrice from '../utils/formatPrice';
-import { FiHeart, FiShoppingCart, FiUpload } from 'react-icons/fi';
+import { FiHeart, FiUpload, FiX } from 'react-icons/fi';
 
 const PageContainer = styled.div`
   max-width: 1200px;
@@ -298,6 +298,501 @@ const WishlistButton = styled.button`
   }
 `;
 
+// Reviews Section Styled Components
+const ReviewsSection = styled.section`
+  margin: 3rem 0;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+`;
+
+const ReviewsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+`;
+
+const ReviewsTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+`;
+
+const RatingsSummary = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
+const OverallRating = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const RatingScore = styled.span`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e74c3c;
+`;
+
+const StarRating = styled.div`
+  display: flex;
+  gap: 0.2rem;
+  
+  .star {
+    color: #e74c3c;
+    font-size: 1.2rem;
+  }
+`;
+
+const OverallScoreText = styled.span`
+  color: #666;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+`;
+
+const RateButton = styled.button`
+  background-color: #48b2ee;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: #48b2ee;
+  }
+`;
+
+const ReviewsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const ReviewCard = styled.div`
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+`;
+
+const ReviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+`;
+
+const ReviewerInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const ReviewerName = styled.span`
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+`;
+
+const ReviewDate = styled.span`
+  color: #666;
+  font-size: 0.9rem;
+`;
+
+const ReviewRating = styled.div`
+  display: flex;
+  gap: 0.2rem;
+  margin-bottom: 0.5rem;
+  
+  .star {
+    color: #e74c3c;
+    font-size: 1rem;
+  }
+`;
+
+const ReviewTitleText = styled.h4`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+`;
+
+const ReviewText = styled.p`
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+`;
+
+const ReviewMeta = styled.div`
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #999;
+`;
+
+// Write Review Modal Styled Components
+const WriteReviewModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const WriteReviewContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+`;
+
+const WriteReviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+`;
+
+const WriteReviewTitle = styled.h2`
+  margin: 0;
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 600;
+`;
+
+const WriteReviewCloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0.5rem;
+  
+  &:hover {
+    color: #333;
+  }
+`;
+
+const ProductPreview = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+`;
+
+const ProductPreviewImage = styled.img`
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 6px;
+`;
+
+const ProductPreviewInfo = styled.div`
+  flex: 1;
+`;
+
+const ProductPreviewName = styled.div`
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+`;
+
+const RatingSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const RatingLabel = styled.div`
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  text-align: center;
+`;
+
+const StarRatingInput = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const StarInput = styled.button`
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: ${props => props.filled ? '#ffd700' : '#ddd'};
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #ffd700;
+  }
+`;
+
+const FormSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const FormLabel = styled.label`
+  display: block;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  
+  &:focus {
+    outline: none;
+    border-color: #48b2ee;
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #48b2ee;
+  }
+`;
+
+const CharacterCount = styled.div`
+  text-align: right;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.25rem;
+`;
+
+const ReviewFileUploadSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const ReviewFileUploadLabel = styled.div`
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+  text-align: center;
+`;
+
+const ReviewFileUploadArea = styled.div`
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  background: #fafafa;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  
+  &:hover {
+    border-color: #48b2ee;
+  }
+`;
+
+const ReviewFileUploadText = styled.div`
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+`;
+
+const ReviewFileUploadSubtext = styled.div`
+  color: #999;
+  font-size: 0.8rem;
+`;
+
+const ReviewFileUploadInput = styled.input`
+  display: none;
+`;
+
+const SubmitReviewButton = styled.button`
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: #c82333;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+// Review Modal Styles
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+`;
+
+const ModalTitle = styled.h2`
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0.5rem;
+  
+  &:hover {
+    color: #333;
+  }
+`;
+
+const ReviewSection = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const ReviewTitle = styled.h3`
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.2rem;
+`;
+
+const ReviewItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ReviewLabel = styled.span`
+  color: #666;
+  font-weight: 500;
+`;
+
+const ReviewValue = styled.span`
+  color: #333;
+  font-weight: 600;
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+`;
+
+const ConfirmButton = styled.button`
+  flex: 1;
+  background: #48b2ee;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  
+  &:hover {
+    background: #3a9bd8;
+  }
+`;
+
+const CancelButton = styled.button`
+  flex: 1;
+  background: white;
+  color: #666;
+  border: 2px solid #ddd;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  
+  &:hover {
+    background: #f8f9fa;
+    border-color: #999;
+  }
+`;
+
 const LensProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -309,9 +804,20 @@ const LensProductDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  
+  // Write Review Modal States
+  const [showWriteReviewModal, setShowWriteReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewEmail, setReviewEmail] = useState('');
+  const [reviewUsername, setReviewUsername] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [reviewPhotos, setReviewPhotos] = useState([]);
   
   const wishlistItems = useSelector(state => state.wishlist.items);
   
+
   // Mock lens product data - in real app, this would come from Redux store
   const lensProduct = {
     id: 1,
@@ -349,6 +855,10 @@ const LensProductDetailPage = () => {
   };
   
   const handleBuyNow = () => {
+    setShowReviewModal(true);
+  };
+
+  const handleConfirmPurchase = () => {
     const cartItem = {
       id: lensProduct.id,
       name: lensProduct.name,
@@ -362,7 +872,12 @@ const LensProductDetailPage = () => {
     };
     
     dispatch(addToCart(cartItem));
+    setShowReviewModal(false);
     navigate('/cart');
+  };
+
+  const handleCloseModal = () => {
+    setShowReviewModal(false);
   };
   
   // Check if product is in wishlist on component mount
@@ -383,6 +898,95 @@ const LensProductDetailPage = () => {
         image: lensProduct.images[0]
       }));
       setIsInWishlist(true);
+    }
+  };
+
+  // Write Review Modal Handlers
+  const handleOpenWriteReview = () => {
+    setShowWriteReviewModal(true);
+  };
+
+  const handleCloseWriteReview = () => {
+    setShowWriteReviewModal(false);
+    // Reset form
+    setReviewRating(0);
+    setReviewTitle('');
+    setReviewEmail('');
+    setReviewUsername('');
+    setReviewText('');
+    setReviewPhotos([]);
+  };
+
+  const handleStarClick = (rating) => {
+    setReviewRating(rating);
+  };
+
+  const handleReviewPhotoUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+        return false;
+      }
+      return true;
+    });
+    
+    setReviewPhotos(prev => [...prev, ...validFiles]);
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewRating === 0) {
+      alert('Please select a rating');
+      return;
+    }
+    
+    if (!reviewTitle.trim()) {
+      alert('Please enter a review title');
+      return;
+    }
+    
+    if (!reviewText.trim()) {
+      alert('Please enter your review');
+      return;
+    }
+    
+    try {
+      const reviewData = {
+        productId: lensProduct.id,
+        name: reviewUsername || 'Anonymous',
+        email: reviewEmail,
+        rating: reviewRating,
+        title: reviewTitle,
+        text: reviewText,
+        verified: false // Reviews start as unverified for moderation
+      };
+      
+      const response = await fetch('http://localhost:3001/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData)
+      });
+      
+      if (response.ok) {
+        alert('Thank you for your review! It will be published after moderation.');
+        // Reset form
+        setReviewRating(0);
+        setReviewTitle('');
+        setReviewEmail('');
+        setReviewUsername('');
+        setReviewText('');
+        setReviewPhotos([]);
+        handleCloseWriteReview();
+      } else {
+        throw new Error('Failed to submit review');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Sorry, there was an error submitting your review. Please try again.');
     }
   };
   
@@ -511,6 +1115,195 @@ const LensProductDetailPage = () => {
           </ActionButtons>
         </ProductDetails>
       </ProductContainer>
+
+      {/* Reviews Section */}
+      <ReviewsSection>
+        <ReviewsHeader>
+          <div>
+            <ReviewsTitle>Reviews</ReviewsTitle>
+          </div>
+          <RateButton onClick={handleOpenWriteReview}>
+            Rate this lense
+          </RateButton>
+        </ReviewsHeader>
+      </ReviewsSection>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <ModalOverlay onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>Review Your Selection</ModalTitle>
+              <CloseButton onClick={handleCloseModal}>
+                <FiX />
+              </CloseButton>
+            </ModalHeader>
+
+            <ReviewSection>
+              <ReviewTitle>Product Details</ReviewTitle>
+              <ReviewItem>
+                <ReviewLabel>Product:</ReviewLabel>
+                <ReviewValue>{lensProduct.name}</ReviewValue>
+              </ReviewItem>
+              <ReviewItem>
+                <ReviewLabel>Price:</ReviewLabel>
+                <ReviewValue>{formatPrice(lensProduct.price)}</ReviewValue>
+              </ReviewItem>
+              <ReviewItem>
+                <ReviewLabel>Color:</ReviewLabel>
+                <ReviewValue>{selectedColor || 'Not selected'}</ReviewValue>
+              </ReviewItem>
+            </ReviewSection>
+
+            <ReviewSection>
+              <ReviewTitle>Prescription Details</ReviewTitle>
+              <ReviewItem>
+                <ReviewLabel>Right Eye Power:</ReviewLabel>
+                <ReviewValue>{rightEyePower}</ReviewValue>
+              </ReviewItem>
+              <ReviewItem>
+                <ReviewLabel>Left Eye Power:</ReviewLabel>
+                <ReviewValue>{leftEyePower}</ReviewValue>
+              </ReviewItem>
+              <ReviewItem>
+                <ReviewLabel>Prescription File:</ReviewLabel>
+                <ReviewValue>{uploadedFile ? uploadedFile.name : 'No file uploaded'}</ReviewValue>
+              </ReviewItem>
+            </ReviewSection>
+
+            <ReviewSection>
+              <ReviewTitle>Order Summary</ReviewTitle>
+              <ReviewItem>
+                <ReviewLabel>Quantity:</ReviewLabel>
+                <ReviewValue>1 pair</ReviewValue>
+              </ReviewItem>
+              <ReviewItem>
+                <ReviewLabel>Total:</ReviewLabel>
+                <ReviewValue>{formatPrice(lensProduct.price)}</ReviewValue>
+              </ReviewItem>
+            </ReviewSection>
+
+            <ModalActions>
+              <CancelButton onClick={handleCloseModal}>
+                Cancel
+              </CancelButton>
+              <ConfirmButton onClick={handleConfirmPurchase}>
+                Add to Cart
+              </ConfirmButton>
+            </ModalActions>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Write Review Modal */}
+      {showWriteReviewModal && (
+        <WriteReviewModal onClick={handleCloseWriteReview}>
+          <WriteReviewContent onClick={(e) => e.stopPropagation()}>
+            <WriteReviewHeader>
+              <WriteReviewTitle>Write a Review for</WriteReviewTitle>
+              <WriteReviewCloseButton onClick={handleCloseWriteReview}>
+                ×
+              </WriteReviewCloseButton>
+            </WriteReviewHeader>
+
+            <ProductPreview>
+              <ProductPreviewImage 
+                src={lensProduct.images[0]} 
+                alt={lensProduct.name}
+                onError={(e) => {
+                  e.target.src = '/images/default-lens.jpg';
+                }}
+              />
+              <ProductPreviewInfo>
+                <ProductPreviewName>{lensProduct.name}</ProductPreviewName>
+              </ProductPreviewInfo>
+            </ProductPreview>
+
+            <RatingSection>
+              <RatingLabel>Rate this lense!*</RatingLabel>
+              <StarRatingInput>
+                {[...Array(5)].map((_, index) => (
+                  <StarInput
+                    key={index}
+                    filled={index < reviewRating}
+                    onClick={() => handleStarClick(index + 1)}
+                  >
+                    ★
+                  </StarInput>
+                ))}
+              </StarRatingInput>
+            </RatingSection>
+
+            <FormSection>
+              <FormLabel>What do you think of your new frames?*</FormLabel>
+            </FormSection>
+
+            <FormSection>
+              <FormInput
+                type="text"
+                placeholder="Review title"
+                value={reviewTitle}
+                onChange={(e) => setReviewTitle(e.target.value)}
+              />
+            </FormSection>
+
+            <FormSection>
+              <FormInput
+                type="email"
+                placeholder="Email"
+                value={reviewEmail}
+                onChange={(e) => setReviewEmail(e.target.value)}
+              />
+            </FormSection>
+
+            <FormSection>
+              <FormInput
+                type="text"
+                placeholder="Username"
+                value={reviewUsername}
+                onChange={(e) => setReviewUsername(e.target.value)}
+              />
+            </FormSection>
+
+            <FormSection>
+              <FormTextarea
+                placeholder="Your thoughts..."
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                maxLength={700}
+              />
+              <CharacterCount>{reviewText.length}/700</CharacterCount>
+            </FormSection>
+
+            <ReviewFileUploadSection>
+              <ReviewFileUploadLabel>Upload your photos (optional).</ReviewFileUploadLabel>
+              <ReviewFileUploadArea onClick={() => document.getElementById('lens-review-photo-upload').click()}>
+                <ReviewFileUploadText>Select an image one here</ReviewFileUploadText>
+                <ReviewFileUploadSubtext>(maximum file size is 10MB)</ReviewFileUploadSubtext>
+                <ReviewFileUploadInput
+                  id="lens-review-photo-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleReviewPhotoUpload}
+                />
+              </ReviewFileUploadArea>
+              {reviewPhotos.length > 0 && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
+                  {reviewPhotos.length} file(s) selected
+                </div>
+              )}
+            </ReviewFileUploadSection>
+
+            <SubmitReviewButton 
+              onClick={handleSubmitReview}
+              disabled={reviewRating === 0 || !reviewTitle.trim() || !reviewText.trim()}
+            >
+              Submit review
+            </SubmitReviewButton>
+          </WriteReviewContent>
+        </WriteReviewModal>
+      )}
     </PageContainer>
   );
 };

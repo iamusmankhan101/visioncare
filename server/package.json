@@ -1,0 +1,18 @@
+{
+  "name": "eyewear-review-server",
+  "version": "1.0.0",
+  "description": "Review API server for eyewear application",
+  "main": "reviewServer.js",
+  "scripts": {
+    "start": "node reviewServer.js",
+    "dev": "nodemon reviewServer.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

@@ -347,6 +347,11 @@ const AdminPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState('all');
+  
   // Get authentication state from Redux
   const { isAuthenticated, user } = useSelector(state => state.auth);
   
@@ -368,7 +373,64 @@ const AdminPage = () => {
   }, [isAuthenticated, navigate]);
   
   // Get products from Redux store
-  const { items: products, loading } = useSelector(state => state.products);
+  const { products, loading, error } = useSelector(state => state.products);
+  
+  // Fetch reviews function
+  const fetchReviews = async () => {
+    setReviewsLoading(true);
+    try {
+      const response = await fetch('/api/reviews/all');
+      if (response.ok) {
+        const reviewsData = await response.json();
+        setReviews(reviewsData);
+      } else {
+        console.error('Failed to fetch reviews');
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+  
+  // Approve review function
+  const approveReview = async (reviewId) => {
+    try {
+      const response = await fetch(`/api/reviews/${reviewId}/approve`, {
+        method: 'PUT'
+      });
+      if (response.ok) {
+        fetchReviews(); // Refresh reviews
+        setSuccessMessage('Review approved successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error approving review:', error);
+    }
+  };
+  
+  // Reject review function
+  const rejectReview = async (reviewId) => {
+    try {
+      const response = await fetch(`/api/reviews/${reviewId}/reject`, {
+        method: 'PUT'
+      });
+      if (response.ok) {
+        fetchReviews(); // Refresh reviews
+        setSuccessMessage('Review rejected successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error rejecting review:', error);
+    }
+  };
+  
+  // Load reviews when reviews tab is active
+  useEffect(() => {
+    if (activeTab === 'reviews') {
+      fetchReviews();
+    }
+  }, [activeTab]);
   
   // Fetch products when component mounts
   useEffect(() => {
@@ -827,6 +889,12 @@ const AdminPage = () => {
             onClick={() => setActiveTab('customers')}
           >
             Customers
+          </SidebarItem>
+          <SidebarItem 
+            active={activeTab === 'reviews'}
+            onClick={() => setActiveTab('reviews')}
+          >
+            Reviews
           </SidebarItem>
         </Sidebar>
         
@@ -1598,6 +1666,192 @@ const AdminPage = () => {
             <div>
               <h2>Customer Management</h2>
               <p>Customer management features coming soon...</p>
+            </div>
+          )}
+
+          {activeTab === 'reviews' && (
+            <div>
+              <h2>Review Management</h2>
+              
+              {successMessage && (
+                <div style={{
+                  padding: '1rem',
+                  backgroundColor: '#d4edda',
+                  border: '1px solid #c3e6cb',
+                  borderRadius: '4px',
+                  color: '#155724',
+                  marginBottom: '1rem'
+                }}>
+                  {successMessage}
+                </div>
+              )}
+              
+              <div style={{ marginBottom: '2rem' }}>
+                <h3>Filter Reviews</h3>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '1rem', 
+                  marginBottom: '1rem',
+                  flexWrap: 'wrap'
+                }}>
+                  <button 
+                    onClick={() => setReviewFilter('all')}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      border: '1px solid #007bff',
+                      backgroundColor: reviewFilter === 'all' ? '#007bff' : 'transparent',
+                      color: reviewFilter === 'all' ? 'white' : '#007bff',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}>
+                    All Reviews ({reviews.length})
+                  </button>
+                  <button 
+                    onClick={() => setReviewFilter('pending')}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      border: '1px solid #ffc107',
+                      backgroundColor: reviewFilter === 'pending' ? '#ffc107' : 'transparent',
+                      color: reviewFilter === 'pending' ? 'white' : '#ffc107',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}>
+                    Pending ({reviews.filter(r => !r.verified && r.status !== 'rejected').length})
+                  </button>
+                  <button 
+                    onClick={() => setReviewFilter('approved')}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      border: '1px solid #28a745',
+                      backgroundColor: reviewFilter === 'approved' ? '#28a745' : 'transparent',
+                      color: reviewFilter === 'approved' ? 'white' : '#28a745',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}>
+                    Approved ({reviews.filter(r => r.verified).length})
+                  </button>
+                  <button 
+                    onClick={() => setReviewFilter('rejected')}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      border: '1px solid #dc3545',
+                      backgroundColor: reviewFilter === 'rejected' ? '#dc3545' : 'transparent',
+                      color: reviewFilter === 'rejected' ? 'white' : '#dc3545',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}>
+                    Rejected ({reviews.filter(r => r.status === 'rejected').length})
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h3>Reviews</h3>
+                {reviewsLoading ? (
+                  <div style={{ textAlign: 'center', padding: '2rem' }}>
+                    Loading reviews...
+                  </div>
+                ) : (
+                  <div>
+                    {reviews
+                      .filter(review => {
+                        if (reviewFilter === 'all') return true;
+                        if (reviewFilter === 'pending') return !review.verified && review.status !== 'rejected';
+                        if (reviewFilter === 'approved') return review.verified;
+                        if (reviewFilter === 'rejected') return review.status === 'rejected';
+                        return true;
+                      })
+                      .map(review => (
+                        <div key={review.id} style={{
+                          border: '1px solid #ddd',
+                          borderRadius: '8px',
+                          padding: '1rem',
+                          marginBottom: '1rem',
+                          backgroundColor: 'white'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                            <div>
+                              <h4 style={{ margin: '0 0 0.25rem 0' }}>{review.title}</h4>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                <div style={{ color: '#ffa500' }}>
+                                  {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                                </div>
+                                <span style={{ fontSize: '0.9rem', color: '#666' }}>by {review.name}</span>
+                              </div>
+                              <p style={{ margin: '0.5rem 0', color: '#333' }}>{review.text}</p>
+                              <small style={{ color: '#666' }}>Product ID: {review.productId} | {new Date(review.createdAt).toLocaleDateString()}</small>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+                              <div style={{
+                                padding: '0.25rem 0.5rem',
+                                borderRadius: '4px',
+                                fontSize: '0.8rem',
+                                fontWeight: 'bold',
+                                textAlign: 'center',
+                                backgroundColor: review.verified ? '#d4edda' : (review.status === 'rejected' ? '#f8d7da' : '#fff3cd'),
+                                color: review.verified ? '#155724' : (review.status === 'rejected' ? '#721c24' : '#856404')
+                              }}>
+                                {review.verified ? 'Approved' : (review.status === 'rejected' ? 'Rejected' : 'Pending')}
+                              </div>
+                              {!review.verified && review.status !== 'rejected' && (
+                                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                  <button
+                                    onClick={() => approveReview(review.id)}
+                                    style={{
+                                      padding: '0.25rem 0.5rem',
+                                      backgroundColor: '#28a745',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.8rem'
+                                    }}
+                                  >
+                                    Approve
+                                  </button>
+                                  <button
+                                    onClick={() => rejectReview(review.id)}
+                                    style={{
+                                      padding: '0.25rem 0.5rem',
+                                      backgroundColor: '#dc3545',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.8rem'
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    }
+                    {reviews.filter(review => {
+                      if (reviewFilter === 'all') return true;
+                      if (reviewFilter === 'pending') return !review.verified && review.status !== 'rejected';
+                      if (reviewFilter === 'approved') return review.verified;
+                      if (reviewFilter === 'rejected') return review.status === 'rejected';
+                      return true;
+                    }).length === 0 && (
+                      <div style={{ 
+                        border: '1px solid #ddd', 
+                        borderRadius: '8px', 
+                        padding: '2rem',
+                        backgroundColor: '#f9f9f9',
+                        textAlign: 'center'
+                      }}>
+                        <p style={{ color: '#666', margin: 0 }}>
+                          {reviewFilter === 'all' ? 'No reviews found.' : `No ${reviewFilter} reviews found.`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
           

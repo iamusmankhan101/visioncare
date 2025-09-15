@@ -148,11 +148,11 @@ const DropdownLink = styled(Link)`
   text-decoration: none;
   display: block;
   font-size: 0.9rem;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   
   &:hover {
-    background-color: #f8f8f8;
-    color: #ff6b00;
+    background-color: #48b2ee;
+    color: white;
   }
 `;
 
@@ -960,9 +960,51 @@ const Header = () => {
 
       
       <Nav>
-        <NavLink to="/">Home</NavLink>
-        <NavLink to="/products?category=eyeglasses">Eyeglasses</NavLink>
-        <NavLink to="/products?category=sunglasses">Sunglasses</NavLink>
+        <NavItem>
+          <NavButton>
+            Eyeglasses
+            <DropdownIcon>
+              <FiChevronDown />
+            </DropdownIcon>
+          </NavButton>
+          <Dropdown>
+            <DropdownLink to="/products?category=eyeglasses&gender=men">Men's Eyeglasses</DropdownLink>
+            <DropdownLink to="/products?category=eyeglasses&gender=women">Women's Eyeglasses</DropdownLink>
+            <DropdownLink to="/products?category=eyeglasses&type=reading">Reading Glasses</DropdownLink>
+            <DropdownLink to="/products?category=eyeglasses&type=computer">Computer Glasses</DropdownLink>
+          </Dropdown>
+        </NavItem>
+        
+        <NavItem>
+          <NavButton>
+            Sunglasses
+            <DropdownIcon>
+              <FiChevronDown />
+            </DropdownIcon>
+          </NavButton>
+          <Dropdown>
+            <DropdownLink to="/products?category=sunglasses&gender=men">Men's Sunglasses</DropdownLink>
+            <DropdownLink to="/products?category=sunglasses&gender=women">Women's Sunglasses</DropdownLink>
+            <DropdownLink to="/products?category=sunglasses&type=polarized">Polarized Sunglasses</DropdownLink>
+            <DropdownLink to="/products?category=sunglasses&type=aviator">Aviator Sunglasses</DropdownLink>
+          </Dropdown>
+        </NavItem>
+        
+        <NavItem>
+          <NavButton>
+            Premium Brands
+            <DropdownIcon>
+              <FiChevronDown />
+            </DropdownIcon>
+          </NavButton>
+          <Dropdown>
+            <DropdownLink to="/products?brand=ray-ban">Ray-Ban</DropdownLink>
+            <DropdownLink to="/products?brand=oakley">Oakley</DropdownLink>
+            <DropdownLink to="/products?brand=gucci">Gucci</DropdownLink>
+            <DropdownLink to="/products?brand=prada">Prada</DropdownLink>
+          </Dropdown>
+        </NavItem>
+        
         <NavItem>
           <NavButton>
             Lenses
@@ -975,9 +1017,21 @@ const Header = () => {
             <DropdownLink to="/lenses?category=transparent-lenses">Transparent Lenses</DropdownLink>
           </Dropdown>
         </NavItem>
-        <NavLink to="/products?gender=men">Men</NavLink>
-        <NavLink to="/products?gender=women">Women</NavLink>
-        <NavLink to="/contact">Contact</NavLink>
+        
+        <NavItem>
+          <NavButton>
+            Help
+            <DropdownIcon>
+              <FiChevronDown />
+            </DropdownIcon>
+          </NavButton>
+          <Dropdown>
+            <DropdownLink to="/help/size-guide">Size Guide</DropdownLink>
+            <DropdownLink to="/help/prescription-guide">Prescription Guide</DropdownLink>
+            <DropdownLink to="/help/returns">Returns & Exchanges</DropdownLink>
+            <DropdownLink to="/help/faq">FAQ</DropdownLink>
+          </Dropdown>
+        </NavItem>
       </Nav>
       
       <SearchContainer ref={searchRef}>

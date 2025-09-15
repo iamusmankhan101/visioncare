@@ -41,6 +41,7 @@ const ProductsContainer = styled.div`
   display: grid;
   grid-template-columns: 250px 1fr;
   gap: 2rem;
+  padding-top:20px;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -360,7 +361,8 @@ const PromoBanner = styled.div`
               url('/images/Untitled design (13).png');
   color: white;
   padding: 1rem;
-  min-height: 200px;
+  
+  min-height: 180px;
   border-radius: 8px;
   margin-bottom: 1rem;
   margin-bottom: 0;

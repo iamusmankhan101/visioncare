@@ -379,7 +379,7 @@ const AdminPage = () => {
   const fetchReviews = async () => {
     setReviewsLoading(true);
     try {
-      const response = await fetch('/api/reviews/all');
+      const response = await fetch('http://localhost:3001/api/reviews/all');
       if (response.ok) {
         const reviewsData = await response.json();
         setReviews(reviewsData);
@@ -396,7 +396,7 @@ const AdminPage = () => {
   // Approve review function
   const approveReview = async (reviewId) => {
     try {
-      const response = await fetch(`/api/reviews/${reviewId}/approve`, {
+      const response = await fetch(`http://localhost:3001/api/reviews/${reviewId}/approve`, {
         method: 'PUT'
       });
       if (response.ok) {
@@ -412,7 +412,7 @@ const AdminPage = () => {
   // Reject review function
   const rejectReview = async (reviewId) => {
     try {
-      const response = await fetch(`/api/reviews/${reviewId}/reject`, {
+      const response = await fetch(`http://localhost:3001/api/reviews/${reviewId}/reject`, {
         method: 'PUT'
       });
       if (response.ok) {

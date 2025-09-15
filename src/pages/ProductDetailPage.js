@@ -1067,6 +1067,9 @@ const ProductDetailPage = () => {
   const { isAuthenticated, prescriptions } = useSelector(state => state.auth);
   
   const [product, setProduct] = useState(null);
+  
+  // Check if product is in wishlist
+  const isInWishlist = product ? wishlistItems.some(item => item.id === product.id) : false;
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
@@ -1088,6 +1091,13 @@ const ProductDetailPage = () => {
   const [showTwoPDNumbers, setShowTwoPDNumbers] = useState(false);
   const [showLensColorSelection, setShowLensColorSelection] = useState(false);
   const [selectedLensColor, setSelectedLensColor] = useState('');
+  
+  // Prescription form state
+  const [prescriptionData, setPrescriptionData] = useState({
+    rightEye: { sph: '0.00', cyl: '0.00', axis: '' },
+    leftEye: { sph: '0.00', cyl: '0.00', axis: '' },
+    pd: '63'
+  });
   const [showClearLensOptions, setShowClearLensOptions] = useState(false);
   const [selectedClearLensOption, setSelectedClearLensOption] = useState('');
   const [showBlueLightOptions, setShowBlueLightOptions] = useState(false);
@@ -1848,6 +1858,76 @@ const ProductDetailPage = () => {
               </div>
               <div className="arrow">→</div>
             </LensSelectionButton>
+            
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button
+                onClick={() => {
+                  // Add product to cart and navigate to cart page
+                  if (!product) return;
+                  
+                  const cartItem = {
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.images?.[0] || '',
+                    color: selectedColor || product.colors?.[0] || '',
+                    size: selectedSize || product.sizes?.[0] || '',
+                    quantity: 1
+                  };
+                  
+                  dispatch(addToCart(cartItem));
+                  navigate('/cart');
+                }}
+                style={{
+                  flex: 1,
+                  background: '#48b2ee',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#3a9bd9'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#48b2ee'}
+              >
+                Buy Now
+              </button>
+              
+              <button
+                onClick={() => {
+                  // Add to wishlist functionality
+                  if (isInWishlist) {
+                    dispatch(removeFromWishlist(product.id));
+                  } else {
+                    dispatch(addToWishlist(product));
+                  }
+                }}
+                style={{
+                  background: 'none',
+                  border: '2px solid #48b2ee',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  fontSize: '1rem',
+                  color: '#48b2ee',
+                  cursor: 'pointer',
+                  minWidth: '60px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#48b2ee';
+                  e.target.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#48b2ee';
+                }}
+              >
+                {isInWishlist ? '♥' : '♡'}
+              </button>
+            </div>
           </div>
         </ProductInfo>
       </ProductLayout>
@@ -1920,7 +2000,7 @@ const ProductDetailPage = () => {
                   {relatedProduct.name}
                 </h3>
                 <ProductPrice>
-                  ${relatedProduct.price}
+                  PKR {relatedProduct.price}
                   {relatedProduct.originalPrice && (
                     <span style={{ 
                       textDecoration: 'line-through', 
@@ -1928,7 +2008,7 @@ const ProductDetailPage = () => {
                       marginLeft: '0.5rem',
                       fontSize: '0.9rem'
                     }}>
-                      ${relatedProduct.originalPrice}
+                      PKR {relatedProduct.originalPrice}
                     </span>
                   )}
                 </ProductPrice>
@@ -2089,7 +2169,7 @@ const ProductDetailPage = () => {
                         </LensOptionName>
                       </div>
                       <LensOptionPrice free={option.price === 0}>
-                        ${option.price}
+                        PKR {option.price}
                       </LensOptionPrice>
                     </LensOptionHeader>
                     <LensOptionDescription>
@@ -2302,31 +2382,56 @@ const ProductDetailPage = () => {
                         <span style={{ fontSize: '0.8rem', color: '#666' }}>right eye</span>
                       </td>
                       <td style={{ padding: '0.25rem' }}>
-                        <select style={{ 
-                          width: '100%', 
-                          padding: '0.5rem', 
-                          border: '1px solid #ddd', 
-                          borderRadius: '4px',
-                          fontSize: '0.9rem'
-                        }}>
-                          <option>0.00</option>
+                        <select 
+                          value={prescriptionData.rightEye.sph}
+                          onChange={(e) => setPrescriptionData(prev => ({
+                            ...prev,
+                            rightEye: { ...prev.rightEye, sph: e.target.value }
+                          }))}
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.5rem', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '4px',
+                            fontSize: '0.9rem'
+                          }}>
+                          <option value="0.00">0.00</option>
+                          {Array.from({length: 112}, (_, i) => {
+                            const value = (-16 + i * 0.25).toFixed(2);
+                            return <option key={value} value={value}>{value > 0 ? `+${value}` : value}</option>;
+                          })}
                         </select>
                       </td>
                       <td style={{ padding: '0.25rem' }}>
-                        <select style={{ 
-                          width: '100%', 
-                          padding: '0.5rem', 
-                          border: '1px solid #ddd', 
-                          borderRadius: '4px',
-                          fontSize: '0.9rem'
-                        }}>
-                          <option>0.00</option>
+                        <select 
+                          value={prescriptionData.rightEye.cyl}
+                          onChange={(e) => setPrescriptionData(prev => ({
+                            ...prev,
+                            rightEye: { ...prev.rightEye, cyl: e.target.value }
+                          }))}
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.5rem', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '4px',
+                            fontSize: '0.9rem'
+                          }}>
+                          <option value="0.00">0.00</option>
+                          {Array.from({length: 48}, (_, i) => {
+                            const value = (-6 + i * 0.25).toFixed(2);
+                            return <option key={value} value={value}>{value > 0 ? `+${value}` : value}</option>;
+                          })}
                         </select>
                       </td>
                       <td style={{ padding: '0.25rem' }}>
                         <input 
                           type="text" 
                           placeholder="---"
+                          value={prescriptionData.rightEye.axis}
+                          onChange={(e) => setPrescriptionData(prev => ({
+                            ...prev,
+                            rightEye: { ...prev.rightEye, axis: e.target.value }
+                          }))}
                           style={{ 
                             width: '100%', 
                             padding: '0.5rem', 
@@ -2344,31 +2449,56 @@ const ProductDetailPage = () => {
                         <span style={{ fontSize: '0.8rem', color: '#666' }}>left eye</span>
                       </td>
                       <td style={{ padding: '0.25rem' }}>
-                        <select style={{ 
-                          width: '100%', 
-                          padding: '0.5rem', 
-                          border: '1px solid #ddd', 
-                          borderRadius: '4px',
-                          fontSize: '0.9rem'
-                        }}>
-                          <option>0.00</option>
+                        <select 
+                          value={prescriptionData.leftEye.sph}
+                          onChange={(e) => setPrescriptionData(prev => ({
+                            ...prev,
+                            leftEye: { ...prev.leftEye, sph: e.target.value }
+                          }))}
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.5rem', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '4px',
+                            fontSize: '0.9rem'
+                          }}>
+                          <option value="0.00">0.00</option>
+                          {Array.from({length: 112}, (_, i) => {
+                            const value = (-16 + i * 0.25).toFixed(2);
+                            return <option key={value} value={value}>{value > 0 ? `+${value}` : value}</option>;
+                          })}
                         </select>
                       </td>
                       <td style={{ padding: '0.25rem' }}>
-                        <select style={{ 
-                          width: '100%', 
-                          padding: '0.5rem', 
-                          border: '1px solid #ddd', 
-                          borderRadius: '4px',
-                          fontSize: '0.9rem'
-                        }}>
-                          <option>0.00</option>
+                        <select 
+                          value={prescriptionData.leftEye.cyl}
+                          onChange={(e) => setPrescriptionData(prev => ({
+                            ...prev,
+                            leftEye: { ...prev.leftEye, cyl: e.target.value }
+                          }))}
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.5rem', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '4px',
+                            fontSize: '0.9rem'
+                          }}>
+                          <option value="0.00">0.00</option>
+                          {Array.from({length: 48}, (_, i) => {
+                            const value = (-6 + i * 0.25).toFixed(2);
+                            return <option key={value} value={value}>{value > 0 ? `+${value}` : value}</option>;
+                          })}
                         </select>
                       </td>
                       <td style={{ padding: '0.25rem' }}>
                         <input 
                           type="text" 
                           placeholder="---"
+                          value={prescriptionData.leftEye.axis}
+                          onChange={(e) => setPrescriptionData(prev => ({
+                            ...prev,
+                            leftEye: { ...prev.leftEye, axis: e.target.value }
+                          }))}
                           style={{ 
                             width: '100%', 
                             padding: '0.5rem', 
@@ -2390,14 +2520,30 @@ const ProductDetailPage = () => {
                     <strong>PD</strong> ⓘ
                   </span>
                   {!showTwoPDNumbers ? (
-                    <select style={{ 
-                      padding: '0.5rem', 
-                      border: '1px solid #ddd', 
-                      borderRadius: '4px',
-                      fontSize: '0.9rem',
-                      marginRight: '1rem'
-                    }}>
-                      <option>63</option>
+                    <select 
+                      value={prescriptionData.pd}
+                      onChange={(e) => setPrescriptionData(prev => ({
+                        ...prev,
+                        pd: e.target.value
+                      }))}
+                      style={{ 
+                        padding: '0.5rem', 
+                        border: '1px solid #ddd', 
+                        borderRadius: '4px',
+                        fontSize: '0.9rem',
+                        marginRight: '1rem'
+                      }}>
+                      <option value="58">58</option>
+                      <option value="59">59</option>
+                      <option value="60">60</option>
+                      <option value="61">61</option>
+                      <option value="62">62</option>
+                      <option value="63">63</option>
+                      <option value="64">64</option>
+                      <option value="65">65</option>
+                      <option value="66">66</option>
+                      <option value="67">67</option>
+                      <option value="68">68</option>
                     </select>
                   ) : (
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -2842,7 +2988,7 @@ const ProductDetailPage = () => {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <LensOptionPrice style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
-                          ${option.price}
+                          PKR {option.price}
                         </LensOptionPrice>
                       </div>
                     </div>
@@ -2958,7 +3104,7 @@ const ProductDetailPage = () => {
                             )}
                           </div>
                           <LensOptionPrice style={{ fontSize: '1rem', fontWeight: '600', color: '#333', marginBottom: '0.5rem' }}>
-                            {option.priceFrom ? 'From ' : ''}${option.price}
+                            {option.priceFrom ? 'From ' : ''}PKR {option.price}
                           </LensOptionPrice>
                         </div>
                       </div>
@@ -3063,7 +3209,7 @@ const ProductDetailPage = () => {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <LensOptionPrice style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
-                          ${option.price}
+                          PKR {option.price}
                         </LensOptionPrice>
                       </div>
                     </div>
@@ -3157,7 +3303,7 @@ const ProductDetailPage = () => {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <LensOptionPrice style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
-                          ${option.price}
+                          PKR {option.price}
                         </LensOptionPrice>
                       </div>
                     </div>
@@ -3305,7 +3451,7 @@ const ProductDetailPage = () => {
                               fontWeight: '600',
                               color: '#333'
                             }}>
-                              $59
+                              PKR 59
                             </span>
                           </div>
                           
@@ -3342,7 +3488,7 @@ const ProductDetailPage = () => {
                               fontWeight: '600',
                               color: '#333'
                             }}>
-                              $88
+                              PKR 88
                             </span>
                           </div>
                         </div>

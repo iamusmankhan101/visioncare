@@ -649,48 +649,64 @@ const MobileMenuOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: 85%;
+  width: 100%;
   height: 100vh;
   background-color: #ffffff;
   z-index: 1002;
   display: flex;
   flex-direction: column;
-  padding: 1rem;
   transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-100%)'};
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: ${props => props.isOpen ? '2px 0 10px rgba(0, 0, 0, 0.1)' : 'none'};
   opacity: 1;
-  
-  @media (max-width: 480px) {
-    width: 80%;
-  }
 `;
 
 const MobileMenuHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  padding: 1rem;
   border-bottom: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
+`;
+
+const MobileSignInButton = styled.button`
+  background-color: #48b2ee;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #3a9bd9;
+  }
 `;
 
 const MobileMenuNav = styled.nav`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
   flex: 1;
-  animation: ${props => props.isOpen ? 'slideInLinks 0.5s ease-out 0.1s both' : 'none'};
+  padding: 0 0 0 1rem;
+`;
+
+const MobileMenuFooter = styled.div`
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem;
+  border-top: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
+`;
+
+const MobileFooterLink = styled(Link)`
+  color: #666;
+  text-decoration: none;
+  font-size: 0.9rem;
   
-  @keyframes slideInLinks {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  &:hover {
+    color: #48b2ee;
   }
 `;
 
@@ -702,6 +718,55 @@ const MobileNavLink = styled(Link)`
   padding: 1rem 0;
   border-bottom: 1px solid #f0f0f0;
   transition: color 0.3s ease;
+  
+  &:hover {
+    color: #48b2ee;
+  }
+`;
+
+const MobileNavButton = styled.button`
+  background: none;
+  border: none;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  font-size: 1.1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  &:hover {
+    color: #48b2ee;
+  }
+`;
+
+const MobileDropdown = styled.div`
+  display: ${props => props.isOpen ? 'block' : 'none'};
+  padding-left: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+`;
+
+const MobileDropdownLink = styled(Link)`
+  display: block;
+  text-decoration: none;
+  color: #666;
+  font-weight: 400;
+  font-size: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  transition: color 0.3s ease;
+  
+  &:last-child {
+    border-bottom: none;
+  }
   
   &:hover {
     color: #48b2ee;
@@ -739,6 +804,13 @@ const Header = () => {
   const [searchMegaMenuOpen, setSearchMegaMenuOpen] = useState(false);
   const [mobileSearchOverlayOpen, setMobileSearchOverlayOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mobileDropdowns, setMobileDropdowns] = useState({
+    eyeglasses: false,
+    sunglasses: false,
+    premiumBrands: false,
+    lenses: false,
+    help: false
+  });
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const searchRef = useRef(null);
@@ -830,6 +902,13 @@ const Header = () => {
     navigate('/');
   };
   
+  const toggleMobileDropdown = (category) => {
+    setMobileDropdowns(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+  
   // Filter products based on search query
   const filteredProducts = searchQuery.trim() 
     ? products.filter(product => 
@@ -885,16 +964,15 @@ const Header = () => {
         <NavLink to="/products?category=eyeglasses">Eyeglasses</NavLink>
         <NavLink to="/products?category=sunglasses">Sunglasses</NavLink>
         <NavItem>
-          <NavLink to="/lenses">
+          <NavButton>
             Lenses
             <DropdownIcon>
               <FiChevronDown />
             </DropdownIcon>
-          </NavLink>
+          </NavButton>
           <Dropdown>
-            <DropdownLink to="/lenses?category=contact-lenses">Contact Lenses</DropdownLink>
-            <DropdownLink to="/lenses?category=transparent-lenses">Transparent Lenses</DropdownLink>
             <DropdownLink to="/lenses?category=colored-lenses">Colored Lenses</DropdownLink>
+            <DropdownLink to="/lenses?category=transparent-lenses">Transparent Lenses</DropdownLink>
           </Dropdown>
         </NavItem>
         <NavLink to="/products?gender=men">Men</NavLink>
@@ -1038,38 +1116,91 @@ const Header = () => {
       {/* Mobile Menu Overlay */}
       <MobileMenuOverlay isOpen={mobileMenuOpen}>
         <MobileMenuHeader>
-          <Logo>
-            <Link 
-              to="/" 
-              style={{ textDecoration: 'none', color: '#ff6b00', display: 'flex', alignItems: 'center' }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <img 
-                src="/images/logo2.png" 
-                alt="Vision Care Logo" 
-                style={{ height: '40px', marginRight: '8px' }} 
-              />
-            </Link>
-          </Logo>
           <MobileMenuClose onClick={() => setMobileMenuOpen(false)}>
             <FiX />
           </MobileMenuClose>
+          <MobileSignInButton onClick={() => {
+            setMobileMenuOpen(false);
+            if (isAuthenticated) {
+              navigate('/account');
+            } else {
+              navigate('/auth');
+            }
+          }}>
+            {isAuthenticated ? 'Account' : 'Sign In'}
+          </MobileSignInButton>
         </MobileMenuHeader>
         
-        <MobileMenuNav isOpen={mobileMenuOpen}>
-          <MobileNavLink to="/" onClick={() => setMobileMenuOpen(false)}>Home</MobileNavLink>
-          <MobileNavLink to="/products?category=eyeglasses" onClick={() => setMobileMenuOpen(false)}>Eyeglasses</MobileNavLink>
-          <MobileNavLink to="/products?category=sunglasses" onClick={() => setMobileMenuOpen(false)}>Sunglasses</MobileNavLink>
-          <MobileNavLink to="/lenses?category=contact-lenses" onClick={() => setMobileMenuOpen(false)}>Contact Lenses</MobileNavLink>
-          <MobileNavLink to="/lenses?category=transparent-lenses" onClick={() => setMobileMenuOpen(false)}>Transparent Lenses</MobileNavLink>
-          <MobileNavLink to="/lenses?category=colored-lenses" onClick={() => setMobileMenuOpen(false)}>Colored Lenses</MobileNavLink>
-          <MobileNavLink to="/products?gender=men" onClick={() => setMobileMenuOpen(false)}>Men</MobileNavLink>
-          <MobileNavLink to="/products?gender=women" onClick={() => setMobileMenuOpen(false)}>Women</MobileNavLink>
-          <MobileNavLink to="/contact" onClick={() => setMobileMenuOpen(false)}>Contact</MobileNavLink>
-          <MobileNavLink to="/auth" onClick={() => setMobileMenuOpen(false)}>Account</MobileNavLink>
-          <MobileNavLink to="/wishlist" onClick={() => setMobileMenuOpen(false)}>Wishlist</MobileNavLink>
-          <MobileNavLink to="/cart" onClick={() => setMobileMenuOpen(false)}>Cart</MobileNavLink>
+        <MobileMenuNav>
+          <div>
+            <MobileNavButton onClick={() => toggleMobileDropdown('eyeglasses')}>
+              Eyeglasses
+              <FiChevronDown style={{ transform: mobileDropdowns.eyeglasses ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+            </MobileNavButton>
+            <MobileDropdown isOpen={mobileDropdowns.eyeglasses}>
+              <MobileDropdownLink to="/products?category=eyeglasses&gender=men" onClick={() => setMobileMenuOpen(false)}>Men's Eyeglasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=eyeglasses&gender=women" onClick={() => setMobileMenuOpen(false)}>Women's Eyeglasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=eyeglasses&type=reading" onClick={() => setMobileMenuOpen(false)}>Reading Glasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=eyeglasses&type=computer" onClick={() => setMobileMenuOpen(false)}>Computer Glasses</MobileDropdownLink>
+            </MobileDropdown>
+          </div>
+          
+          <div>
+            <MobileNavButton onClick={() => toggleMobileDropdown('sunglasses')}>
+              Sunglasses
+              <FiChevronDown style={{ transform: mobileDropdowns.sunglasses ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+            </MobileNavButton>
+            <MobileDropdown isOpen={mobileDropdowns.sunglasses}>
+              <MobileDropdownLink to="/products?category=sunglasses&gender=men" onClick={() => setMobileMenuOpen(false)}>Men's Sunglasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=sunglasses&gender=women" onClick={() => setMobileMenuOpen(false)}>Women's Sunglasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=sunglasses&type=polarized" onClick={() => setMobileMenuOpen(false)}>Polarized Sunglasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=sunglasses&type=aviator" onClick={() => setMobileMenuOpen(false)}>Aviator Sunglasses</MobileDropdownLink>
+            </MobileDropdown>
+          </div>
+          
+          
+          <div>
+            <MobileNavButton onClick={() => toggleMobileDropdown('premiumBrands')}>
+              Premium Brands
+              <FiChevronDown style={{ transform: mobileDropdowns.premiumBrands ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+            </MobileNavButton>
+            <MobileDropdown isOpen={mobileDropdowns.premiumBrands}>
+              <MobileDropdownLink to="/products?brand=ray-ban" onClick={() => setMobileMenuOpen(false)}>Ray-Ban</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=oakley" onClick={() => setMobileMenuOpen(false)}>Oakley</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=gucci" onClick={() => setMobileMenuOpen(false)}>Gucci</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=prada" onClick={() => setMobileMenuOpen(false)}>Prada</MobileDropdownLink>
+            </MobileDropdown>
+          </div>
+          
+          <div>
+            <MobileNavButton onClick={() => toggleMobileDropdown('lenses')}>
+              Lenses
+              <FiChevronDown style={{ transform: mobileDropdowns.lenses ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+            </MobileNavButton>
+            <MobileDropdown isOpen={mobileDropdowns.lenses}>
+              <MobileDropdownLink to="/lenses?category=colored-lenses" onClick={() => setMobileMenuOpen(false)}>Colored Lenses</MobileDropdownLink>
+              <MobileDropdownLink to="/lenses?category=transparent-lenses" onClick={() => setMobileMenuOpen(false)}>Transparent Lenses</MobileDropdownLink>
+            </MobileDropdown>
+          </div>
+          
+          <div>
+            <MobileNavButton onClick={() => toggleMobileDropdown('help')}>
+              Help
+              <FiChevronDown style={{ transform: mobileDropdowns.help ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+            </MobileNavButton>
+            <MobileDropdown isOpen={mobileDropdowns.help}>
+              <MobileDropdownLink to="/help/size-guide" onClick={() => setMobileMenuOpen(false)}>Size Guide</MobileDropdownLink>
+              <MobileDropdownLink to="/help/prescription-guide" onClick={() => setMobileMenuOpen(false)}>Prescription Guide</MobileDropdownLink>
+              <MobileDropdownLink to="/help/returns" onClick={() => setMobileMenuOpen(false)}>Returns & Exchanges</MobileDropdownLink>
+              <MobileDropdownLink to="/help/faq" onClick={() => setMobileMenuOpen(false)}>FAQ</MobileDropdownLink>
+            </MobileDropdown>
+          </div>
         </MobileMenuNav>
+        
+        <MobileMenuFooter>
+          <MobileFooterLink to="/contact" onClick={() => setMobileMenuOpen(false)}>Contact</MobileFooterLink>
+          <MobileFooterLink to="/order-tracking" onClick={() => setMobileMenuOpen(false)}>Order Tracking</MobileFooterLink>
+        </MobileMenuFooter>
       </MobileMenuOverlay>
       
       {/* Mobile Search Overlay */}

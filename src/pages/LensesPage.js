@@ -19,7 +19,7 @@ const PageContainer = styled.div`
 
 const BannerSection = styled.div`
   background: linear-gradient(90deg, rgba(72, 178, 238, 0.8) 0%, rgba(200, 134, 13, 0.1) 100%), 
-              url('/images/contact-lenses-solution-bottle-banner_33099-1916.jpg');
+              url('/images/TreeCityEyeCare-MissingAssets-Hero-ContactLensExamsFittings.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -259,10 +259,22 @@ const LensesPage = () => {
     dispatch(fetchProducts());
   }, [dispatch]);
   
-  // Filter products based on active category
+  // Filter products to show only lens products
   const filteredProducts = products.filter(product => {
+    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
+    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
+    
+    // Include only lens products
+    const isLensProduct = lensCategories.includes(product.category) ||
+                         lensNames.some(name => product.name.includes(name)) ||
+                         lensBrands.includes(product.brand);
+    
+    if (!isLensProduct) return false;
+    
+    // Apply category filter if not 'all'
     if (activeCategory === 'all') {
-      return ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'].includes(product.category);
+      return true;
     }
     
     const categoryMap = {

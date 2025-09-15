@@ -1229,9 +1229,9 @@ const AdminPage = () => {
                     onChange={handleInputChange} 
                   />
                 </FormGroup>
-
-                <SubmitButton type="submit" disabled={isLoading}>
-                  {isLoading ? 'Adding...' : 'Add Product'}
+                
+                <SubmitButton type="submit">
+                  Add Product
                 </SubmitButton>
               </Form>
             </>
@@ -1414,63 +1414,6 @@ const AdminPage = () => {
                 <p>• Reading Glasses</p>
                 <p>• Safety Glasses</p>
               </div>
-
-              <div style={{ marginTop: '30px' }}>
-                <h3>Manage Eyewear Products</h3>
-                <ProductList>
-                  {products.filter(product => {
-                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-                    
-                    // Exclude lens products
-                    if (lensCategories.includes(product.category)) return false;
-                    if (lensNames.some(name => product.name.includes(name))) return false;
-                    if (lensBrands.includes(product.brand)) return false;
-                    
-                    return true;
-                  }).length === 0 ? (
-                    <p>No eyewear products found. Add some eyewear products to get started.</p>
-                  ) : (
-                    products.filter(product => {
-                      const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                      const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                      const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-                      
-                      // Exclude lens products
-                      if (lensCategories.includes(product.category)) return false;
-                      if (lensNames.some(name => product.name.includes(name))) return false;
-                      if (lensBrands.includes(product.brand)) return false;
-                      
-                      return true;
-                    }).map(product => (
-                      <ProductItem key={product.id}>
-                        <ProductInfo>
-                          <h4>{product.name}</h4>
-                          <p>Price: PKR {product.price}</p>
-                          <p>Category: {product.category}</p>
-                          <p>Brand: {product.brand || 'N/A'}</p>
-                          <p>Status: {product.status}</p>
-                        </ProductInfo>
-                        <ActionButtons>
-                          <ActionButton 
-                            className="edit"
-                            onClick={() => handleEditProduct(product)}
-                          >
-                            Edit
-                          </ActionButton>
-                          <ActionButton 
-                            className="delete"
-                            onClick={() => handleDeleteProduct(product.id)}
-                          >
-                            Delete
-                          </ActionButton>
-                        </ActionButtons>
-                      </ProductItem>
-                    ))
-                  )}
-                </ProductList>
-              </div>
             </>
           )}
           
@@ -1530,66 +1473,6 @@ const AdminPage = () => {
                 <p>• Prescription upload functionality</p>
                 <p>• Eye-specific power selection (OD/OS)</p>
                 <p>• Separate routing (/lenses/:id)</p>
-              </div>
-
-              <div style={{ marginTop: '30px' }}>
-                <h3>Manage Lens Products</h3>
-                <ProductList>
-                  {products.filter(product => {
-                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-                    
-                    // Include only lens products
-                    if (lensCategories.includes(product.category)) return true;
-                    if (lensNames.some(name => product.name.includes(name))) return true;
-                    if (lensBrands.includes(product.brand)) return true;
-                    
-                    return false;
-                  }).length === 0 ? (
-                    <p>No lens products found. Add some lens products to get started.</p>
-                  ) : (
-                    products.filter(product => {
-                      const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                      const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                      const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-                      
-                      // Include only lens products
-                      if (lensCategories.includes(product.category)) return true;
-                      if (lensNames.some(name => product.name.includes(name))) return true;
-                      if (lensBrands.includes(product.brand)) return true;
-                      
-                      return false;
-                    }).map(product => (
-                      <ProductItem key={product.id}>
-                        <ProductInfo>
-                          <h4>{product.name}</h4>
-                          <p>Price: PKR {product.price}</p>
-                          <p>Category: {product.category}</p>
-                          <p>Brand: {product.brand || 'N/A'}</p>
-                          <p>Status: {product.status}</p>
-                          {product.power && <p>Power: {product.power}</p>}
-                          {product.bc && <p>BC: {product.bc}</p>}
-                          {product.dia && <p>DIA: {product.dia}</p>}
-                        </ProductInfo>
-                        <ActionButtons>
-                          <ActionButton 
-                            className="edit"
-                            onClick={() => handleEditProduct(product)}
-                          >
-                            Edit
-                          </ActionButton>
-                          <ActionButton 
-                            className="delete"
-                            onClick={() => handleDeleteProduct(product.id)}
-                          >
-                            Delete
-                          </ActionButton>
-                        </ActionButtons>
-                      </ProductItem>
-                    ))
-                  )}
-                </ProductList>
               </div>
             </>
           )}
@@ -1980,17 +1863,3 @@ const AdminPage = () => {
                     onChange={handleInputChange} 
                   />
                 </FormGroup>
-
-                <SubmitButton type="submit" disabled={isLoading}>
-                  {isLoading ? 'Updating...' : 'Update Product'}
-                </SubmitButton>
-              </Form>
-            </>
-          )}
-        </ContentArea>
-      </AdminPanel>
-    </PageContainer>
-  );
-};
-
-export default AdminPage;

@@ -356,11 +356,18 @@ const FilterTags = styled.div`
 `;
 
 const PromoBanner = styled.div`
-  background: linear-gradient(135deg, #48b2ee, #a07828);
+   background: linear-gradient(-90deg, rgba(72, 178, 238, 0.8) 0%, rgba(200, 134, 13, 0.1) 100%), 
+              url('/images/Untitled design (13).png');
   color: white;
   padding: 1rem;
+  min-height: 200px;
   border-radius: 8px;
   margin-bottom: 1rem;
+  margin-bottom: 0;
+   background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
   text-align: center;
 `;
 
@@ -1450,7 +1457,18 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
-                  {(filteredItems.length > 0 ? filteredItems : items).map(product => (
+                  {(filteredItems.length > 0 ? filteredItems : items).filter(product => {
+                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+                    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
+                    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
+                    
+                    // Exclude lens products
+                    if (lensCategories.includes(product.category)) return false;
+                    if (lensNames.some(name => product.name.includes(name))) return false;
+                    if (lensBrands.includes(product.brand)) return false;
+                    
+                    return true;
+                  }).map(product => (
                     <ProductCard key={product.id}>
                                   {product.discount && <DiscountBadge>{typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}</DiscountBadge>}
                                   <ListingCategoryBadge>{product.category}</ListingCategoryBadge>

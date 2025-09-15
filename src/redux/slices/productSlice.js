@@ -125,6 +125,26 @@ const productSlice = createSlice({
     removeAllProducts(state) {
       state.items = [];
       state.filteredItems = [];
+    },
+    removeLensProducts(state) {
+      const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+      const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
+      
+      state.items = state.items.filter(item => {
+        // Remove by category
+        if (lensCategories.includes(item.category)) return false;
+        
+        // Remove by name pattern (in case category was changed)
+        if (lensNames.some(name => item.name.includes(name))) return false;
+        
+        // Remove by brand (lens brands)
+        const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
+        if (lensBrands.includes(item.brand)) return false;
+        
+        return true;
+      });
+      
+      state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
     }
   },
   extraReducers: (builder) => {
@@ -197,7 +217,8 @@ export const {
   addProduct,
   updateProduct,
   deleteProduct,
-  removeAllProducts 
+  removeAllProducts,
+  removeLensProducts 
 } = productSlice.actions;
 
 export default productSlice.reducer;
@@ -205,6 +226,10 @@ export default productSlice.reducer;
 // Helper function to apply filters and sorting
 const applyFilters = (items, filters, sortOption) => {
   let result = [...items];
+  
+  // First, exclude lens categories from general product listings
+  const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+  result = result.filter(item => !lensCategories.includes(item.category));
   
   // Apply category filter
   if (filters.category) {

@@ -8,6 +8,8 @@ class NotificationService {
 
   // Initialize notification service
   async initialize() {
+    console.log('🔔 Initializing notification service...');
+    
     if (!this.isSupported) {
       console.warn('Push notifications are not supported');
       return false;
@@ -15,27 +17,38 @@ class NotificationService {
 
     try {
       // Request permission
+      console.log('📱 Requesting notification permission...');
       const permission = await Notification.requestPermission();
+      console.log('Permission result:', permission);
       
       if (permission === 'granted') {
+        console.log('✅ Notification permission granted');
+        
         // Get FCM token
+        console.log('🔑 Getting FCM token...');
         this.token = await getNotificationToken();
+        console.log('Token received:', this.token ? 'Yes' : 'No');
         
         if (this.token) {
           // Send token to your backend to store for admin
+          console.log('📤 Registering token with backend...');
           await this.registerToken(this.token);
           
           // Listen for foreground messages
           this.setupForegroundListener();
           
+          console.log('🎉 Notification service initialized successfully');
           return true;
+        } else {
+          console.error('❌ Failed to get FCM token');
+          return false;
         }
       } else {
-        console.log('Notification permission denied');
+        console.log('❌ Notification permission denied');
         return false;
       }
     } catch (error) {
-      console.error('Error initializing notifications:', error);
+      console.error('❌ Error initializing notifications:', error);
       return false;
     }
   }
@@ -43,7 +56,7 @@ class NotificationService {
   // Register token with backend
   async registerToken(token) {
     try {
-      const response = await fetch('/api/admin/register-notification-token', {
+      const response = await fetch('http://localhost:5002/api/admin/register-notification-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +188,7 @@ class NotificationService {
   // Send test notification
   async sendTestNotification() {
     try {
-      const response = await fetch('/api/admin/test-notification', {
+      const response = await fetch('http://localhost:5002/api/admin/test-notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

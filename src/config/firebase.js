@@ -3,12 +3,12 @@ import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  apiKey: "AIzaSyBTQTYPToIGHbQMoLgm8VwzmB0bVNwN1J8",
+  authDomain: "vision-care-8b4bf.firebaseapp.com",
+  projectId: "vision-care-8b4bf",
+  storageBucket: "vision-care-8b4bf.firebasestorage.app",
+  messagingSenderId: "180564316187",
+  appId: "1:180564316187:web:6eb26cb84cd719bfd6e8be"
 };
 
 // Initialize Firebase
@@ -21,7 +21,7 @@ const messaging = getMessaging(app);
 export const getNotificationToken = async () => {
   try {
     const token = await getToken(messaging, {
-      vapidKey: 'your-vapid-key' // Get this from Firebase Console
+      vapidKey: 'BG-HQ9TSKB1SX' // Your VAPID key from Firebase Console
     });
     
     if (token) {

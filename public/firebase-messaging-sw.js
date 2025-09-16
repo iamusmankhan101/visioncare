@@ -4,12 +4,12 @@ importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compa
 
 // Initialize Firebase in service worker
 firebase.initializeApp({
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  apiKey: "AIzaSyBTQTYPToIGHbQMoLgm8VwzmB0bVNwN1J8",
+  authDomain: "vision-care-8b4bf.firebaseapp.com",
+  projectId: "vision-care-8b4bf",
+  storageBucket: "vision-care-8b4bf.firebasestorage.app",
+  messagingSenderId: "180564316187",
+  appId: "1:180564316187:web:6eb26cb84cd719bfd6e8be"
 });
 
 const messaging = firebase.messaging();

@@ -757,7 +757,7 @@ const ProductStats = styled.div`
 `;
 
 const ChartContainer2 = styled.div`
-  height: 500px;
+  height: 400px;
   position: relative;
   background: white;
   border-radius: 12px;
@@ -765,10 +765,9 @@ const ChartContainer2 = styled.div`
   display: flex;
   flex-direction: column;
   border: 1px solid #f1f5f9;
-  overflow: visible;
   
   @media (max-width: 768px) {
-    height: 450px;
+    height: 350px;
     padding: 1rem;
   }
 `;

@@ -648,6 +648,11 @@ const ChartContainer = styled.div`
   border-radius: 12px;
   padding: 1.5rem;
   border: 1px solid #e2e8f0;
+  height:450px;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const ChartHeader = styled.div`
@@ -752,14 +757,20 @@ const ProductStats = styled.div`
 `;
 
 const ChartContainer2 = styled.div`
-  height: 350px;
+  height: 500px;
   position: relative;
   background: white;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   border: 1px solid #f1f5f9;
+  overflow: visible;
+  
+  @media (max-width: 768px) {
+    height: 450px;
+    padding: 1rem;
+  }
 `;
 
 const ChartHeader2 = styled.div`
@@ -809,8 +820,23 @@ const TimeSelector = styled.div`
 const ChartNavigation = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  z-index:1;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 3.5rem;
+    padding: 0.25rem;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 480px) {
+    z-index:2;
+  
 `;
 
 const NavButton = styled.button`
@@ -881,7 +907,7 @@ const ChartCanvas = styled.div`
   flex: 1;
   position: relative;
   background: transparent;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 `;
@@ -889,7 +915,11 @@ const ChartCanvas = styled.div`
 const ChartArea = styled.div`
   flex: 1;
   position: relative;
-  padding: 20px 20px 40px 60px;
+  padding: 150px 40px 60px 80px;
+  
+  @media (max-width: 768px) {
+    padding: 80px 30px 40px 60px;
+  }
 `;
 
 const YAxis = styled.div`

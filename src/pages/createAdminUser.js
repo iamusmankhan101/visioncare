@@ -9,26 +9,26 @@ async function createAdminUser() {
     
     // Check if admin user already exists
     const existingAdmin = await User.findOne({
-      where: { email: 'admin@eyewearr.com' }
+      where: { email: 'Visioncareoptometryclinic@gmail.com' }
     });
     
     if (existingAdmin) {
       console.log('Admin user already exists!');
-      console.log('Email: admin@eyewearr.com');
+      console.log('Email: Visioncareoptometryclinic@gmail.com');
       console.log('Password: admin123');
       process.exit(0);
     }
     
     // Create admin user
     const adminUser = await User.create({
-      name: 'Admin User',
-      email: 'admin@eyewearr.com',
+      name: 'Vision Care Optometry Clinic',
+      email: 'Visioncareoptometryclinic@gmail.com',
       password: 'admin123',
       role: 'admin'
     });
     
     console.log('Admin user created successfully!');
-    console.log('Email: admin@eyewearr.com');
+    console.log('Email: Visioncareoptometryclinic@gmail.com');
     console.log('Password: admin123');
     
   } catch (error) {

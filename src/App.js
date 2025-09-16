@@ -12,20 +12,25 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ContactPage from './pages/ContactPage';
 import AdminPage from './pages/AdminPage';
+import AdminLogin from './pages/AdminLogin';
 import AdminNotificationDashboard from './components/admin/AdminNotificationDashboard';
 import ShopifyDashboard from './components/admin/ShopifyDashboard';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import LensesPage from './pages/LensesPage';
 import LensProductDetailPage from './pages/LensProductDetailPage';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 import LoginPage from './pages/LoginPage'; // Import the new LoginPage component
 import AuthPage from './pages/AuthPage';
 import AccountPage from './pages/AccountPage';
 import WishlistPage from './pages/WishlistPage';
 import NotFoundPage from './pages/NotFoundPage';
 import debugOrders from './utils/debugOrders';
+import testAdminAuth from './utils/testAdminAuth';
 
 // Add debug function to window
 window.debugOrders = debugOrders;
+window.testAdminAuth = testAdminAuth;
 
 // Component to conditionally render layout
 function AppContent() {
@@ -35,9 +40,27 @@ function AppContent() {
   if (isAdminRoute) {
     return (
       <Routes>
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/admin/dashboard" element={<AdminNotificationDashboard />} />
-        <Route path="/admin/shopify" element={<ShopifyDashboard />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminNotificationDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/shopify" element={
+          <ProtectedRoute requireAdmin={true}>
+            <ShopifyDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/*" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     );
   }
@@ -71,13 +94,15 @@ function AppContent() {
 
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <div className="App">
-          <AppContent />
-        </div>
-      </Router>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <div className="App">
+            <AppContent />
+          </div>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

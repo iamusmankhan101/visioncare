@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FiHome, FiShoppingBag, FiUsers, FiBarChart2, FiSettings, FiTrendingUp, FiDollarSign, FiPackage, FiSearch, FiChevronDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiEye, FiMenu, FiX, FiChevronDown, FiChevronLeft, FiChevronRight, FiMoon, FiBarChart2 } from 'react-icons/fi';
 import { addProduct, updateProduct, deleteProduct, resetFilters, createProductAsync, updateProductAsync, deleteProductAsync, fetchProducts } from '../redux/slices/productSlice';
 import OrderManagement from '../components/admin/OrderManagement';
+import AdminHeader from '../components/admin/AdminHeader';
 import { getAllOrders, getOrderStats } from '../services/orderService';
 
 // Modern Dashboard Styled Components
@@ -17,13 +18,19 @@ const DashboardContainer = styled.div`
 
 const Sidebar = styled.div`
   width: 280px;
-  background: white;
+  background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
   border-right: 1px solid #e2e8f0;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
   position: fixed;
   height: 100vh;
-  overflow-y: auto;
   z-index: 100;
+  transition: transform 0.3s ease;
+  
+  @media (max-width: 768px) {
+    transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-100%)'};
+    box-shadow: ${props => props.isOpen ? '0 0 20px rgba(0, 0, 0, 0.3)' : 'none'};
+  }
 `;
 
 const SidebarHeader = styled.div`
@@ -38,6 +45,7 @@ const Logo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  filter:invert(1);
 `;
 
 const LogoImage = styled.img`
@@ -55,29 +63,83 @@ const NavItem = styled.div`
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
-  color: ${props => props.active ? '#3b82f6' : '#64748b'};
-  background: ${props => props.active ? '#eff6ff' : 'transparent'};
-  border-right: ${props => props.active ? '3px solid #3b82f6' : '3px solid transparent'};
+  color: ${props => props.active ? '#ffffff' : '#ffffff'};
+  background: ${props => props.active ? 'rgba(255, 255, 255, 0.2)' : 'transparent'};
+  border-right: ${props => props.active ? '3px solid #ffffff' : 'none'};
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   font-weight: ${props => props.active ? '600' : '500'};
+  border-radius: 8px;
+  margin: 0 0.5rem;
   
   &:hover {
-    background: #f8fafc;
-    color: #3b82f6;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
+    transform: translateY(-1px);
   }
   
   svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+    color: #ffffff;
+  }
+`;
+
+const LogoutButton = styled.button`
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(53, 114, 239, 0.3);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  
+  &:hover {
+    background: linear-gradient(135deg, #2AA8E8 0%, #2461DE 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(53, 114, 239, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    color: #ffffff;
+    pointer-events: none;
   }
 `;
 
 const MainContent = styled.div`
-  flex: 1;
   margin-left: 280px;
-  padding: 2rem;
+  flex: 1;
+  background: #f8fafc;
   min-height: 100vh;
+  transition: margin-left 0.3s ease;
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
+    
+    
+  }
 `;
 
 const DashboardHeader = styled.div`
@@ -85,50 +147,416 @@ const DashboardHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  padding: 0 1rem;
+  background: white;
+  border-radius: 16px;
+  height: 70px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.5rem;
+    height: 60px;
+    margin: 0 1rem 2rem 0;
+  }
 `;
 
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0;
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  flex: 1;
+`;
+
+const MobileMenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #3ABEF9;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f1f5f9;
+  }
+  
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
+const MobileOverlay = styled.div`
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  
+  @media (max-width: 768px) {
+    display: ${props => props.isOpen ? 'block' : 'none'};
+  }
 `;
 
 const SearchContainer = styled.div`
   position: relative;
-  width: 300px;
+  width: 400px;
+  margin-left: 2rem;
+  
+  @media (max-width: 768px) {
+    width: auto;
+    flex: 1;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: white;
+  padding: 12px 16px 12px 44px;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  background: #f8fafc;
+  color: #64748b;
+  transition: all 0.2s;
   
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    background: #ffffff;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #94a3b8;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px 8px 36px;
+    font-size: 14px;
+    border-radius: 20px;
   }
 `;
 
 const SearchIcon = styled(FiSearch)`
   position: absolute;
-  left: 0.75rem;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
+  color: #94a3b8;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  
+  @media (max-width: 768px) {
+    left: 12px;
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const HeaderIconButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+  
+  &:hover {
+    background: #f1f5f9;
+    color: #475569;
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    background: #e2e8f0;
+  }
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+  }
+`;
+
+const ProfileButton = styled.button`
+  background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(58, 190, 249, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 14px 20px;
+    font-size: 16px;
+    width: 100%;
+  }
+`;
+
+const NotificationDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0;
+  z-index: 1000;
+  margin-top: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    border-right: none;
+    transform: rotate(45deg);
+  }
+`;
+
+const NotificationHeader = styled.div`
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const NotificationTitle = styled.h3`
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+`;
+
+const NotificationBadge = styled.span`
+  background: #ef4444;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+`;
+
+const NotificationList = styled.div`
+  max-height: 300px;
+  overflow-y: auto;
+`;
+
+const NotificationItem = styled.div`
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f8fafc;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  
+  &:hover {
+    background: #f8fafc;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const NotificationContent = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+`;
+
+const NotificationIcon = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${props => props.type === 'order' ? '#dbeafe' : props.type === 'user' ? '#dcfce7' : '#fef3c7'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    color: ${props => props.type === 'order' ? '#3b82f6' : props.type === 'user' ? '#22c55e' : '#f59e0b'};
+  }
+`;
+
+const NotificationText = styled.div`
+  flex: 1;
+`;
+
+const NotificationMessage = styled.p`
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.4;
+`;
+
+const NotificationTime = styled.span`
+  font-size: 0.75rem;
   color: #9ca3af;
-  width: 16px;
-  height: 16px;
+`;
+
+const ProfileDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 240px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0;
+  z-index: 1000;
+  margin-top: 8px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    border-right: none;
+    transform: rotate(45deg);
+  }
+`;
+
+const ProfileHeader = styled.div`
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+`;
+
+const ProfileName = styled.h4`
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a202c;
+`;
+
+const ProfileEmail = styled.p`
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+`;
+
+const ProfileMenu = styled.div`
+  padding: 0.5rem 0;
+`;
+
+const ProfileMenuItem = styled.button`
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #374151;
+  
+  &:hover {
+    background: #f8fafc;
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+  }
+`;
+
+const DropdownContainer = styled.div`
+  position: relative;
+`;
+
+const WelcomeSection = styled.div`
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    text-align: center;
+    padding: 0 0.5rem;
+  }
+`;
+
+const WelcomeTitle = styled.h1`
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 0.5rem 0;
+`;
+
+const WelcomeSubtitle = styled.p`
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+  font-weight: 400;
 `;
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const StatCard = styled.div`
@@ -138,6 +566,20 @@ const StatCard = styled.div`
   border: 1px solid #e2e8f0;
   position: relative;
   overflow: hidden;
+  text-align:left;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    max-width: 100%;
+    text-align:left;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    margin: 0 auto;
+    width: 85%;
+    text-align:left;
+  }
 `;
 
 const StatHeader = styled.div`
@@ -192,6 +634,10 @@ const ContentGrid = styled.div`
   grid-template-columns: 2fr 1fr;
   gap: 2rem;
   
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
   @media (max-width: 1200px) {
     grid-template-columns: 1fr;
   }
@@ -510,9 +956,14 @@ const GridLine = styled.div`
 `;
 
 const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  gap: 1.5rem;
+  max-width: 800px;
+  
+  @media (max-width: 768px) {
+    gap: 1rem;
+    max-width: 100%;
+  }
 `;
 
 const FormGroup = styled.div`
@@ -527,14 +978,20 @@ const Label = styled.label`
 `;
 
 const Input = styled.input`
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
   
   &:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: #3ABEF9;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 `;
 
@@ -568,8 +1025,14 @@ const ContentArea = styled.div`
   flex-grow: 1;
   background-color: white;
   border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin: 0 1rem 2rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 0 0.5rem 1rem 0.5rem;
+  }
 `;
 
 const CheckboxContainer = styled.div`
@@ -810,6 +1273,10 @@ const AdminPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [productData, setProductData] = useState({
     name: '',
     price: '',
@@ -1059,6 +1526,22 @@ const AdminPage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Click outside handler to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close dropdowns when clicking outside
+      if (!event.target.closest('.dropdown-container')) {
+        setShowNotifications(false);
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // Load real orders for chart
   const loadRealOrders = async () => {
     try {
@@ -1109,6 +1592,90 @@ const AdminPage = () => {
   const [chartUpdateTrigger, setChartUpdateTrigger] = useState(0);
   const [chartDateOffset, setChartDateOffset] = useState(0); // 0 = today, -1 = yesterday, etc.
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, content: '' });
+
+  // Sample notifications data
+  const [notifications] = useState([
+    {
+      id: 1,
+      type: 'order',
+      message: 'New order #1234 received from John Doe',
+      time: '2 minutes ago',
+      unread: true
+    },
+    {
+      id: 2,
+      type: 'user',
+      message: 'New customer Sarah Wilson registered',
+      time: '15 minutes ago',
+      unread: true
+    },
+    {
+      id: 3,
+      type: 'order',
+      message: 'Order #1233 has been delivered',
+      time: '1 hour ago',
+      unread: false
+    },
+    {
+      id: 4,
+      type: 'system',
+      message: 'Low stock alert: Ray-Ban Aviator',
+      time: '2 hours ago',
+      unread: true
+    },
+    {
+      id: 5,
+      type: 'order',
+      message: 'Payment received for order #1232',
+      time: '3 hours ago',
+      unread: false
+    }
+  ]);
+
+  const unreadNotifications = notifications.filter(n => n.unread).length;
+
+  // Header button handlers
+  const handleNotificationClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Notification clicked!');
+    setShowNotifications(!showNotifications);
+    setShowProfileMenu(false);
+  };
+
+  const handleSettingsClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Settings clicked!');
+    // Navigate to settings or show settings modal
+  };
+
+  const handleDarkModeToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Dark mode toggled!', !isDarkMode);
+    setIsDarkMode(!isDarkMode);
+    // Apply dark mode logic here
+  };
+
+  const handleProfileClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Profile clicked!');
+    setShowProfileMenu(!showProfileMenu);
+    setShowNotifications(false);
+  };
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Logout clicked!');
+    // Clear any auth tokens or user data
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    // Navigate to admin login page
+    navigate('/admin/login');
+  };
 
   // Generate chart data based on date range
   const chartData = useMemo(() => {
@@ -1489,10 +2056,14 @@ const AdminPage = () => {
   
   return (
     <DashboardContainer>
-      <Sidebar>
+      <MobileOverlay 
+        isOpen={isMobileMenuOpen} 
+        onClick={() => setIsMobileMenuOpen(false)} 
+      />
+      <Sidebar isOpen={isMobileMenuOpen}>
         <SidebarHeader>
           <Logo>
-            <LogoImage src="/images/logo2.png" alt="Eyewearr Logo" />
+            <LogoImage src="/images/logo2.png" alt="Vision Care Logo" />
           
           </Logo>
         </SidebarHeader>
@@ -1562,49 +2133,83 @@ const AdminPage = () => {
         {activeTab === 'dashboard' && (
           <>
             <DashboardHeader>
-              <PageTitle>Dashboard</PageTitle>
-              <SearchContainer>
-                <SearchIcon />
-                <SearchInput placeholder="Search something" />
-              </SearchContainer>
+              <HeaderLeft>
+                <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                  {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+                </MobileMenuButton>
+                <SearchContainer>
+                  <SearchIcon />
+                  <SearchInput placeholder="Search" />
+                </SearchContainer>
+              </HeaderLeft>
+              <HeaderRight>
+                <AdminHeader 
+                  showNotifications={showNotifications}
+                  setShowNotifications={setShowNotifications}
+                  showProfileMenu={showProfileMenu}
+                  setShowProfileMenu={setShowProfileMenu}
+                  notifications={notifications}
+                  unreadNotifications={unreadNotifications}
+                  handleLogout={handleLogout}
+                  setActiveTab={setActiveTab}
+                />
+              </HeaderRight>
             </DashboardHeader>
             
+            <WelcomeSection>
+              <WelcomeTitle>Welcome Back, Usman Khan!</WelcomeTitle>
+              <WelcomeSubtitle>Here's what happening with your store today</WelcomeSubtitle>
+            </WelcomeSection>
+            
             <StatsGrid>
-              <StatCard>
-                <StatHeader>
-                  <StatTitle>Total Orders</StatTitle>
-                  <StatIcon><FiTrendingUp /></StatIcon>
-                </StatHeader>
-                <StatValue>{orderStats.totalOrders.toLocaleString()}</StatValue>
-                <StatChange positive>
-                  ↗ {orderStats.pendingOrders} Pending
-                </StatChange>
-                <StatChart color="#3b82f6" />
-              </StatCard>
-              
-              <StatCard>
+              <StatCard style={{ background: 'linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%)' }}>
                 <StatHeader>
                   <StatTitle>Total Revenue</StatTitle>
-                  <StatIcon><FiDollarSign /></StatIcon>
                 </StatHeader>
-                <StatValue>{formatPKR(orderStats.totalRevenue)}</StatValue>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                  {formatPKR(orderStats.totalRevenue)}
+                </StatValue>
                 <StatChange positive>
-                  ↗ {orderStats.deliveredOrders} Delivered
+                  ↗ {orderStats.totalRevenue > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>({orderStats.deliveredOrders} delivered)</span>
                 </StatChange>
-                <StatChart color="#f59e0b" />
               </StatCard>
               
-              <StatCard>
+              <StatCard style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)' }}>
                 <StatHeader>
-                  <StatTitle>Products Available</StatTitle>
-                  <StatIcon><FiShoppingBag /></StatIcon>
+                  <StatTitle>New Customers</StatTitle>
                 </StatHeader>
-                <StatValue>{stats.totalProducts.toLocaleString()}</StatValue>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                  {orderStats.totalOrders - orderStats.pendingOrders}
+                </StatValue>
                 <StatChange positive>
-                  ↗ {stats.featuredProducts} Featured
+                  ↗ {orderStats.totalOrders > 0 ? (((orderStats.totalOrders - orderStats.pendingOrders) / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>({orderStats.totalOrders - orderStats.pendingOrders} completed)</span>
                 </StatChange>
-                <StatChart color="#ef4444" />
               </StatCard>
+              
+              <StatCard style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #bae6fd 100%)' }}>
+                <StatHeader>
+                  <StatTitle>Total Orders</StatTitle>
+                </StatHeader>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                  {orderStats.totalOrders.toLocaleString()}
+                </StatValue>
+                <StatChange positive>
+                  ↗ {orderStats.pendingOrders} <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>pending orders</span>
+                </StatChange>
+              </StatCard>
+              
+              <StatCard style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)' }}>
+                <StatHeader>
+                  <StatTitle>Average Order Value</StatTitle>
+                </StatHeader>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                  {formatPKR(Math.round(orderStats.totalRevenue / Math.max(orderStats.totalOrders, 1)))}
+                </StatValue>
+                <StatChange positive>
+                  ↗ {orderStats.totalOrders > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>delivery rate</span>
+                </StatChange>
+              </StatCard>
+              
             </StatsGrid>
             
             <ContentGrid>
@@ -1866,19 +2471,27 @@ const AdminPage = () => {
         {activeTab !== 'dashboard' && (
           <>
             <DashboardHeader>
-              <PageTitle>
-                {activeTab === 'add-product' && 'Add New Product'}
-                {activeTab === 'manage-products' && 'Manage Products'}
-                {activeTab === 'eyewear-products' && 'Eyewear Products'}
-                {activeTab === 'lens-products' && 'Lens Products'}
-                {activeTab === 'orders' && 'Order Management'}
-                {activeTab === 'customers' && 'Customer Management'}
-                {activeTab === 'reviews' && 'Review Management'}
-              </PageTitle>
-              <SearchContainer>
-                <SearchIcon />
-                <SearchInput placeholder="Search..." />
-              </SearchContainer>
+              <HeaderLeft>
+                <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                  {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+                </MobileMenuButton>
+                <SearchContainer>
+                  <SearchIcon />
+                  <SearchInput placeholder="Search" />
+                </SearchContainer>
+              </HeaderLeft>
+              <HeaderRight>
+                <AdminHeader 
+                  showNotifications={showNotifications}
+                  setShowNotifications={setShowNotifications}
+                  showProfileMenu={showProfileMenu}
+                  setShowProfileMenu={setShowProfileMenu}
+                  notifications={notifications}
+                  unreadNotifications={unreadNotifications}
+                  handleLogout={handleLogout}
+                  setActiveTab={setActiveTab}
+                />
+              </HeaderRight>
             </DashboardHeader>
             <ContentArea>
               {activeTab === 'add-product' && (
@@ -3201,6 +3814,11 @@ const AdminPage = () => {
           </>
         )}
       </MainContent>
+      
+      <LogoutButton onClick={handleLogout}>
+        <FiLogOut />
+        Logout
+      </LogoutButton>
     </DashboardContainer>
   );
 };

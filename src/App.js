@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import React from 'react';
 import Header from './components/layout/Header';
@@ -27,35 +27,54 @@ import debugOrders from './utils/debugOrders';
 // Add debug function to window
 window.debugOrders = debugOrders;
 
+// Component to conditionally render layout
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  if (isAdminRoute) {
+    return (
+      <Routes>
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/dashboard" element={<AdminNotificationDashboard />} />
+        <Route path="/admin/shopify" element={<ShopifyDashboard />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <>
+      <Header />
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductListingPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/lenses" element={<LensesPage />} />
+          <Route path="/lenses/:id" element={<LensProductDetailPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
+      <Footer />
+      <ScrollToTopButton />
+    </>
+  );
+}
+
 function App() {
   return (
     <CartProvider>
       <Router>
         <div className="App">
-          <Header />
-          <main>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/products" element={<ProductListingPage />} />
-              <Route path="/products/:id" element={<ProductDetailPage />} />
-              <Route path="/lenses" element={<LensesPage />} />
-              <Route path="/lenses/:id" element={<LensProductDetailPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/account" element={<AccountPage />} />
-              <Route path="/wishlist" element={<WishlistPage />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/admin/dashboard" element={<AdminNotificationDashboard />} />
-              <Route path="/admin/shopify" element={<ShopifyDashboard />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
-          <Footer />
-          <ScrollToTopButton />
+          <AppContent />
         </div>
       </Router>
     </CartProvider>

@@ -85,7 +85,7 @@ const OrdersTable = styled.div`
 
 const TableHeader = styled.div`
   display: grid;
-  grid-template-columns: 120px 1fr 150px 120px 100px 120px 150px;
+  grid-template-columns: 120px 1fr 150px 120px 200px 120px 150px;
   background: #f8f9fa;
   padding: 1rem;
   font-weight: 600;
@@ -99,7 +99,7 @@ const TableHeader = styled.div`
 
 const OrderRow = styled.div`
   display: grid;
-  grid-template-columns: 120px 1fr 150px 120px 100px 120px 150px;
+  grid-template-columns: 120px 1fr 150px 120px 200px 120px 150px;
   padding: 1rem;
   border-bottom: 1px solid #eee;
   align-items: center;
@@ -464,7 +464,7 @@ const OrderManagement = () => {
             <div>Customer</div>
             <div>Date</div>
             <div>Total</div>
-            <div>Items</div>
+            <div>Items Ordered</div>
             <div>Status</div>
             <div>Actions</div>
           </TableHeader>
@@ -486,7 +486,15 @@ const OrderManagement = () => {
               
               <div>{formatCurrency(order.total)}</div>
               
-              <div>{order.items?.length || 0}</div>
+              <div>
+                {order.items?.map((item, index) => (
+                  <div key={index} style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                    <strong>{item.name}</strong> x{item.quantity || 1}
+                    {item.selectedColor && <span style={{ color: '#666' }}> - {item.selectedColor}</span>}
+                    {item.selectedSize && <span style={{ color: '#666' }}> - {item.selectedSize}</span>}
+                  </div>
+                )) || 'No items'}
+              </div>
               
               <div>
                 <StatusSelect
@@ -539,9 +547,15 @@ const OrderManagement = () => {
 
               <DetailSection>
                 <SectionTitle>Shipping Address</SectionTitle>
-                <div>{selectedOrder.shippingAddress.address}</div>
-                <div>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}</div>
-                <div>{selectedOrder.shippingAddress.country}</div>
+                {selectedOrder.shippingAddress ? (
+                  <>
+                    <div>{selectedOrder.shippingAddress.address}</div>
+                    <div>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}</div>
+                    <div>{selectedOrder.shippingAddress.country}</div>
+                  </>
+                ) : (
+                  <div>No shipping address provided</div>
+                )}
               </DetailSection>
 
               <DetailSection>

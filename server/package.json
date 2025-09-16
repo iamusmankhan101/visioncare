@@ -5,11 +5,14 @@
   "main": "reviewServer.js",
   "scripts": {
     "start": "node reviewServer.js",
+    "admin": "node adminServer.js",
     "whatsapp": "node whatsappServer.js",
     "notifications": "node notificationServer.js",
     "dev": "nodemon reviewServer.js",
+    "dev:admin": "nodemon adminServer.js",
     "dev:notifications": "nodemon notificationServer.js",
     "dev:whatsapp": "nodemon whatsappServer.js",
+    "migrate": "node migrateProducts.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

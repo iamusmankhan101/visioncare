@@ -13,6 +13,7 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ContactPage from './pages/ContactPage';
 import AdminPage from './pages/AdminPage';
 import AdminNotificationDashboard from './components/admin/AdminNotificationDashboard';
+import ShopifyDashboard from './components/admin/ShopifyDashboard';
 import LensesPage from './pages/LensesPage';
 import LensProductDetailPage from './pages/LensProductDetailPage';
 import { CartProvider } from './context/CartContext';
@@ -47,6 +48,7 @@ function App() {
               <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/admin/dashboard" element={<AdminNotificationDashboard />} />
+              <Route path="/admin/shopify" element={<ShopifyDashboard />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="*" element={<NotFoundPage />} />

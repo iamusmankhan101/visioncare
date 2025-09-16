@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { addToCart } from '../redux/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
+import { fetchProducts } from '../redux/slices/productSlice';
 import formatPrice from '../utils/formatPrice';
 import { FiHeart, FiUpload, FiX } from 'react-icons/fi';
 
@@ -816,11 +817,21 @@ const LensProductDetailPage = () => {
   const [reviewPhotos, setReviewPhotos] = useState([]);
   
   const wishlistItems = useSelector(state => state.wishlist.items);
-  
+  const { items: products, status: loading, error } = useSelector(state => state.products);
 
-  // Mock lens product data - in real app, this would come from Redux store
-  const lensProduct = {
-    id: 1,
+  // Fetch products when component mounts
+  useEffect(() => {
+    if (!products || products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products]);
+
+  // Find the lens product by ID from Redux store
+  const lensProduct = products?.find(product => product.id === parseInt(id));
+
+  // Fallback mock data if product not found
+  const fallbackProduct = {
+    id: parseInt(id) || 1,
     name: 'FreshKon Mosaic',
     price: 4500,
     images: [
@@ -840,6 +851,9 @@ const LensProductDetailPage = () => {
       dia: '14.2'
     }
   };
+
+  // Use actual product data or fallback
+  const currentProduct = lensProduct || fallbackProduct;
   
   const powerOptions = [
     '0.00-plain', '-0.25', '-0.50', '-0.75', '-1.00', '-1.25', '-1.50', '-1.75', '-2.00',
@@ -860,10 +874,10 @@ const LensProductDetailPage = () => {
 
   const handleConfirmPurchase = () => {
     const cartItem = {
-      id: lensProduct.id,
-      name: lensProduct.name,
-      price: lensProduct.price,
-      image: lensProduct.images[0],
+      id: currentProduct.id,
+      name: currentProduct.name,
+      price: currentProduct.price,
+      image: currentProduct.images?.[0] || currentProduct.image,
       quantity: 1,
       selectedColor,
       rightEyePower,
@@ -882,20 +896,20 @@ const LensProductDetailPage = () => {
   
   // Check if product is in wishlist on component mount
   useEffect(() => {
-    const productInWishlist = wishlistItems.find(item => item.id === lensProduct.id);
+    const productInWishlist = wishlistItems.find(item => item.id === currentProduct.id);
     setIsInWishlist(!!productInWishlist);
-  }, [wishlistItems, lensProduct.id]);
+  }, [wishlistItems, currentProduct.id]);
 
   const handleAddToWishlist = () => {
     if (isInWishlist) {
-      dispatch(removeFromWishlist(lensProduct.id));
+      dispatch(removeFromWishlist(currentProduct.id));
       setIsInWishlist(false);
     } else {
       dispatch(addToWishlist({
-        id: lensProduct.id,
-        name: lensProduct.name,
-        price: lensProduct.price,
-        image: lensProduct.images[0]
+        id: currentProduct.id,
+        name: currentProduct.name,
+        price: currentProduct.price,
+        image: currentProduct.images?.[0] || currentProduct.image
       }));
       setIsInWishlist(true);
     }
@@ -954,7 +968,7 @@ const LensProductDetailPage = () => {
     
     try {
       const reviewData = {
-        productId: lensProduct.id,
+        productId: currentProduct.id,
         name: reviewUsername || 'Anonymous',
         email: reviewEmail,
         rating: reviewRating,
@@ -996,8 +1010,8 @@ const LensProductDetailPage = () => {
         <ImageSection>
           <MainImageContainer>
             <MainImage 
-              src={lensProduct.images[selectedImage]} 
-              alt={lensProduct.name}
+              src={currentProduct.images?.[selectedImage] || currentProduct.image} 
+              alt={currentProduct.name}
               onError={(e) => {
                 e.target.src = '/images/default-lens.jpg';
               }}
@@ -1005,7 +1019,7 @@ const LensProductDetailPage = () => {
           </MainImageContainer>
           
           <ThumbnailContainer>
-            {lensProduct.images.map((image, index) => (
+            {(currentProduct.images || [currentProduct.image]).map((image, index) => (
               <Thumbnail 
                 key={index}
                 active={selectedImage === index}
@@ -1013,7 +1027,7 @@ const LensProductDetailPage = () => {
               >
                 <img 
                   src={image} 
-                  alt={`${lensProduct.name} ${index + 1}`}
+                  alt={`${currentProduct.name} ${index + 1}`}
                   onError={(e) => {
                     e.target.src = '/images/default-lens.jpg';
                   }}
@@ -1024,11 +1038,11 @@ const LensProductDetailPage = () => {
         </ImageSection>
         
         <ProductDetails>
-          <ProductTitle>{lensProduct.name}</ProductTitle>
+          <ProductTitle>{currentProduct.name}</ProductTitle>
           
           <PriceSection>
             <PriceLabel>Price includes</PriceLabel>
-            <Price>{formatPrice(lensProduct.price)}</Price>
+            <Price>{formatPrice(currentProduct.price)}</Price>
           </PriceSection>
           
           <OptionSection>
@@ -1038,7 +1052,7 @@ const LensProductDetailPage = () => {
               onChange={(e) => setSelectedColor(e.target.value)}
             >
               <option value="">--</option>
-              {lensProduct.colors.map(color => (
+              {(currentProduct.colors || fallbackProduct.colors).map(color => (
                 <option key={color.value} value={color.value}>
                   {color.name}
                 </option>
@@ -1143,11 +1157,11 @@ const LensProductDetailPage = () => {
               <ReviewTitle>Product Details</ReviewTitle>
               <ReviewItem>
                 <ReviewLabel>Product:</ReviewLabel>
-                <ReviewValue>{lensProduct.name}</ReviewValue>
+                <ReviewValue>{currentProduct.name}</ReviewValue>
               </ReviewItem>
               <ReviewItem>
                 <ReviewLabel>Price:</ReviewLabel>
-                <ReviewValue>{formatPrice(lensProduct.price)}</ReviewValue>
+                <ReviewValue>{formatPrice(currentProduct.price)}</ReviewValue>
               </ReviewItem>
               <ReviewItem>
                 <ReviewLabel>Color:</ReviewLabel>
@@ -1179,7 +1193,7 @@ const LensProductDetailPage = () => {
               </ReviewItem>
               <ReviewItem>
                 <ReviewLabel>Total:</ReviewLabel>
-                <ReviewValue>{formatPrice(lensProduct.price)}</ReviewValue>
+                <ReviewValue>{formatPrice(currentProduct.price)}</ReviewValue>
               </ReviewItem>
             </ReviewSection>
 
@@ -1208,14 +1222,14 @@ const LensProductDetailPage = () => {
 
             <ProductPreview>
               <ProductPreviewImage 
-                src={lensProduct.images[0]} 
-                alt={lensProduct.name}
+                src={currentProduct.images?.[0] || currentProduct.image} 
+                alt={currentProduct.name}
                 onError={(e) => {
                   e.target.src = '/images/default-lens.jpg';
                 }}
               />
               <ProductPreviewInfo>
-                <ProductPreviewName>{lensProduct.name}</ProductPreviewName>
+                <ProductPreviewName>{currentProduct.name}</ProductPreviewName>
               </ProductPreviewInfo>
             </ProductPreview>
 

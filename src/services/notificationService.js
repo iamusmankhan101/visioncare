@@ -151,18 +151,7 @@ class NotificationService {
         icon: '/favicon.ico',
         badge: '/favicon.ico',
         tag: 'order-notification',
-        requireInteraction: true,
-        actions: [
-          {
-            action: 'view',
-            title: 'View Order'
-          },
-          {
-            action: 'dismiss',
-            title: 'Dismiss'
-          }
-        ],
-        data: data
+        requireInteraction: true
       });
 
       notification.onclick = () => {
@@ -232,7 +221,16 @@ class NotificationService {
 
   // Send test notification
   async sendTestNotification() {
+    console.log('🧪 Sending test notification...');
+    
+    if (!this.token) {
+      console.error('❌ No notification token available. Please enable notifications first.');
+      alert('❌ Please enable notifications first before sending test notification.');
+      return false;
+    }
+
     try {
+      console.log('📤 Sending request to notification server...');
       const response = await fetch('http://localhost:5002/api/admin/test-notification', {
         method: 'POST',
         headers: {
@@ -243,11 +241,43 @@ class NotificationService {
         })
       });
 
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
-        console.log('Test notification sent');
+        console.log('✅ Test notification sent successfully');
+        
+        // Also show local notification as fallback
+        this.showCustomNotification({
+          title: 'Test Notification',
+          body: 'This is a test notification from your admin dashboard!',
+          data: { type: 'test' }
+        });
+        
+        return true;
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Server error:', response.status, errorText);
+        
+        // Show local notification as fallback
+        this.showCustomNotification({
+          title: 'Test Notification (Local)',
+          body: 'Server unavailable, but notifications are working locally!',
+          data: { type: 'test' }
+        });
+        
+        return false;
       }
     } catch (error) {
-      console.error('Error sending test notification:', error);
+      console.error('❌ Network error sending test notification:', error);
+      
+      // Show local notification as fallback
+      this.showCustomNotification({
+        title: 'Test Notification (Local)',
+        body: 'Network error, but local notifications are working!',
+        data: { type: 'test' }
+      });
+      
+      return false;
     }
   }
 }

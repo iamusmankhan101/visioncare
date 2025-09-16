@@ -24,8 +24,16 @@ const Header = styled.div`
 const Title = styled.h1`
   color: #333;
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 1.7rem;
+
+  @media (max-width: 768px) {
+    
+}
+  @media (max-width: 425px) {
+    font-size: 1.3rem;
+}
 `;
+
 
 const StatusIndicator = styled.div`
   display: flex;
@@ -153,37 +161,34 @@ const AdminNotificationDashboard = () => {
   };
 
   const loadRecentNotifications = () => {
-    // Mock data - replace with actual API call
-    const mockNotifications = [
-      {
-        id: 1,
-        title: 'New Order #1234',
-        message: 'John Doe placed an order for Ray-Ban Aviators',
-        time: new Date().toLocaleTimeString(),
-        type: 'order'
-      },
-      {
-        id: 2,
-        title: 'Payment Received',
-        message: 'Payment of $299.99 received for Order #1233',
-        time: new Date(Date.now() - 300000).toLocaleTimeString(),
-        type: 'payment'
-      }
-    ];
-    setRecentNotifications(mockNotifications);
+    // No mock data - will show real notifications when they arrive
+    setRecentNotifications([]);
   };
 
   const loadStats = () => {
-    // Mock data - replace with actual API call
+    // Real stats - will be updated when orders are placed
     setStats({
-      todayOrders: 12,
-      pendingOrders: 5,
-      totalRevenue: 2499.99
+      todayOrders: 0,
+      pendingOrders: 0,
+      totalRevenue: 0
     });
   };
 
   const handleTestNotification = async () => {
-    await notificationService.sendTestNotification();
+    console.log('🧪 Test Notification button clicked');
+    try {
+      const result = await notificationService.sendTestNotification();
+      console.log('Test notification result:', result);
+      
+      if (result) {
+        alert('✅ Test notification sent successfully!');
+      } else {
+        alert('❌ Failed to send test notification. Check console for details.');
+      }
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      alert('❌ Error sending test notification: ' + error.message);
+    }
   };
 
   const handleEnableNotifications = async () => {
@@ -250,7 +255,7 @@ Or go to browser Settings → Site Settings → Notifications and allow localhos
   return (
     <DashboardContainer>
       <Header>
-        <Title>Admin Notification Dashboard</Title>
+        <Title>Order Dashboard</Title>
         <StatusIndicator active={isNotificationEnabled}>
           <StatusDot active={isNotificationEnabled} />
           {isNotificationEnabled ? 'Notifications Active' : 'Notifications Disabled'}
@@ -281,7 +286,7 @@ Or go to browser Settings → Site Settings → Notifications and allow localhos
           <div style={{ display: 'grid', gap: '0.5rem' }}>
             <div>New Orders: <strong>{stats.todayOrders}</strong></div>
             <div>Pending Orders: <strong>{stats.pendingOrders}</strong></div>
-            <div>Revenue: <strong>${stats.totalRevenue}</strong></div>
+            <div>Revenue: <strong>PKR {stats.totalRevenue.toLocaleString()}</strong></div>
           </div>
         </ControlCard>
 

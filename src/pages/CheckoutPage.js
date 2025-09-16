@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { sendOrderConfirmationEmail } from '../services/emailService';
 import { saveOrder } from '../services/orderService';
+import { sendOrderWhatsAppNotification } from '../services/whatsappService';
 import formatPrice from '../utils/formatPrice';
 
 const Container = styled.div`
@@ -360,7 +361,19 @@ const CheckoutPage = () => {
 
     try {
       await saveOrder(orderData);
+      
+      // Send email confirmation to customer
       await sendOrderConfirmationEmail(orderData);
+      
+      // Send WhatsApp notification to business owner for order dispatch
+      const whatsappResult = await sendOrderWhatsAppNotification(orderData);
+      if (whatsappResult.success) {
+        console.log('WhatsApp notification sent successfully');
+      } else {
+        console.warn('WhatsApp notification failed:', whatsappResult.error);
+        // Don't block the order process if WhatsApp fails
+      }
+      
       navigate('/order-confirmation', { state: { orderData } });
     } catch (error) {
       console.error('Order processing error:', error);

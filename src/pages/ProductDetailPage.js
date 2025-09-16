@@ -443,6 +443,8 @@ const RateButton = styled.button`
   }
 `;
 
+
+
 const ReviewsList = styled.div`
   display: flex;
   flex-direction: column;
@@ -932,6 +934,7 @@ const ModalTitle = styled.h2`
   font-weight: 600;
   color: #333;
   margin: 0;
+  padding-bottom: 1rem;
 `;
 
 const CloseButton = styled.button`
@@ -1086,7 +1089,7 @@ const ProductDetailPage = () => {
   const [showPrescriptionMethod, setShowPrescriptionMethod] = useState(false);
   const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
   const [selectedUsage, setSelectedUsage] = useState('');
-  const [selectedLensTypeOption, setSelectedLensTypeOption] = useState('');
+  const [selectedLensTypeOption, setSelectedLensTypeOption] = useState('progressive');
   const [selectedPrescriptionMethod, setSelectedPrescriptionMethod] = useState('');
   const [showTwoPDNumbers, setShowTwoPDNumbers] = useState(false);
   const [showLensColorSelection, setShowLensColorSelection] = useState(false);
@@ -1418,38 +1421,13 @@ const ProductDetailPage = () => {
   // Lens type options for step 2 - Progressive and Bifocal options
   const lensTypeOptions = [
     {
-      id: 'kodak-intromax',
-      name: 'KODAK IntroMax Lenses',
-      price: 189,
-      description: 'Premium KODAK progressive Lenses with advanced technology for sharper vision, wider viewing, and reduced distortion for ultimate comfort.',
-      badge: 'Top pick',
-      brand: 'KODAK'
-    },
-    {
-      id: 'kodak-introplus',
-      name: 'KODAK IntroPlus Lenses',
-      price: 149,
-      description: 'High-quality KODAK Lenses featuring advanced technology for smooth, clear vision and easy adaptation.',
-      badge: 'New',
-      brand: 'KODAK'
-    },
-    {
-      id: 'premium-progressive',
-      name: 'Premium Progressive',
-      price: 89,
-      description: 'Perfect balance of price and performance, offering smooth, seamless vision across all distances.'
-    },
-    {
       id: 'progressive',
       name: 'Progressive',
-      price: 49,
-      description: 'Standard everyday lenses with clear vision for near, intermediate, and distance needs.',
-      selected: true
+      description: 'Standard everyday lenses with clear vision for near, intermediate, and distance needs.'
     },
     {
       id: 'bifocal',
       name: 'Bifocal',
-      price: 29,
       description: 'Classic lenses with a visible line, providing separate areas for reading and distance vision.'
     }
   ];
@@ -2066,7 +2044,20 @@ const ProductDetailPage = () => {
                   <LensOption
                     key={option.id}
                     selected={selectedUsage === option.id}
-                    onClick={() => setSelectedUsage(option.id)}
+                    onClick={() => {
+                      setSelectedUsage(option.id);
+                      // Auto-advance logic based on selection
+                      setTimeout(() => {
+                        setShowUsageSelection(false);
+                        if (option.id === 'bifocal-progressive') {
+                          // For bifocal & progressive, show lens type selection
+                          setShowLensTypeSelection(true);
+                        } else {
+                          // For other options, go directly to prescription method
+                          setShowPrescriptionMethod(true);
+                        }
+                      }, 300);
+                    }}
                     style={{ 
                       padding: '1.5rem',
                       border: selectedUsage === option.id ? '2px solid #48b2ee' : '1px solid #e0e0e0',
@@ -2098,18 +2089,7 @@ const ProductDetailPage = () => {
                 ))}
               </LensOptionsGrid>
               
-              <ModalActions>
-                <ModalButton onClick={closeAllModals}>
-                  Cancel
-                </ModalButton>
-                <ModalButton 
-                  primary 
-                  onClick={handleContinueToLensType}
-                  disabled={!selectedUsage}
-                >
-                  Continue
-                </ModalButton>
-              </ModalActions>
+              {/* Continue buttons removed - auto-advance on selection */}
             </ModalRightSection>
           </ModalContent>
         </ModalOverlay>
@@ -2133,24 +2113,48 @@ const ProductDetailPage = () => {
             <ModalRightSection>
               <ModalHeader>
                 <div>
-                  <span style={{ color: '#48b2ee', fontSize: '0.9rem', marginRight: '0.5rem' }}>
-                    ← Back to {product?.name || 'Vinyl'}
-                  </span>
+                  <button
+                    style={{ 
+                      background: 'none',
+                      border: 'none',
+                      color: '#48b2ee', 
+                      fontSize: '0.9rem', 
+                      marginRight: '0.5rem',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      padding: '0.5rem',
+                      borderRadius: '4px'
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Back button clicked');
+                      setShowLensTypeSelection(false);
+                      setShowUsageSelection(true);
+                    }}
+                  >
+                    ← Back to Usage Selection
+                  </button>
                 </div>
                 <CloseButton onClick={closeAllModals}>×</CloseButton>
               </ModalHeader>
               
               <ModalTitle style={{ marginBottom: '0.5rem' }}>Choose Lens Type</ModalTitle>
-              <p style={{ color: '#48b2ee', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                ⓘ Learn about different lens types
-              </p>
+              
               
               <LensOptionsGrid>
                 {lensTypeOptions.map((option) => (
                   <LensOption
                     key={option.id}
-                    selected={selectedLensTypeOption === option.id || option.selected}
-                    onClick={() => setSelectedLensTypeOption(option.id)}
+                    selected={selectedLensTypeOption === option.id}
+                    onClick={() => {
+                      setSelectedLensTypeOption(option.id);
+                      // Auto-advance to prescription method for all options
+                      setTimeout(() => {
+                        setShowLensTypeSelection(false);
+                        setShowPrescriptionMethod(true);
+                      }, 300);
+                    }}
                   >
                     <LensOptionHeader>
                       <div>
@@ -2168,9 +2172,7 @@ const ProductDetailPage = () => {
                           )}
                         </LensOptionName>
                       </div>
-                      <LensOptionPrice free={option.price === 0}>
-                        PKR {option.price}
-                      </LensOptionPrice>
+                      {/* Price removed */}
                     </LensOptionHeader>
                     <LensOptionDescription>
                       {option.description}
@@ -2179,21 +2181,7 @@ const ProductDetailPage = () => {
                 ))}
               </LensOptionsGrid>
               
-              <ModalActions>
-                <ModalButton onClick={() => {
-                  setShowLensTypeSelection(false);
-                  setShowUsageSelection(true);
-                }}>
-                  Back
-                </ModalButton>
-                <ModalButton 
-                  primary 
-                  onClick={handleContinueToPrescriptionMethod}
-                  disabled={!selectedLensTypeOption}
-                >
-                  Continue
-                </ModalButton>
-              </ModalActions>
+              {/* Continue buttons removed - auto-advance on selection */}
             </ModalRightSection>
           </ModalContent>
         </ModalOverlay>
@@ -2245,13 +2233,16 @@ const ProductDetailPage = () => {
                 <LensOption
                   selected={selectedPrescriptionMethod === 'previous'}
                   onClick={() => {
-                    if (!isAuthenticated) {
-                      setShowSignInModal(true);
-                    } else {
-                      setSelectedPrescriptionMethod('previous');
-                      setShowPrescriptionSelector(true);
-                      setShowPrescriptionMethod(false);
-                    }
+                    setSelectedPrescriptionMethod('previous');
+                    // Auto-advance after selection
+                    setTimeout(() => {
+                      if (!isAuthenticated) {
+                        setShowSignInModal(true);
+                      } else {
+                        setShowPrescriptionSelector(true);
+                        setShowPrescriptionMethod(false);
+                      }
+                    }, 300);
                   }}
                   style={{ marginBottom: '1rem' }}
                 >
@@ -2267,8 +2258,11 @@ const ProductDetailPage = () => {
                   selected={selectedPrescriptionMethod === 'manual'}
                   onClick={() => {
                     setSelectedPrescriptionMethod('manual');
-                    setShowPrescriptionMethod(false);
-                    setShowPrescriptionForm(true);
+                    // Auto-advance after selection
+                    setTimeout(() => {
+                      setShowPrescriptionMethod(false);
+                      setShowPrescriptionForm(true);
+                    }, 300);
                   }}
                   style={{ marginBottom: '1rem' }}
                 >
@@ -2285,8 +2279,11 @@ const ProductDetailPage = () => {
                   selected={selectedPrescriptionMethod === 'scan'}
                   onClick={() => {
                     setSelectedPrescriptionMethod('scan');
-                    setShowPrescriptionScan(true);
-                    setShowPrescriptionMethod(false);
+                    // Auto-advance after selection
+                    setTimeout(() => {
+                      setShowPrescriptionScan(true);
+                      setShowPrescriptionMethod(false);
+                    }, 300);
                   }}
                   style={{ marginBottom: '1rem', position: 'relative' }}
                 >
@@ -2310,18 +2307,7 @@ const ProductDetailPage = () => {
                 </LensOption>
               </LensOptionsGrid>
               
-              <ModalActions>
-                <ModalButton onClick={() => {
-                  setShowPrescriptionMethod(false);
-                  if (selectedUsage === 'bifocal-progressive') {
-                    setShowLensTypeSelection(true);
-                  } else {
-                    setShowUsageSelection(true);
-                  }
-                }}>
-                  Back
-                </ModalButton>
-              </ModalActions>
+              {/* Continue buttons removed - auto-advance on selection */}
             </ModalRightSection>
           </ModalContent>
         </ModalOverlay>

@@ -189,19 +189,42 @@ const AdminNotificationDashboard = () => {
   const handleEnableNotifications = async () => {
     console.log('🔔 Enable Notifications button clicked');
     
+    // Detect mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('Is mobile device:', isMobile);
+    
     // Check current permission status
     const currentPermission = Notification.permission;
     console.log('Current notification permission:', currentPermission);
     
     if (currentPermission === 'denied') {
-      alert(`🚫 Notifications are blocked in your browser.
+      const mobileInstructions = isMobile ? `
+📱 MOBILE SETUP REQUIRED:
+
+For Android Chrome:
+1. Tap the ⋮ menu → "Add to Home screen"
+2. Install the app
+3. Open the installed app (not browser)
+4. Try "Enable Notifications" again
+5. Allow permissions when prompted
+
+For iPhone Safari:
+1. Tap Share button → "Add to Home Screen"
+2. Install the app
+3. Open the installed app
+4. Try "Enable Notifications" again
+
+Note: Mobile browsers often block notifications, but PWA apps allow them.` : `
+🚫 Notifications are blocked in your browser.
 
 To fix this:
 1. Click the 🔒 lock icon in your address bar
 2. Change Notifications to "Allow"
 3. Refresh the page and try again
 
-Or go to browser Settings → Site Settings → Notifications and allow localhost:3000`);
+Or go to browser Settings → Site Settings → Notifications and allow localhost:3000`;
+
+      alert(mobileInstructions);
       return;
     }
     
@@ -211,9 +234,12 @@ Or go to browser Settings → Site Settings → Notifications and allow localhos
       setIsNotificationEnabled(success);
       
       if (success) {
-        alert('✅ Notifications enabled successfully!');
+        alert('✅ Notifications enabled successfully! You will now receive instant order alerts.');
       } else {
-        alert('❌ Failed to enable notifications. Check console for details.');
+        const errorMsg = isMobile ? 
+          '❌ Mobile notifications require PWA installation. Please install this app to your home screen first.' :
+          '❌ Failed to enable notifications. Check console for details.';
+        alert(errorMsg);
       }
     } catch (error) {
       console.error('Error in handleEnableNotifications:', error);

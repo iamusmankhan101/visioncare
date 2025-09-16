@@ -10,9 +10,25 @@ class NotificationService {
   async initialize() {
     console.log('🔔 Initializing notification service...');
     
+    // Check if running as PWA
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  window.navigator.standalone || 
+                  document.referrer.includes('android-app://');
+    console.log('Running as PWA:', isPWA);
+    
+    // Detect mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('Mobile device detected:', isMobile);
+    
     if (!this.isSupported) {
       console.warn('Push notifications are not supported');
       return false;
+    }
+
+    // For mobile browsers (not PWA), show installation prompt
+    if (isMobile && !isPWA) {
+      console.log('📱 Mobile browser detected - PWA installation recommended');
+      this.showPWAInstallPrompt();
     }
 
     try {
@@ -51,6 +67,35 @@ class NotificationService {
       console.error('❌ Error initializing notifications:', error);
       return false;
     }
+  }
+
+  // Show PWA installation prompt for mobile
+  showPWAInstallPrompt() {
+    const installBanner = document.createElement('div');
+    installBanner.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #007bff;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      z-index: 10000;
+      font-size: 0.9rem;
+    `;
+    installBanner.innerHTML = `
+      📱 For mobile notifications, install this app to your home screen!
+      <button onclick="this.parentElement.remove()" style="margin-left: 1rem; background: white; color: #007bff; border: none; padding: 0.5rem; border-radius: 4px;">Got it</button>
+    `;
+    document.body.appendChild(installBanner);
+    
+    // Auto remove after 10 seconds
+    setTimeout(() => {
+      if (installBanner.parentNode) {
+        installBanner.remove();
+      }
+    }, 10000);
   }
 
   // Register token with backend

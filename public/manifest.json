@@ -26,6 +26,8 @@
   "orientation": "portrait-primary",
   "theme_color": "#48b2ee",
   "background_color": "#ffffff",
+  "prefer_related_applications": false,
+  "gcm_sender_id": "103953800507",
   "categories": ["business", "productivity"],
   "lang": "en",
   "scope": "/admin/",

@@ -1,5 +1,6 @@
 // Order service for managing orders
 import { openDB } from 'idb';
+import { sendOrderWhatsAppNotification } from './whatsappService';
 
 const DB_NAME = 'EyewearrDB';
 const DB_VERSION = 1;
@@ -20,7 +21,7 @@ const initDB = async () => {
   });
 };
 
-// Save order to IndexedDB
+// Save order to IndexedDB and send notifications
 export const saveOrder = async (orderData) => {
   try {
     const db = await initDB();
@@ -39,10 +40,65 @@ export const saveOrder = async (orderData) => {
     await store.add(order);
     await tx.complete;
     
+    // Send notifications after successful order save
+    await sendOrderNotifications(order);
+    
     return order;
   } catch (error) {
     console.error('Error saving order:', error);
     throw error;
+  }
+};
+
+// Send all order notifications (Push + WhatsApp)
+const sendOrderNotifications = async (orderData) => {
+  try {
+    console.log('Sending order notifications for:', orderData.orderNumber);
+    
+    // 1. Send Push Notification to Admin
+    await sendPushNotification(orderData);
+    
+    // 2. Send WhatsApp Notification
+    await sendOrderWhatsAppNotification(orderData);
+    
+  } catch (error) {
+    console.error('Error sending order notifications:', error);
+    // Don't throw error - notifications are non-critical
+  }
+};
+
+// Send push notification to admin
+const sendPushNotification = async (orderData) => {
+  try {
+    const notificationData = {
+      title: `🛍️ New Order #${orderData.orderNumber}`,
+      body: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName} placed an order for Rs ${orderData.total}`,
+      data: {
+        orderId: orderData.id.toString(),
+        orderNumber: orderData.orderNumber,
+        customerName: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`,
+        total: orderData.total.toString(),
+        items: orderData.items.length.toString(),
+        timestamp: new Date().toISOString()
+      }
+    };
+    
+    // Send to notification server
+    const response = await fetch('http://localhost:5002/api/webhook/order-placed', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderData)
+    });
+    
+    if (response.ok) {
+      console.log('Push notification sent successfully');
+    } else {
+      console.error('Failed to send push notification');
+    }
+  } catch (error) {
+    console.error('Push notification error:', error);
   }
 };
 

@@ -1,22 +1,37 @@
 {
-  "name": "eyewear-review-server",
+  "name": "eyewearr-server",
   "version": "1.0.0",
-  "description": "Review API server for eyewear application",
+  "description": "Backend server for Eyewearr application with push notifications",
   "main": "reviewServer.js",
   "scripts": {
     "start": "node reviewServer.js",
-    "dev": "nodemon reviewServer.js",
     "whatsapp": "node whatsappServer.js",
-    "whatsapp-dev": "nodemon whatsappServer.js"
+    "notifications": "node notificationServer.js",
+    "dev": "nodemon reviewServer.js",
+    "dev:notifications": "nodemon notificationServer.js",
+    "dev:whatsapp": "nodemon whatsappServer.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.6.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.11.1",
     "sqlite3": "^5.1.6",
-    "twilio": "^4.19.0",
-    "axios": "^1.6.0"
+    "twilio": "^4.19.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
-  }
+  },
+  "keywords": [
+    "eyewear",
+    "ecommerce",
+    "reviews",
+    "whatsapp",
+    "notifications",
+    "firebase"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }

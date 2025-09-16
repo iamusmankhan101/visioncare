@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Eyewearr Admin",
+  "name": "Eyewearr Admin Dashboard",
+  "description": "Mobile admin dashboard for instant order notifications",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,38 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/admin/dashboard",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#48b2ee",
+  "background_color": "#ffffff",
+  "categories": ["business", "productivity"],
+  "lang": "en",
+  "scope": "/admin/",
+  "shortcuts": [
+    {
+      "name": "View Orders",
+      "short_name": "Orders",
+      "description": "View all orders",
+      "url": "/admin/orders",
+      "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Admin dashboard",
+      "url": "/admin/dashboard",
+      "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
+    }
+  ]
 }

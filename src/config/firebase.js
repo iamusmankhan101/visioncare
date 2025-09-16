@@ -20,19 +20,32 @@ const messaging = getMessaging(app);
 // Get registration token for push notifications
 export const getNotificationToken = async () => {
   try {
-    const token = await getToken(messaging, {
-      vapidKey: 'BG-HQ9TSKB1SX' // Your VAPID key from Firebase Console
-    });
+    console.log('🔑 Attempting to get FCM token...');
+    
+    // First try without VAPID key (for testing)
+    let token;
+    try {
+      token = await getToken(messaging);
+      console.log('✅ Got token without VAPID key:', token ? 'Success' : 'Failed');
+    } catch (error) {
+      console.log('❌ Failed without VAPID key, trying with VAPID...');
+      // If that fails, you need to get the correct VAPID key from Firebase Console
+      // Go to Project Settings > Cloud Messaging > Web Push certificates
+      token = await getToken(messaging, {
+        vapidKey: 'YOUR_ACTUAL_VAPID_KEY_HERE' // Replace with real VAPID key from Firebase Console
+      });
+    }
     
     if (token) {
-      console.log('Notification token:', token);
+      console.log('✅ FCM token obtained successfully');
+      console.log('Token (first 20 chars):', token.substring(0, 20) + '...');
       return token;
     } else {
-      console.log('No registration token available.');
+      console.log('❌ No registration token available');
       return null;
     }
   } catch (err) {
-    console.log('An error occurred while retrieving token. ', err);
+    console.error('❌ Error getting FCM token:', err);
     return null;
   }
 };

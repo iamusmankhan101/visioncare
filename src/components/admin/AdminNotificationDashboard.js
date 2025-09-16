@@ -187,8 +187,38 @@ const AdminNotificationDashboard = () => {
   };
 
   const handleEnableNotifications = async () => {
-    const success = await notificationService.initialize();
-    setIsNotificationEnabled(success);
+    console.log('🔔 Enable Notifications button clicked');
+    
+    // Check current permission status
+    const currentPermission = Notification.permission;
+    console.log('Current notification permission:', currentPermission);
+    
+    if (currentPermission === 'denied') {
+      alert(`🚫 Notifications are blocked in your browser.
+
+To fix this:
+1. Click the 🔒 lock icon in your address bar
+2. Change Notifications to "Allow"
+3. Refresh the page and try again
+
+Or go to browser Settings → Site Settings → Notifications and allow localhost:3000`);
+      return;
+    }
+    
+    try {
+      const success = await notificationService.initialize();
+      console.log('Notification initialization result:', success);
+      setIsNotificationEnabled(success);
+      
+      if (success) {
+        alert('✅ Notifications enabled successfully!');
+      } else {
+        alert('❌ Failed to enable notifications. Check console for details.');
+      }
+    } catch (error) {
+      console.error('Error in handleEnableNotifications:', error);
+      alert('❌ Error enabling notifications: ' + error.message);
+    }
   };
 
   return (

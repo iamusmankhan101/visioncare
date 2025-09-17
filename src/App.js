@@ -13,6 +13,8 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ContactPage from './pages/ContactPage';
 import AdminPage from './pages/AdminPage';
 import AdminLogin from './pages/AdminLogin';
+import MobileAdminPage from './pages/MobileAdminPage';
+import MobileTestPage from './components/mobile/MobileTestPage';
 import AdminNotificationDashboard from './components/admin/AdminNotificationDashboard';
 import ShopifyDashboard from './components/admin/ShopifyDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -41,6 +43,12 @@ function AppContent() {
     return (
       <Routes>
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/mobile" element={
+          <ProtectedRoute requireAdmin={true}>
+            <MobileAdminPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/mobile/test" element={<MobileTestPage />} />
         <Route path="/admin" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminPage />

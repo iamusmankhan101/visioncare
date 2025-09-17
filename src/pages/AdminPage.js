@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiEye, FiMenu, FiX, FiChevronDown, FiChevronLeft, FiChevronRight, FiMoon, FiBarChart2 } from 'react-icons/fi';
 import { addProduct, updateProduct, deleteProduct, resetFilters, createProductAsync, updateProductAsync, deleteProductAsync, fetchProducts } from '../redux/slices/productSlice';
 import OrderManagement from '../components/admin/OrderManagement';
+import OrderDashboard from '../components/admin/OrderDashboard';
 import AdminHeader from '../components/admin/AdminHeader';
 import { getAllOrders, getOrderStats } from '../services/orderService';
 
@@ -3027,7 +3028,7 @@ const AdminPage = () => {
           )}
           
           {activeTab === 'orders' && (
-            <OrderManagement />
+            <OrderDashboard />
           )}
           
           {activeTab === 'eyewear-products' && (

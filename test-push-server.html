@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Server Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background: #3ABEF9;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            background: #2AA8E8;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        .step {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3ABEF9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Push Server Test</h1>
+        <p>This page will test if your push notification server is running correctly.</p>
+        
+        <div class="step">
+            <h3>Step 1: Start the Server</h3>
+            <p>Open a terminal and run:</p>
+            <code>cd server && node simplePushServer.js</code>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Test the Connection</h3>
+            <button onclick="testHealth()">Test Server Health</button>
+            <button onclick="testVapid()">Test VAPID Key</button>
+            <button onclick="testNotification()">Send Test Notification</button>
+            <button onclick="testAll()">Run All Tests</button>
+        </div>
+
+        <div id="results"></div>
+
+        <div class="step">
+            <h3>Step 3: Next Steps</h3>
+            <p>If all tests pass:</p>
+            <ol>
+                <li>Start your React app: <code>npm start</code></li>
+                <li>Go to: <a href="http://localhost:3000/admin/mobile/test" target="_blank">http://localhost:3000/admin/mobile/test</a></li>
+                <li>Test the mobile app features</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const serverUrl = 'http://localhost:5004';
+        const resultsDiv = document.getElementById('results');
+
+        function showResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+
+        async function testHealth() {
+            clearResults();
+            showResult('Testing server health...', 'info');
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/health`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ Server is running! Status: ${data.status}, Subscriptions: ${data.subscriptions}`, 'success');
+                } else {
+                    showResult(`❌ Server error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Connection failed: ${error.message}`, 'error');
+                showResult('Make sure the server is running: cd server && node simplePushServer.js', 'error');
+            }
+        }
+
+        async function testVapid() {
+            showResult('Testing VAPID key endpoint...', 'info');
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/vapid-public-key`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ VAPID key received: ${data.publicKey}`, 'success');
+                } else {
+                    showResult(`❌ VAPID error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ VAPID test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNotification() {
+            showResult('Sending test notification...', 'info');
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/admin/test-notification`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ Test notification sent! ${data.message}`, 'success');
+                } else {
+                    showResult(`❌ Notification error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Notification test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAll() {
+            clearResults();
+            showResult('🧪 Running all tests...', 'info');
+            
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testVapid();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testNotification();
+            
+            showResult('🎉 All tests completed!', 'success');
+        }
+
+        // Auto-run health check on page load
+        window.addEventListener('load', () => {
+            setTimeout(testHealth, 1000);
+        });
+    </script>
+</body>
+</html>

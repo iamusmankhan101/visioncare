@@ -1,40 +1,39 @@
 {
   "name": "eyewearr-server",
   "version": "1.0.0",
-  "description": "Backend server for Eyewearr application with push notifications",
-  "main": "reviewServer.js",
+  "description": "Backend servers for Eyewearr admin system",
+  "main": "index.js",
   "scripts": {
-    "start": "node reviewServer.js",
-    "admin": "node adminServer.js",
-    "whatsapp": "node whatsappServer.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "notifications": "node notificationServer.js",
-    "dev": "nodemon reviewServer.js",
-    "dev:admin": "nodemon adminServer.js",
     "dev:notifications": "nodemon notificationServer.js",
+    "whatsapp": "node whatsappServer.js",
     "dev:whatsapp": "nodemon whatsappServer.js",
-    "migrate": "node migrateProducts.js",
+    "admin": "node adminServer.js",
+    "dev:admin": "nodemon adminServer.js",
+    "push": "node pushNotificationServer.js",
+    "dev:push": "nodemon pushNotificationServer.js",
+    "all": "concurrently \"npm run dev:notifications\" \"npm run dev:whatsapp\" \"npm run dev:admin\" \"npm run dev:push\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "axios": "^1.6.0",
+    "express": "^4.18.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "firebase-admin": "^11.11.1",
     "sqlite3": "^5.1.6",
-    "twilio": "^4.19.0"
+    "sequelize": "^6.32.1",
+    "firebase-admin": "^11.10.1",
+    "web-push": "^3.6.6",
+    "twilio": "^4.15.0",
+    "axios": "^1.5.0",
+    "nodemailer": "^6.9.4"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0"
   },
-  "keywords": [
-    "eyewear",
-    "ecommerce",
-    "reviews",
-    "whatsapp",
-    "notifications",
-    "firebase"
-  ],
-  "author": "Your Name",
+  "keywords": ["eyewear", "admin", "notifications", "push", "whatsapp"],
+  "author": "Eyewearr Team",
   "license": "MIT"
 }

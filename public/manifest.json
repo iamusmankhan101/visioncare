@@ -1,7 +1,7 @@
 {
   "short_name": "Eyewearr Admin",
-  "name": "Eyewearr Admin Dashboard",
-  "description": "Mobile admin dashboard for instant order notifications",
+  "name": "Eyewearr Order Management",
+  "description": "Mobile admin app for managing eyewear orders and receiving notifications",
   "icons": [
     {
       "src": "favicon.ico",
@@ -11,40 +11,26 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
+      "sizes": "192x192"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
+      "sizes": "512x512"
     }
   ],
-  "start_url": "/admin/dashboard",
+  "start_url": "/admin/mobile",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "theme_color": "#48b2ee",
+  "theme_color": "#3ABEF9",
   "background_color": "#ffffff",
-  "prefer_related_applications": false,
-  "gcm_sender_id": "103953800507",
+  "orientation": "portrait",
+  "scope": "/",
   "categories": ["business", "productivity"],
-  "lang": "en",
-  "scope": "/admin/",
-  "shortcuts": [
+  "screenshots": [
     {
-      "name": "View Orders",
-      "short_name": "Orders",
-      "description": "View all orders",
-      "url": "/admin/orders",
-      "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
-    },
-    {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "Admin dashboard",
-      "url": "/admin/dashboard",
-      "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
+      "src": "screenshot1.png",
+      "sizes": "540x720",
+      "type": "image/png"
     }
   ]
 }

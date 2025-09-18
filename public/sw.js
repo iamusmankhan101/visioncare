@@ -172,7 +172,7 @@ self.addEventListener('notificationclick', (event) => {
       
       // Check if app is already open
       for (const client of clientList) {
-        if (client.url.includes(window.location.origin)) {
+        if (client.url.includes(self.location.origin)) {
           console.log('✅ Focusing existing client');
           return client.focus().then(() => {
             // Send message to the client about the notification click

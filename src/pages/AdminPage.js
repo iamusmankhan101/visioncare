@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiEye, FiMenu, FiX, FiChevronDown, FiChevronLeft, FiChevronRight, FiMoon, FiBarChart2 } from 'react-icons/fi';
-import { addProduct, updateProduct, deleteProduct, resetFilters, createProductAsync, updateProductAsync, deleteProductAsync, fetchProducts } from '../redux/slices/productSlice';
+import { FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
+import { resetFilters, createProductAsync, updateProductAsync, deleteProductAsync, fetchProducts } from '../redux/slices/productSlice';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
 import AdminHeader from '../components/admin/AdminHeader';
@@ -1301,10 +1301,10 @@ const AdminPage = () => {
   const { items: products, status, error } = useSelector(state => state.products);
   const isProductsLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [searchTerm, setSearchTerm] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [editingProduct, setEditingProduct] = useState(null);
+
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -1326,7 +1326,7 @@ const AdminPage = () => {
     }
   });
   const fileInputRef = useRef(null);
-  const galleryInputRef = useRef(null);
+
 
   // Calculate real statistics from products data
   const calculateStats = () => {
@@ -1418,7 +1418,6 @@ const AdminPage = () => {
     event.preventDefault();
     event.stopPropagation();
 
-    const svgRect = event.target.closest('svg').getBoundingClientRect();
     const chartCanvasRect = event.target.closest('.chart-canvas').getBoundingClientRect();
 
     // Get mouse position relative to the chart canvas
@@ -1441,38 +1440,7 @@ const AdminPage = () => {
     setTooltip({ show: false, x: 0, y: 0, content: '' });
   };
 
-  // Generate SVG path for smooth line
-  const generateSmoothPath = (points, width, height) => {
-    if (points.length < 2) return '';
 
-    const padding = 60;
-    const chartWidth = width - padding - 20;
-    const chartHeight = height - 60;
-
-    let path = '';
-
-    points.forEach((point, index) => {
-      const x = padding + (index / (points.length - 1)) * chartWidth;
-      const y = 20 + (1 - point.normalized) * chartHeight;
-
-      if (index === 0) {
-        path += `M ${x} ${y}`;
-      } else {
-        const prevPoint = points[index - 1];
-        const prevX = padding + ((index - 1) / (points.length - 1)) * chartWidth;
-        const prevY = 20 + (1 - prevPoint.normalized) * chartHeight;
-
-        const cpX1 = prevX + (x - prevX) * 0.5;
-        const cpY1 = prevY;
-        const cpX2 = prevX + (x - prevX) * 0.5;
-        const cpY2 = y;
-
-        path += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${x} ${y}`;
-      }
-    });
-
-    return path;
-  };
 
   // Format PKR currency
   const formatPKR = (amount) => {
@@ -1579,7 +1547,7 @@ const AdminPage = () => {
     try {
       const orders = await getAllOrders();
       setRealOrders(orders);
-      setChartUpdateTrigger(prev => prev + 1); // Trigger chart update
+
     } catch (error) {
       console.error('Error loading real orders:', error);
       setRealOrders([]);
@@ -1621,7 +1589,7 @@ const AdminPage = () => {
     deliveredOrders: 0
   });
   const [realOrders, setRealOrders] = useState([]);
-  const [chartUpdateTrigger, setChartUpdateTrigger] = useState(0);
+
   const [chartDateOffset, setChartDateOffset] = useState(0); // 0 = today, -1 = yesterday, etc.
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, content: '' });
 

@@ -1,5 +1,14 @@
 // Email service for sending order confirmations
-import emailjs from '@emailjs/browser';
+let emailjs;
+try {
+  emailjs = require('@emailjs/browser');
+} catch (error) {
+  console.warn('EmailJS not available, using fallback');
+  emailjs = {
+    init: () => {},
+    send: () => Promise.resolve({ success: false, error: 'EmailJS not available' })
+  };
+}
 
 // EmailJS configuration
 // TODO: Replace these with your actual EmailJS credentials

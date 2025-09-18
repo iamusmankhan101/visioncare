@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notification Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .status-label {
+            font-weight: 600;
+        }
+        
+        .status-value {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        
+        .status-warning {
+            background: rgba(255, 193, 7, 0.3);
+            color: #FFC107;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            min-width: 200px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        }
+        
+        .actions {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #4ECDC4;
+            padding-left: 10px;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Push Notification Test</h1>
+        
+        <div class="status-card">
+            <h3>🔍 System Status</h3>
+            <div id="status-container">
+                <!-- Status items will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button id="initBtn" class="btn">🚀 Initialize Notifications</button>
+            <button id="testBtn" class="btn btn-secondary" disabled>🧪 Send Test Push</button>
+            <button id="orderBtn" class="btn btn-success" disabled>🛍️ Simulate New Order</button>
+            <button id="refreshBtn" class="btn btn-danger">🔄 Refresh Status</button>
+        </div>
+        
+        <div class="status-card">
+            <h3>📋 Activity Log</h3>
+            <div id="log" class="log">
+                <div class="log-entry">🔄 Ready to test push notifications...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import mobileNotificationService from '../src/services/mobileNotificationService.js';
+        
+        let logContainer = document.getElementById('log');
+        let statusContainer = document.getElementById('status-container');
+        
+        function addLog(message) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateStatus() {
+            const status = mobileNotificationService.getStatus();
+            
+            statusContainer.innerHTML = `
+                <div class="status-item">
+                    <span class="status-label">🌐 Browser Support</span>
+                    <span class="status-value ${status.supported ? 'status-success' : 'status-error'}">
+                        ${status.supported ? 'Supported' : 'Not Supported'}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">📱 Push Support</span>
+                    <span class="status-value ${status.pushSupported ? 'status-success' : 'status-error'}">
+                        ${status.pushSupported ? 'Supported' : 'Not Supported'}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">🔐 Permission</span>
+                    <span class="status-value ${status.permission === 'granted' ? 'status-success' : status.permission === 'denied' ? 'status-error' : 'status-warning'}">
+                        ${status.permission}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">⚡ Service Worker</span>
+                    <span class="status-value ${status.serviceWorkerReady ? 'status-success' : 'status-error'}">
+                        ${status.serviceWorkerReady ? 'Ready' : 'Not Ready'}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">🔑 VAPID Key</span>
+                    <span class="status-value ${status.vapidKeyLoaded ? 'status-success' : 'status-error'}">
+                        ${status.vapidKeyLoaded ? 'Loaded' : 'Not Loaded'}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">📡 Push Subscription</span>
+                    <span class="status-value ${status.pushSubscribed ? 'status-success' : 'status-error'}">
+                        ${status.pushSubscribed ? 'Subscribed' : 'Not Subscribed'}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">🔔 Monitoring</span>
+                    <span class="status-value ${status.monitoring ? 'status-success' : 'status-error'}">
+                        ${status.monitoring ? 'Active' : 'Inactive'}
+                    </span>
+                </div>
+            `;
+            
+            // Update button states
+            const isReady = status.permission === 'granted' && status.pushSubscribed;
+            document.getElementById('testBtn').disabled = !isReady;
+            document.getElementById('orderBtn').disabled = !isReady;
+        }
+        
+        // Initialize button
+        document.getElementById('initBtn').addEventListener('click', async () => {
+            addLog('🚀 Initializing notification service...');
+            try {
+                const success = await mobileNotificationService.init();
+                if (success) {
+                    addLog('✅ Notification service initialized successfully!');
+                } else {
+                    addLog('❌ Failed to initialize notification service');
+                }
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Initialization error: ${error.message}`);
+            }
+        });
+        
+        // Test button
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            addLog('🧪 Sending test push notification...');
+            try {
+                await mobileNotificationService.sendTestNotification();
+                addLog('✅ Test notification sent!');
+            } catch (error) {
+                addLog(`❌ Test notification failed: ${error.message}`);
+            }
+        });
+        
+        // Simulate order button
+        document.getElementById('orderBtn').addEventListener('click', async () => {
+            addLog('🛍️ Simulating new order notification...');
+            try {
+                await mobileNotificationService.sendPushNotification(
+                    '🛍️ New Order #12345',
+                    'John Doe placed an order for PKR 2,500',
+                    {
+                        orderId: '12345',
+                        customerName: 'John Doe',
+                        total: 2500,
+                        type: 'new_order'
+                    }
+                );
+                addLog('✅ Order notification sent!');
+            } catch (error) {
+                addLog(`❌ Order notification failed: ${error.message}`);
+            }
+        });
+        
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            addLog('🔄 Refreshing status...');
+            updateStatus();
+        });
+        
+        // Initial status update
+        updateStatus();
+        
+        // Auto-refresh status every 5 seconds
+        setInterval(updateStatus, 5000);
+    </script>
+</body>
+</html>

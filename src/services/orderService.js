@@ -43,6 +43,11 @@ export const saveOrder = async (orderData) => {
     // Send notifications after successful order save
     await sendOrderNotifications(order);
     
+    // Trigger mobile notification check (for the mobile app)
+    if (window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('newOrder', { detail: order }));
+    }
+    
     return order;
   } catch (error) {
     console.error('Error saving order:', error);

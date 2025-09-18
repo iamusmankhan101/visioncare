@@ -1,19 +1,16 @@
 {
-  "name": "eyewearr",
-  "version": "0.1.0",
+  "name": "eyewearr-admin",
+  "version": "1.0.0",
+  "description": "Eyewearr order management system with mobile push notifications",
   "private": true,
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
-    "@reduxjs/toolkit": "^1.9.7",
-    "@testing-library/dom": "^9.3.4",
+    "@reduxjs/toolkit": "^2.9.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.6.8",
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
     "firebase": "^12.2.1",
-    "formik": "^2.4.5",
     "framer-motion": "^10.18.0",
     "idb": "^8.0.3",
     "react": "^18.2.0",
@@ -25,35 +22,23 @@
     "react-scripts": "5.0.1",
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.7",
-    "styled-components": "^6.1.11",
-    "web-vitals": "^3.5.2",
-    "yup": "^1.4.0"
+    "styled-components": "^6.1.8",
+    "web-push": "^3.6.6",
+    "web-vitals": "^5.1.0"
   },
   "scripts": {
-    "start": "set PORT=3000 && react-scripts start",
-    "build": "CI=false && react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "start:push": "node server/simplePushServer.js",
-    "test:server": "node test-server.js",
-    "mobile:setup": "node start-mobile-app.js"
-  },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "server": "node server/simpleServer.js",
+    "dev": "concurrently \"npm run server\" \"npm start\""
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
-    ],
-    "rules": {
-      "no-unused-vars": "off",
-      "jsx-a11y/anchor-is-valid": "off"
-    }
+    ]
   },
   "browserslist": {
     "production": [
@@ -66,5 +51,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "keywords": [
+    "eyewearr",
+    "order-management",
+    "push-notifications",
+    "mobile",
+    "react"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }

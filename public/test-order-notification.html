@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Order Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background: #3ABEF9; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        button:hover { transform: translateY(-1px); opacity: 0.9; }
+        .status {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .status-success { background: #dcfce7; color: #166534; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+        .status-info { background: #dbeafe; color: #1e40af; }
+        .instructions {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #3ABEF9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Order Notifications</h1>
+        <p>This page will help you test the mobile notification system by creating fake orders.</p>
+
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Open the mobile app in another tab: <a href="/mobile-app-working.html" target="_blank">Mobile App</a></li>
+                <li>Enable notifications in the mobile app</li>
+                <li>Come back to this tab and create a test order</li>
+                <li>You should get a notification on the mobile app!</li>
+            </ol>
+        </div>
+
+        <button class="btn-primary" onclick="createTestOrder()">
+            🛍️ Create Test Order
+        </button>
+
+        <button class="btn-success" onclick="createMultipleOrders()">
+            📦 Create 3 Test Orders
+        </button>
+
+        <button class="btn-warning" onclick="clearAllOrders()">
+            🗑️ Clear All Orders
+        </button>
+
+        <div id="status"></div>
+
+        <div class="instructions">
+            <h3>🔔 How Notifications Work:</h3>
+            <ul>
+                <li><strong>Real-time Detection:</strong> Mobile app checks for new orders every 5 seconds</li>
+                <li><strong>Instant Alerts:</strong> Shows notification with customer name and order amount</li>
+                <li><strong>Sound Alert:</strong> Plays a notification sound</li>
+                <li><strong>Persistent:</strong> Notification stays until you interact with it</li>
+                <li><strong>Click Action:</strong> Clicking notification brings you back to the app</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status status-${type}`;
+            statusDiv.textContent = message;
+            
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+            }, 5000);
+        }
+
+        async function createTestOrder() {
+            try {
+                showStatus('🛍️ Creating test order...', 'info');
+
+                // Create a fake order
+                const testOrder = {
+                    orderNumber: `EW${Date.now()}`,
+                    customerInfo: {
+                        firstName: 'John',
+                        lastName: 'Doe',
+                        email: 'john.doe@example.com',
+                        phone: '+1234567890'
+                    },
+                    items: [
+                        {
+                            name: 'Ray-Ban Aviator Sunglasses',
+                            price: 15000,
+                            quantity: 1,
+                            selectedColor: 'Black',
+                            selectedSize: 'Medium'
+                        }
+                    ],
+                    total: 15200,
+                    subtotal: 15000,
+                    shipping: 200,
+                    paymentMethod: 'Cash on Delivery',
+                    shippingAddress: {
+                        address: '123 Main Street',
+                        city: 'Karachi',
+                        postalCode: '75500',
+                        country: 'Pakistan'
+                    }
+                };
+
+                // Save to IndexedDB
+                await saveTestOrder(testOrder);
+                
+                showStatus(`✅ Test order ${testOrder.orderNumber} created! Check your mobile app for notification.`, 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error creating test order: ${error.message}`, 'error');
+            }
+        }
+
+        async function createMultipleOrders() {
+            try {
+                showStatus('📦 Creating 3 test orders...', 'info');
+
+                const customers = [
+                    { firstName: 'Alice', lastName: 'Smith', email: 'alice@example.com' },
+                    { firstName: 'Bob', lastName: 'Johnson', email: 'bob@example.com' },
+                    { firstName: 'Carol', lastName: 'Williams', email: 'carol@example.com' }
+                ];
+
+                const products = [
+                    { name: 'Designer Sunglasses', price: 12000 },
+                    { name: 'Reading Glasses', price: 8000 },
+                    { name: 'Blue Light Glasses', price: 6000 }
+                ];
+
+                for (let i = 0; i < 3; i++) {
+                    const customer = customers[i];
+                    const product = products[i];
+                    
+                    const testOrder = {
+                        orderNumber: `EW${Date.now() + i}`,
+                        customerInfo: {
+                            ...customer,
+                            phone: `+123456789${i}`
+                        },
+                        items: [
+                            {
+                                ...product,
+                                quantity: 1,
+                                selectedColor: ['Black', 'Brown', 'Clear'][i],
+                                selectedSize: 'Medium'
+                            }
+                        ],
+                        total: product.price + 200,
+                        subtotal: product.price,
+                        shipping: 200,
+                        paymentMethod: 'Cash on Delivery',
+                        shippingAddress: {
+                            address: `${123 + i} Main Street`,
+                            city: 'Karachi',
+                            postalCode: '75500',
+                            country: 'Pakistan'
+                        }
+                    };
+
+                    await saveTestOrder(testOrder);
+                    
+                    // Wait 2 seconds between orders to see individual notifications
+                    if (i < 2) {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+                
+                showStatus('✅ 3 test orders created! You should receive 3 notifications.', 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error creating test orders: ${error.message}`, 'error');
+            }
+        }
+
+        async function saveTestOrder(orderData) {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('EyewearrDB', 1);
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('orders')) {
+                        const orderStore = db.createObjectStore('orders', { keyPath: 'id', autoIncrement: true });
+                        orderStore.createIndex('orderNumber', 'orderNumber', { unique: true });
+                        orderStore.createIndex('status', 'status');
+                        orderStore.createIndex('customerEmail', 'customerInfo.email');
+                        orderStore.createIndex('orderDate', 'orderDate');
+                    }
+                };
+                
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    
+                    const order = {
+                        ...orderData,
+                        id: Date.now() + Math.random(), // Unique ID
+                        orderDate: new Date().toISOString(),
+                        status: 'pending',
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    const transaction = db.transaction(['orders'], 'readwrite');
+                    const store = transaction.objectStore('orders');
+                    const addRequest = store.add(order);
+                    
+                    addRequest.onsuccess = () => {
+                        resolve(order);
+                    };
+                    
+                    addRequest.onerror = () => {
+                        reject(new Error('Failed to save order'));
+                    };
+                };
+                
+                request.onerror = () => {
+                    reject(new Error('Failed to open database'));
+                };
+            });
+        }
+
+        async function clearAllOrders() {
+            if (!confirm('Are you sure you want to delete all orders? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                showStatus('🗑️ Clearing all orders...', 'info');
+
+                const request = indexedDB.open('EyewearrDB', 1);
+                
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains('orders')) {
+                        showStatus('✅ No orders to clear.', 'success');
+                        return;
+                    }
+                    
+                    const transaction = db.transaction(['orders'], 'readwrite');
+                    const store = transaction.objectStore('orders');
+                    const clearRequest = store.clear();
+                    
+                    clearRequest.onsuccess = () => {
+                        showStatus('✅ All orders cleared successfully.', 'success');
+                    };
+                    
+                    clearRequest.onerror = () => {
+                        showStatus('❌ Failed to clear orders.', 'error');
+                    };
+                };
+                
+            } catch (error) {
+                showStatus(`❌ Error clearing orders: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

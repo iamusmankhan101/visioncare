@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MobileAdminApp from '../components/mobile/MobileAdminApp';
+import OfflineMobileApp from '../components/mobile/OfflineMobileApp';
 import { useSelector } from 'react-redux';
 
 const MobileAdminPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector(state => state.auth || {});
+  const [useOfflineMode, setUseOfflineMode] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated and is admin
@@ -18,6 +20,23 @@ const MobileAdminPage = () => {
       navigate('/');
       return;
     }
+
+    // Check if push server is available
+    const checkServerAvailability = async () => {
+      try {
+        const response = await fetch('http://localhost:5004/api/health', {
+          signal: AbortSignal.timeout(2000)
+        });
+        if (!response.ok) {
+          setUseOfflineMode(true);
+        }
+      } catch (error) {
+        console.log('Push server not available, using offline mode');
+        setUseOfflineMode(true);
+      }
+    };
+
+    checkServerAvailability();
 
     // Set mobile viewport meta tag for better mobile experience
     const viewport = document.querySelector('meta[name="viewport"]');
@@ -56,7 +75,8 @@ const MobileAdminPage = () => {
     );
   }
 
-  return <MobileAdminApp />;
+  // Use offline mode if server is not available
+  return useOfflineMode ? <OfflineMobileApp /> : <MobileAdminApp />;
 };
 
 export default MobileAdminPage;

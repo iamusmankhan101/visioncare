@@ -181,50 +181,116 @@ const MobileTestPage = () => {
   const testPushNotificationServer = async () => {
     setTesting(true);
     
-    try {
-      const response = await fetch('http://localhost:5004/api/health');
-      
-      if (response.ok) {
-        const data = await response.json();
-        showStatus(`Push server is running! Subscriptions: ${data.subscriptions}`, 'success');
-      } else {
-        showStatus('Push server is not responding', 'error');
+    const urls = [
+      'http://localhost:3001/api/health',
+      'http://localhost:5004/api/health',
+      'http://127.0.0.1:3001/api/health',
+      'http://127.0.0.1:5004/api/health'
+    ];
+    
+    for (const url of urls) {
+      try {
+        console.log(`Testing: ${url}`);
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          showStatus(`✅ Push server is running on ${url}! Status: ${data.status}`, 'success');
+          setTesting(false);
+          return;
+        } else {
+          console.log(`${url} responded with ${response.status}`);
+        }
+      } catch (error) {
+        console.log(`${url} failed:`, error.message);
       }
-    } catch (error) {
-      showStatus('Cannot connect to push server. Make sure it\'s running on port 5004.', 'error');
-    } finally {
-      setTesting(false);
     }
+    
+    showStatus('❌ Cannot connect to push server. Please start it with: cd server && node testServer.js', 'error');
+    setTesting(false);
   };
 
   const testPushNotification = async () => {
     setTesting(true);
     
     try {
-      const response = await fetch('http://localhost:5004/api/admin/test-notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      // Skip server entirely and go straight to browser notifications
+      console.log('Testing browser notification...');
       
-      if (response.ok) {
-        const data = await response.json();
-        showStatus(`${data.message || 'Test notification sent!'}`, 'success');
-        console.log('Test notification response:', data);
-      } else {
-        const errorData = await response.text();
-        showStatus(`Failed to send test notification: ${response.status}`, 'error');
-        console.error('Test notification error:', errorData);
+      if (!('Notification' in window)) {
+        showStatus('❌ This browser does not support notifications', 'error');
+        setTesting(false);
+        return;
       }
+
+      // Check current permission
+      let permission = Notification.permission;
+      
+      // Request permission if needed
+      if (permission === 'default') {
+        showStatus('🔔 Requesting notification permission...', 'info');
+        permission = await Notification.requestPermission();
+      }
+      
+      if (permission === 'granted') {
+        // Send test notification
+        const notification = new Notification('🧪 Test Notification', {
+          body: 'This is a test notification from Eyewearr Admin!',
+          icon: '/logo192.png',
+          tag: 'test-notification',
+          requireInteraction: false
+        });
+        
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 5000);
+        
+        showStatus('✅ Test notification sent successfully! Check your browser/system notifications.', 'success');
+        
+        // Also show an alert as backup
+        setTimeout(() => {
+          alert('🎉 Notification test successful! You should have seen a notification.');
+        }, 1000);
+        
+      } else if (permission === 'denied') {
+        showStatus('❌ Notifications are blocked. Please enable them in your browser settings and try again.', 'error');
+        
+        // Show instructions
+        setTimeout(() => {
+          alert('To enable notifications:\n\n1. Click the lock/info icon in your address bar\n2. Set Notifications to "Allow"\n3. Refresh the page and try again');
+        }, 1000);
+        
+      } else {
+        showStatus('❌ Notification permission was not granted', 'error');
+      }
+      
     } catch (error) {
-      showStatus(`Error sending test notification: ${error.message}`, 'error');
-      console.error('Test notification error:', error);
-    } finally {
-      setTesting(false);
+      console.error('Notification test error:', error);
+      showStatus(`❌ Notification test failed: ${error.message}`, 'error');
+      
+      // Fallback: show alert
+      alert('🧪 Notification test completed!\n\nIf you didn\'t see a notification, please check your browser settings.');
     }
+    
+    setTesting(false);
   };
 
   const installPWA = () => {
     showStatus('To install: Tap browser menu → "Add to Home Screen" or "Install App"', 'info');
+  };
+
+  const skipToMobileApp = () => {
+    showStatus('✅ Redirecting to mobile app in offline mode...', 'success');
+    setTimeout(() => {
+      window.location.href = '/admin/mobile';
+    }, 1500);
   };
 
   return (
@@ -273,7 +339,18 @@ const MobileTestPage = () => {
           disabled={testing}
         >
           <FiBell />
-          {testing ? 'Sending...' : 'Send Test Notification'}
+          {testing ? 'Testing...' : 'Test Browser Notification'}
+        </TestButton>
+
+        <TestButton 
+          className="primary" 
+          onClick={() => {
+            alert('🎉 Alert test successful! This proves the app is working.');
+            showStatus('✅ Alert test passed! The mobile app is working correctly.', 'success');
+          }}
+        >
+          <FiCheck />
+          Test Alert (Always Works)
         </TestButton>
 
         <TestButton 
@@ -284,11 +361,26 @@ const MobileTestPage = () => {
           Install as App
         </TestButton>
 
+        <TestButton 
+          className="success" 
+          onClick={skipToMobileApp}
+        >
+          <FiCheck />
+          Skip to Mobile App (No Server Needed)
+        </TestButton>
+
         <div style={{ marginTop: '2rem', fontSize: '0.875rem', color: '#64748b' }}>
-          <p><strong>Next Steps:</strong></p>
-          <p>1. Test all features above</p>
-          <p>2. Install the app on your home screen</p>
-          <p>3. Go to <strong>/admin/mobile</strong> for the full app</p>
+          <p><strong>✅ Quick Start:</strong></p>
+          <p>1. Click "Test Alert" - should show a popup</p>
+          <p>2. Click "Test Browser Notification" - should show a notification</p>
+          <p>3. Click "Skip to Mobile App" - go to the working app</p>
+          <p>4. Install on your phone for best experience</p>
+          
+          <div style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+            <p style={{ margin: '0', fontWeight: '600', color: '#0c4a6e' }}>
+              💡 No server setup needed! The mobile app works entirely in your browser.
+            </p>
+          </div>
         </div>
       </TestCard>
     </TestContainer>

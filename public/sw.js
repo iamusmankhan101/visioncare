@@ -1,9 +1,13 @@
-// Enhanced Service Worker for Lock Screen Notifications
-const CACHE_NAME = 'eyewearr-admin-v2';
+// Enhanced Service Worker for Mobile Push Notifications
+const CACHE_NAME = 'eyewearr-admin-v3';
 const urlsToCache = [
   '/',
-  '/mobile-app-working.html',
-  '/manifest.json'
+  '/index.html',
+  '/static/js/bundle.js',
+  '/static/css/main.css',
+  '/manifest.json',
+  '/logo192.png',
+  '/logo512.png'
 ];
 
 // Install event - cache resources and skip waiting
@@ -58,33 +62,37 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Enhanced push event for lock screen notifications
+// Enhanced push event for mobile lock screen notifications
 self.addEventListener('push', (event) => {
-  console.log('Push notification received:', event);
+  console.log('🔔 Push notification received:', event);
   
   let notificationData = {
-    title: '🛍️ New Order Alert',
-    body: 'A new order has been placed on your store',
+    title: '🛍️ Eyewearr Admin Alert',
+    body: 'New activity in your store',
     icon: '/logo192.png',
     badge: '/logo192.png',
-    tag: 'order-notification',
+    tag: 'eyewearr-notification',
     requireInteraction: true,
     persistent: true,
     renotify: true,
-    vibrate: [200, 100, 200, 100, 200],
+    silent: false,
+    vibrate: [300, 100, 300, 100, 300],
     actions: [
       {
         action: 'view',
-        title: '👀 View Order'
+        title: '👀 View Details',
+        icon: '/logo192.png'
       },
       {
         action: 'dismiss',
-        title: '❌ Dismiss'
+        title: '❌ Dismiss',
+        icon: '/logo192.png'
       }
     ],
     data: {
-      url: '/mobile-app-working.html',
-      timestamp: Date.now()
+      url: '/',
+      timestamp: Date.now(),
+      type: 'admin_alert'
     }
   };
 
@@ -92,40 +100,67 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const pushData = event.data.json();
+      console.log('📱 Push data received:', pushData);
+      
       notificationData = {
         ...notificationData,
         title: pushData.title || notificationData.title,
         body: pushData.body || notificationData.body,
+        icon: pushData.icon || notificationData.icon,
+        badge: pushData.badge || notificationData.badge,
+        tag: pushData.tag || notificationData.tag,
         data: {
           ...notificationData.data,
           ...pushData.data
         }
       };
+
+      // Add custom actions if provided
+      if (pushData.actions) {
+        notificationData.actions = pushData.actions;
+      }
     } catch (e) {
-      console.error('Error parsing push data:', e);
+      console.error('❌ Error parsing push data:', e);
     }
   }
+
+  console.log('📲 Showing notification:', notificationData);
 
   event.waitUntil(
     self.registration.showNotification(notificationData.title, notificationData)
       .then(() => {
-        console.log('Lock screen notification shown');
+        console.log('✅ Mobile notification shown successfully');
+        
+        // Send analytics or tracking data
+        self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            client.postMessage({
+              type: 'NOTIFICATION_SHOWN',
+              data: notificationData
+            });
+          });
+        });
       })
       .catch((error) => {
-        console.error('Error showing notification:', error);
+        console.error('❌ Error showing notification:', error);
       })
   );
 });
 
-// Enhanced notification click handler
+// Enhanced notification click handler for mobile
 self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked:', event.action);
+  console.log('📱 Notification clicked:', event.action, event.notification.data);
   
   event.notification.close();
   
+  // Handle dismiss action
   if (event.action === 'dismiss') {
+    console.log('🚫 Notification dismissed');
     return;
   }
+  
+  // Get the URL to open
+  const urlToOpen = event.notification.data?.url || '/';
   
   // Open or focus the app
   event.waitUntil(
@@ -133,17 +168,39 @@ self.addEventListener('notificationclick', (event) => {
       type: 'window',
       includeUncontrolled: true 
     }).then((clientList) => {
+      console.log('🔍 Looking for existing clients:', clientList.length);
+      
       // Check if app is already open
       for (const client of clientList) {
-        if (client.url.includes('mobile-app-working.html')) {
-          return client.focus();
+        if (client.url.includes(window.location.origin)) {
+          console.log('✅ Focusing existing client');
+          return client.focus().then(() => {
+            // Send message to the client about the notification click
+            client.postMessage({
+              type: 'NOTIFICATION_CLICKED',
+              action: event.action,
+              data: event.notification.data
+            });
+          });
         }
       }
       
-      // Open new window
+      // Open new window if no existing client
+      console.log('🆕 Opening new window:', urlToOpen);
       if (clients.openWindow) {
-        return clients.openWindow('/mobile-app-working.html');
+        return clients.openWindow(urlToOpen).then(windowClient => {
+          // Send message to the new client
+          if (windowClient) {
+            windowClient.postMessage({
+              type: 'NOTIFICATION_CLICKED',
+              action: event.action,
+              data: event.notification.data
+            });
+          }
+        });
       }
+    }).catch(error => {
+      console.error('❌ Error handling notification click:', error);
     })
   );
 });

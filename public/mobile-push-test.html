@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mobile Push Notifications Test</title>
+    <meta name="theme-color" content="#3ABEF9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .status-success {
+            color: #4ade80;
+        }
+
+        .status-error {
+            color: #f87171;
+        }
+
+        .status-warning {
+            color: #fbbf24;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin: 8px 0;
+            padding: 8px;
+            border-left: 3px solid #3ABEF9;
+            padding-left: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            margin-bottom: 15px;
+            color: #fbbf24;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 375px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .title {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">📱 Mobile Push Test</div>
+            <div class="subtitle">Test notifications when app is closed</div>
+        </div>
+
+        <div class="instructions">
+            <h3>🔔 How to Test Background Notifications:</h3>
+            <ol>
+                <li>Click "Initialize Push Service" below</li>
+                <li>Grant notification permissions when prompted</li>
+                <li>Click "Send Test Notification"</li>
+                <li><strong>Close this browser tab/app completely</strong></li>
+                <li>Wait 5-10 seconds, then check your lock screen</li>
+                <li>You should see the notification even with the app closed!</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 20px;">📊 Service Status</h3>
+            <div class="status-grid" id="statusGrid">
+                <!-- Status items will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 20px;">🎮 Controls</h3>
+            
+            <button id="initBtn" class="btn btn-primary">
+                <span class="emoji">🚀</span>
+                Initialize Push Service
+            </button>
+            
+            <button id="testBtn" class="btn btn-success" disabled>
+                <span class="emoji">🧪</span>
+                Send Test Notification
+            </button>
+            
+            <button id="orderBtn" class="btn btn-success" disabled>
+                <span class="emoji">🛍️</span>
+                Simulate Order Notification
+            </button>
+            
+            <button id="refreshBtn" class="btn btn-primary">
+                <span class="emoji">🔄</span>
+                Refresh Status
+            </button>
+            
+            <button id="unsubscribeBtn" class="btn btn-danger" disabled>
+                <span class="emoji">🚫</span>
+                Unsubscribe
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">📋 Activity Log</h3>
+            <div id="log" class="log">
+                <div class="log-entry">🔄 Ready to test mobile push notifications...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the mobile push service
+        import mobilePushService from '../src/services/mobilePushService.js';
+        
+        let logContainer = document.getElementById('log');
+        let statusGrid = document.getElementById('statusGrid');
+        
+        function addLog(message) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateStatus() {
+            const status = mobilePushService.getStatus();
+            
+            statusGrid.innerHTML = `
+                <div class="status-item">
+                    <div class="status-label">Browser Support</div>
+                    <div class="status-value ${status.supported ? 'status-success' : 'status-error'}">
+                        ${status.supported ? '✅ Yes' : '❌ No'}
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Permission</div>
+                    <div class="status-value ${status.permission === 'granted' ? 'status-success' : status.permission === 'denied' ? 'status-error' : 'status-warning'}">
+                        ${status.permission === 'granted' ? '✅ Granted' : status.permission === 'denied' ? '❌ Denied' : '⚠️ Default'}
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Service Worker</div>
+                    <div class="status-value ${status.serviceWorkerReady ? 'status-success' : 'status-error'}">
+                        ${status.serviceWorkerReady ? '✅ Ready' : '❌ Not Ready'}
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Push Subscription</div>
+                    <div class="status-value ${status.subscribed ? 'status-success' : 'status-error'}">
+                        ${status.subscribed ? '✅ Active' : '❌ Inactive'}
+                    </div>
+                </div>
+            `;
+            
+            // Update button states
+            const isReady = status.initialized && status.subscribed;
+            document.getElementById('testBtn').disabled = !isReady;
+            document.getElementById('orderBtn').disabled = !isReady;
+            document.getElementById('unsubscribeBtn').disabled = !isReady;
+        }
+        
+        // Initialize button
+        document.getElementById('initBtn').addEventListener('click', async () => {
+            addLog('🚀 Initializing mobile push service...');
+            try {
+                const success = await mobilePushService.init();
+                if (success) {
+                    addLog('✅ Mobile push service initialized successfully!');
+                    addLog('📱 You can now receive notifications even when the app is closed');
+                } else {
+                    addLog('❌ Failed to initialize mobile push service');
+                }
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Initialization error: ${error.message}`);
+            }
+        });
+        
+        // Test button
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            addLog('🧪 Sending test notification...');
+            addLog('💡 Close this app/tab now to test background notifications!');
+            
+            try {
+                // Add a delay to give user time to close the app
+                setTimeout(async () => {
+                    await mobilePushService.sendTestNotification();
+                    addLog('✅ Test notification sent! Check your lock screen.');
+                }, 3000);
+                
+                addLog('⏰ Notification will be sent in 3 seconds...');
+            } catch (error) {
+                addLog(`❌ Test notification failed: ${error.message}`);
+            }
+        });
+        
+        // Order simulation button
+        document.getElementById('orderBtn').addEventListener('click', async () => {
+            addLog('🛍️ Simulating order notification...');
+            addLog('💡 Close this app/tab now to test background notifications!');
+            
+            try {
+                const mockOrder = {
+                    id: 'order_' + Date.now(),
+                    orderNumber: 'ORD-' + Math.floor(Math.random() * 10000),
+                    customerInfo: {
+                        firstName: 'John',
+                        lastName: 'Doe'
+                    },
+                    total: 2500
+                };
+                
+                // Add a delay to give user time to close the app
+                setTimeout(async () => {
+                    await mobilePushService.sendOrderNotification(mockOrder);
+                    addLog('✅ Order notification sent! Check your lock screen.');
+                }, 3000);
+                
+                addLog('⏰ Order notification will be sent in 3 seconds...');
+            } catch (error) {
+                addLog(`❌ Order notification failed: ${error.message}`);
+            }
+        });
+        
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            addLog('🔄 Refreshing status...');
+            updateStatus();
+        });
+        
+        // Unsubscribe button
+        document.getElementById('unsubscribeBtn').addEventListener('click', async () => {
+            addLog('🚫 Unsubscribing from push notifications...');
+            try {
+                await mobilePushService.unsubscribe();
+                addLog('✅ Unsubscribed successfully');
+                updateStatus();
+            } catch (error) {
+                addLog(`❌ Unsubscribe failed: ${error.message}`);
+            }
+        });
+        
+        // Initial status update
+        updateStatus();
+        
+        // Auto-refresh status every 10 seconds
+        setInterval(updateStatus, 10000);
+        
+        // Listen for service worker messages
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data.type === 'NOTIFICATION_CLICKED') {
+                    addLog(`👆 Notification clicked: ${event.data.action}`);
+                }
+            });
+        }
+        
+        // Add visibility change listener to detect when app is hidden/shown
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                addLog('👋 App is now hidden - perfect time to test background notifications!');
+            } else {
+                addLog('👀 App is now visible');
+            }
+        });
+    </script>
+</body>
+</html>

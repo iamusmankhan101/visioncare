@@ -1591,8 +1591,8 @@ const AdminPage = () => {
   // Prevent auto-scroll to bottom on page load
   useEffect(() => {
     // Set scroll restoration to manual to prevent browser auto-scroll
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
     }
 
     // Force scroll to top immediately
@@ -1601,8 +1601,8 @@ const AdminPage = () => {
 
     return () => {
       // Restore default scroll restoration when component unmounts
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'auto';
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto';
       }
     };
   }, []);

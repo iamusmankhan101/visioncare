@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import { FiTrendingUp, FiDollarSign, FiShoppingCart, FiUsers, FiPackage, FiCalendar } from 'react-icons/fi';
+import { FiTrendingUp, FiDollarSign, FiShoppingCart, FiUsers, FiPackage } from 'react-icons/fi';
 import { updateAnalytics } from '../../redux/slices/storeSlice';
 
 const AnalyticsContainer = styled.div`

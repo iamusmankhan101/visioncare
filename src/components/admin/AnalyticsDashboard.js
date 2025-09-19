@@ -249,7 +249,7 @@ const AnalyticsDashboard = () => {
     };
     
     dispatch(updateAnalytics(mockAnalytics));
-  }, [dispatch, orderStats]);
+  }, [dispatch, orderStats, topProducts, sampleSalesData]);
 
   const reports = [
     {

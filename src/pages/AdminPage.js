@@ -15,6 +15,8 @@ const DashboardContainer = styled.div`
   min-height: 100vh;
   background: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 `;
 
 const Sidebar = styled.div`
@@ -134,12 +136,12 @@ const MainContent = styled.div`
   background: #f8fafc;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
+  position: relative;
+  overflow-x: hidden;
   
   @media (max-width: 768px) {
     margin-left: 0;
     width: 100%;
-    
-    
   }
 `;
 
@@ -1514,6 +1516,9 @@ const AdminPage = () => {
     dispatch(fetchProducts());
     loadOrderStats();
     loadRealOrders();
+
+    // Ensure page starts at the top
+    window.scrollTo(0, 0);
   }, [dispatch]);
 
   // Auto-refresh chart data every 30 seconds
@@ -1577,6 +1582,30 @@ const AdminPage = () => {
       // handleAddSampleProducts(); // Commented out to prevent automatic popup
     }
   }, [products, isProductsLoading, error]);
+
+  // Scroll to top when component mounts or active tab changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [activeTab]);
+
+  // Prevent auto-scroll to bottom on page load
+  useEffect(() => {
+    // Set scroll restoration to manual to prevent browser auto-scroll
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    // Force scroll to top immediately
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    return () => {
+      // Restore default scroll restoration when component unmounts
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'auto';
+      }
+    };
+  }, []);
 
   // Additional state variables
   const [reviews, setReviews] = useState([]);

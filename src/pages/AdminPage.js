@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
-import { FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
-import { resetFilters, createProductAsync, updateProductAsync, deleteProductAsync, fetchProducts } from '../redux/slices/productSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { addProduct, updateProduct, deleteProduct, fetchProducts } from '../redux/slices/productSlice';
+import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
 import AdminHeader from '../components/admin/AdminHeader';
@@ -17,6 +17,10 @@ const DashboardContainer = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   scroll-behavior: smooth;
   overflow-x: hidden;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const Sidebar = styled.div`
@@ -158,9 +162,18 @@ const DashboardHeader = styled.div`
   border: 1px solid #f1f5f9;
   
   @media (max-width: 768px) {
-    padding: 0.5rem 0.5rem;
-    height: 60px;
-    margin: 0 1rem 2rem 0;
+    padding: 0.75rem;
+    height: auto;
+    min-height: 60px;
+    margin: 0 0.5rem 1rem 0.5rem;
+    border-radius: 12px;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 0 0.25rem 1rem 0.25rem;
+    padding: 0.5rem;
   }
 `;
 
@@ -527,8 +540,9 @@ const WelcomeSection = styled.div`
   position: relative;
   
   @media (max-width: 768px) {
-    text-align: center;
-    padding: 0 0.5rem;
+    text-align: left;
+    padding: 1rem;
+    margin-bottom: 1rem;
   }
 `;
 
@@ -537,6 +551,15 @@ const WelcomeTitle = styled.h1`
   font-weight: 600;
   color: #1a202c;
   margin: 0 0 0.5rem 0;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.25rem;
+  }
 `;
 
 const WelcomeSubtitle = styled.p`
@@ -544,6 +567,14 @@ const WelcomeSubtitle = styled.p`
   color: #64748b;
   margin: 0;
   font-weight: 400;
+  
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+  }
 `;
 
 const StatsGrid = styled.div`
@@ -839,8 +870,9 @@ const ChartNavigation = styled.div`
   }
 
   @media (max-width: 480px) {
-    z-index:2;
-  
+    z-index: 2;
+    margin-bottom: 2rem;
+  }
 `;
 
 const NavButton = styled.button`
@@ -1066,6 +1098,12 @@ const ContentArea = styled.div`
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0 0.5rem 1rem 0.5rem;
+    border-radius: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    margin: 0 0.25rem 1rem 0.25rem;
   }
 `;
 
@@ -1164,79 +1202,101 @@ const SubmitButton = styled.button`
 const SuccessMessage = styled.div`
   background-color: #d4edda;
   color: #155724;
-  padding: 1rem;
+  border: 1px solid #c3e6cb;
   border-radius: 4px;
+  padding: 0.75rem 1rem;
   margin-bottom: 1rem;
 `;
 
-// Add the product list styled components here
 const ProductList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 `;
 
-// Delete all of these duplicate styled component definitions
-const ProductItem = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid #eee;
-  border-radius: 4px;
-`;
-
-const ProductImage = styled.div`
-  width: 60px;
-  height: 60px;
-  background-color: #f8f8f8;
-  margin-right: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const ProductCard = styled.div`
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
   
-  img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
   }
 `;
 
-// Add all other styled components here
+const ProductImage = styled.div`
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
 const ProductInfo = styled.div`
-  flex-grow: 1;
+  padding: 1rem;
 `;
 
 const ProductName = styled.h3`
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a202c;
+`;
+
+const ProductPrice = styled.p`
+  margin: 0 0 0.5rem 0;
   font-size: 1rem;
+  font-weight: 600;
+  color: #3b82f6;
 `;
 
-const ProductMeta = styled.div`
-  font-size: 0.8rem;
-  color: #666;
+const ProductCategory = styled.p`
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  text-transform: capitalize;
 `;
 
-const ActionButtons = styled.div`
+const ProductStatus = styled.span`
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: ${props => {
+    if (props.children?.includes('Featured')) return '#dbeafe';
+    if (props.children?.includes('Best Seller')) return '#dcfce7';
+    return '#f1f5f9';
+  }};
+  color: ${props => {
+    if (props.children?.includes('Featured')) return '#1e40af';
+    if (props.children?.includes('Best Seller')) return '#166534';
+    return '#475569';
+  }};
+`;
+
+const ProductActions = styled.div`
   display: flex;
   gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
 `;
 
 const ActionButton = styled.button`
+  flex: 1;
   padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  
-  &.edit {
-    background-color: #3498db;
-    color: white;
-    
-    &:hover {
-      background-color: #2980b9;
-    }
+  border: 1px solid ${props => props.danger ? '#ef4444' : '#3b82f6'};
+  background: ${props => props.danger ? '#ef4444' : '#3b82f6'};
+  color: white;
+  border-radius: 6px;
   }
   
   &.delete {
@@ -1295,6 +1355,268 @@ const UploadActions = styled.div`
   align-items: center;
   margin-top: 0.5rem;
 `;
+
+// Modern Product Form Styled Components
+const ProductFormContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const ProductFormHeader = styled.div`
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 20px;
+  display: flex;;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  min-height: 20px;
+  
+  h2 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: #000000;
+    font-family: 'Montserrat', sans-serif;
+    text-align: left;
+  }
+`;
+
+const ProductFormLayout = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  text-align:left;
+  padding:1rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+const ProductFormMain = styled.div`
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  
+  form {
+    padding: 1.5rem;
+  }
+`;
+
+const TabContainer = styled.div`
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+`;
+
+const TabButton = styled.button`
+  padding: 1rem 1.5rem;
+  border: none;
+  background: ${props => props.active ? 'white' : 'transparent'};
+  color: ${props => props.active ? '#1a202c' : '#64748b'};
+  font-weight: ${props => props.active ? '600' : '400'};
+  border-bottom: ${props => props.active ? '2px solid #3b82f6' : 'none'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: ${props => props.active ? 'white' : '#f1f5f9'};
+  }
+`;
+
+const FormHint = styled.p`
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0.5rem 0 0 0;
+`;
+
+const RichTextEditor = styled.div`
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const EditorToolbar = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const ToolbarButton = styled.button`
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  
+  &:hover {
+    background: #f1f5f9;
+  }
+`;
+
+const MediaUploadArea = styled.div`
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #3b82f6;
+    background: #f0f9ff;
+  }
+`;
+
+const MediaUploadIcon = styled.div`
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+`;
+
+const MediaUploadText = styled.p`
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+`;
+
+const PricingContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+`;
+
+const PricingGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const ProductFormSidebar = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const SidebarSection = styled.div`
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+`;
+
+const SidebarTitle = styled.h3`
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+`;
+
+const ThumbnailContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const ThumbnailImage = styled.div`
+  width: 100%;
+  height: 200px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #3b82f6;
+    background: #f0f9ff;
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const ThumbnailPlaceholder = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  
+  span:first-child {
+    font-size: 2rem;
+  }
+  
+  span:last-child {
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.4;
+  }
+`;
+
+const StatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const StatusIndicator = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${props => {
+    switch(props.status) {
+      case 'published': return '#10b981';
+      case 'featured': return '#3b82f6';
+      case 'draft': return '#f59e0b';
+      default: return '#6b7280';
+    }
+  }};
+`;
+
+const DetailsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const DetailsItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const TagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+`;
+
+const TagInput = styled.input`
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+`;
+
 
 // Start of the AdminPage component
 const AdminPage = () => {
@@ -2525,13 +2847,22 @@ const AdminPage = () => {
             <ContentArea>
               {activeTab === 'add-product' && (
                 <>
-                  <h2>Add New Product</h2>
-
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
-
-                  <Form onSubmit={handleSubmit}>
+                  <ProductFormContainer>
+                    <ProductFormHeader>
+                      <h2>Add New Product</h2>
+                      {successMessage && (
+                        <SuccessMessage>{successMessage}</SuccessMessage>
+                      )}
+                    </ProductFormHeader>
+                    
+                    <ProductFormLayout>
+                      <ProductFormMain>
+                        <TabContainer>
+                          <TabButton active={true}>General</TabButton>
+                          
+                        </TabContainer>
+                        
+                        <Form onSubmit={handleSubmit}>
                     <FormGroup>
                       <Label htmlFor="name">Product Name</Label>
                       <Input
@@ -2666,48 +2997,7 @@ const AdminPage = () => {
                       </ColorRadioContainer>
                     </FormGroup>
 
-                    <FormGroup>
-                      <Label>Product Image</Label>
-                      <ImageUploadContainer>
-                        <UploadActions>
-                          <UploadButton type="button" onClick={handleUploadClick}>
-                            Choose Image
-                          </UploadButton>
-                          <span>{selectedFile ? selectedFile.name : 'No file selected'}</span>
-                        </UploadActions>
-                        <FileInput
-                          type="file"
-                          ref={fileInputRef}
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                        />
-                        <ImagePreviewContainer>
-                          {previewUrl ? (
-                            <ImagePreview src={previewUrl} alt="Preview" />
-                          ) : productData.image ? (
-                            <ImagePreview src={productData.image} alt="Current" />
-                          ) : (
-                            <span>Image Preview</span>
-                          )}
-                        </ImagePreviewContainer>
-                      </ImageUploadContainer>
-                    </FormGroup>
 
-                    <FormGroup>
-                      <Label>Features</Label>
-                      <CheckboxContainer>
-                        {featureOptions.map(feature => (
-                          <CheckboxLabel key={feature}>
-                            <input
-                              type="checkbox"
-                              checked={productData.features?.includes(feature) || false}
-                              onChange={() => handleFeatureToggle(feature)}
-                            />
-                            {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                          </CheckboxLabel>
-                        ))}
-                      </CheckboxContainer>
-                    </FormGroup>
 
                     <FormGroup>
                       <Label htmlFor="productStatus">Product Status</Label>
@@ -2739,85 +3029,8 @@ const AdminPage = () => {
                       </Select>
                     </FormGroup>
 
-                    {/* Gallery Images */}
-                    <FormGroup>
-                      <Label>Product Gallery Images</Label>
-                      <ImageUploadContainer>
-                        <UploadActions>
-                          <UploadButton type="button" onClick={() => document.getElementById('galleryUpload').click()}>
-                            Add Gallery Images
-                          </UploadButton>
-                          <span>{(productData && productData.gallery) ? productData.gallery.length : 0} images selected</span>
-                        </UploadActions>
-                        <FileInput
-                          type="file"
-                          id="galleryUpload"
-                          accept="image/*"
-                          multiple
-                          onChange={handleGalleryUpload}
-                        />
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                          {(productData && productData.gallery && Array.isArray(productData.gallery)) &&
-                            productData.gallery.map((img, index) => (
-                              <div key={index} style={{ position: 'relative', width: '80px', height: '80px' }}>
-                                <ImagePreview src={img} alt={`Gallery ${index}`} style={{ width: '100%', height: '100%' }} />
-                                <button
-                                  type="button"
-                                  onClick={() => removeGalleryImage(index)}
-                                  style={{
-                                    position: 'absolute',
-                                    top: '-8px',
-                                    right: '-8px',
-                                    background: '#e74c3c',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '20px',
-                                    height: '20px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                  }}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            ))
-                          }
-                        </div>
-                      </ImageUploadContainer>
-                    </FormGroup>
 
-                    {/* Brand */}
-                    <FormGroup>
-                      <Label htmlFor="brand">Brand</Label>
-                      <Input
-                        type="text"
-                        id="brand"
-                        name="brand"
-                        value={productData.brand}
-                        onChange={handleInputChange}
-                      />
-                    </FormGroup>
 
-                    {/* Gender */}
-                    <FormGroup>
-                      <Label htmlFor="gender">Gender</Label>
-                      <Select
-                        id="gender"
-                        name="gender"
-                        value={productData.gender}
-                        onChange={handleInputChange}
-                      >
-                        {genders.map(gender => (
-                          <option key={gender} value={gender}>
-                            {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                          </option>
-                        ))}
-                      </Select>
-                    </FormGroup>
 
                     {/* Frame Color */}
                     <FormGroup>
@@ -2831,22 +3044,6 @@ const AdminPage = () => {
                       />
                     </FormGroup>
 
-                    {/* Sizes */}
-                    <FormGroup>
-                      <Label>Available Sizes</Label>
-                      <CheckboxContainer>
-                        {sizeOptions.map(size => (
-                          <CheckboxLabel key={size}>
-                            <input
-                              type="checkbox"
-                              checked={productData.sizes?.includes(size) || false}
-                              onChange={() => handleSizeToggle(size)}
-                            />
-                            {size}
-                          </CheckboxLabel>
-                        ))}
-                      </CheckboxContainer>
-                    </FormGroup>
 
                     {/* Lens Types */}
                     <FormGroup>
@@ -2921,14 +3118,341 @@ const AdminPage = () => {
                       />
                     </FormGroup>
 
-                    <SubmitButton type="submit" disabled={isLoading}>
-                      {isLoading ? 'Adding...' : 'Add Product'}
-                    </SubmitButton>
-                  </Form>
+                          <SubmitButton type="submit" disabled={isLoading}>
+                            {isLoading ? 'Adding Product...' : 'Add Product'}
+                          </SubmitButton>
+                        </Form>
+                      </ProductFormMain>
+                      
+                      <ProductFormSidebar>
+                        <SidebarSection>
+                          <SidebarTitle>Thumbnail</SidebarTitle>
+                          <ThumbnailContainer>
+                            <ThumbnailImage onClick={handleUploadClick}>
+                              {previewUrl ? (
+                                <img src={previewUrl} alt="Product thumbnail" />
+                              ) : (
+                                <ThumbnailPlaceholder>
+                                  <span>📷</span>
+                                  <span>Click to upload thumbnail image</span>
+                                </ThumbnailPlaceholder>
+                              )}
+                            </ThumbnailImage>
+                            <FileInput
+                              type="file"
+                              ref={fileInputRef}
+                              accept="image/*"
+                              onChange={handleFileSelect}
+                            />
+                          </ThumbnailContainer>
+                        </SidebarSection>
+                        
+                        <SidebarSection>
+                          <SidebarTitle>Status</SidebarTitle>
+                          <StatusContainer>
+                            <StatusIndicator status="draft" />
+                            <Select
+                              value={productData.featured && productData.bestSeller ? 'both' : productData.featured ? 'featured' : productData.bestSeller ? 'bestSeller' : 'draft'}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProductData({
+                                  ...productData,
+                                  featured: value === 'featured' || value === 'both',
+                                  bestSeller: value === 'bestSeller' || value === 'both'
+                                });
+                              }}
+                            >
+                              <option value="draft">Draft</option>
+                              <option value="featured">Featured</option>
+                              <option value="bestSeller">Best Seller</option>
+                              <option value="both">Featured & Best Seller</option>
+                            </Select>
+                          </StatusContainer>
+                        </SidebarSection>
+                        
+                        <SidebarSection>
+                          <SidebarTitle>Product Details</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Label>Categories</Label>
+                              <Select
+                                name="category"
+                                value={productData.category}
+                                onChange={handleInputChange}
+                                required
+                              >
+                                {categories.map(category => (
+                                  <option key={category} value={category}>
+                                    {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+                            
+                            <DetailsItem>
+                              <Label>Material</Label>
+                              <Select
+                                name="material"
+                                value={productData.material}
+                                onChange={handleInputChange}
+                              >
+                                <option value="">Select Material</option>
+                                {materials.map(material => (
+                                  <option key={material} value={material}>
+                                    {material.charAt(0).toUpperCase() + material.slice(1)}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+                            
+                            <DetailsItem>
+                              <Label>Tags</Label>
+                              <TagsContainer>
+                                <TagInput placeholder="Sunglasses" />
+                              </TagsContainer>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                        
+                        <SidebarSection>
+                          <SidebarTitle>Brand</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Input
+                                type="text"
+                                name="brand"
+                                value={productData.brand}
+                                onChange={handleInputChange}
+                                placeholder="Enter brand name"
+                              />
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                        
+                        <SidebarSection>
+                          <SidebarTitle>Gender</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="gender"
+                                value={productData.gender}
+                                onChange={handleInputChange}
+                              >
+                                {genders.map(gender => (
+                                  <option key={gender} value={gender}>
+                                    {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                        
+                        <SidebarSection>
+                          <SidebarTitle>Available Sizes</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="sizes"
+                                value={productData.sizes?.[0] || ''}
+                                onChange={(e) => {
+                                  const selectedSize = e.target.value;
+                                  if (selectedSize && !productData.sizes?.includes(selectedSize)) {
+                                    setProductData({
+                                      ...productData,
+                                      sizes: [...(productData.sizes || []), selectedSize]
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="">Select a size</option>
+                                {sizeOptions.map(size => (
+                                  <option key={size} value={size}>
+                                    {size}
+                                  </option>
+                                ))}
+                              </Select>
+                              {productData.sizes && productData.sizes.length > 0 && (
+                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {productData.sizes.map((size, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        background: '#3b82f6',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                      }}
+                                    >
+                                      {size}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProductData({
+                                            ...productData,
+                                            sizes: productData.sizes.filter(s => s !== size)
+                                          });
+                                        }}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'white',
+                                          cursor: 'pointer',
+                                          fontSize: '14px',
+                                          padding: '0',
+                                          lineHeight: '1'
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                        
+                        <SidebarSection>
+                          <SidebarTitle>Features</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="features"
+                                value=""
+                                onChange={(e) => {
+                                  const selectedFeature = e.target.value;
+                                  if (selectedFeature && !productData.features?.includes(selectedFeature)) {
+                                    setProductData({
+                                      ...productData,
+                                      features: [...(productData.features || []), selectedFeature]
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="">Select a feature</option>
+                                {featureOptions.map(feature => (
+                                  <option key={feature} value={feature}>
+                                    {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                  </option>
+                                ))}
+                              </Select>
+                              {productData.features && productData.features.length > 0 && (
+                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {productData.features.map((feature, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        background: '#10b981',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                      }}
+                                    >
+                                      {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProductData({
+                                            ...productData,
+                                            features: productData.features.filter(f => f !== feature)
+                                          });
+                                        }}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'white',
+                                          cursor: 'pointer',
+                                          fontSize: '14px',
+                                          padding: '0',
+                                          lineHeight: '1'
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                        
+                        <SidebarSection>
+                          <SidebarTitle>Product Gallery</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <MediaUploadArea onClick={() => document.getElementById('galleryUpload').click()}>
+                                <MediaUploadIcon>🖼️</MediaUploadIcon>
+                                <MediaUploadText>
+                                  {productData.gallery?.length || 0} images selected
+                                  <br />
+                                  Click to add gallery images
+                                </MediaUploadText>
+                                <FileInput
+                                  type="file"
+                                  id="galleryUpload"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={handleGalleryUpload}
+                                />
+                              </MediaUploadArea>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                                {productData.gallery?.map((img, index) => (
+                                  <div key={index} style={{ position: 'relative', width: '60px', height: '60px' }}>
+                                    <img 
+                                      src={img} 
+                                      alt={`Gallery ${index}`} 
+                                      style={{ 
+                                        width: '100%', 
+                                        height: '100%', 
+                                        objectFit: 'cover', 
+                                        borderRadius: '4px',
+                                        border: '1px solid #e2e8f0'
+                                      }} 
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeGalleryImage(index)}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '-6px',
+                                        right: '-6px',
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '18px',
+                                        height: '18px',
+                                        cursor: 'pointer',
+                                        fontSize: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                      </ProductFormSidebar>
+                    </ProductFormLayout>
+                  </ProductFormContainer>
                 </>
               )}
 
-              {/* Manage Products section */}
               {activeTab === 'manage-products' && (
                 <>
                   <h2>Manage Products</h2>
@@ -2937,520 +3461,70 @@ const AdminPage = () => {
                     <SuccessMessage>{successMessage}</SuccessMessage>
                   )}
 
-
-
                   <ProductList>
                     {isProductsLoading ? (
-                      <p>Loading products...</p>
-                    ) : error ? (
-                      <p>Error loading products: {error}</p>
-                    ) : !products || products.length === 0 ? (
-                      <p>No products available. Add your first product to get started with real data analytics.</p>
-                    ) : (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        Loading products...
+                      </div>
+                    ) : products && products.length > 0 ? (
                       products.map(product => (
-                        <ProductItem key={product.id}>
+                        <ProductCard key={product.id}>
                           <ProductImage>
-                            <img src={product.image} alt="Product image" />
+                            {product.image ? (
+                              <img src={product.image} alt={product.name} />
+                            ) : (
+                              <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                height: '100%',
+                                background: '#f8fafc',
+                                color: '#64748b'
+                              }}>
+                                No Image
+                              </div>
+                            )}
                           </ProductImage>
                           <ProductInfo>
                             <ProductName>{product.name}</ProductName>
-                            <ProductMeta>
-                              {formatPKR(product.price)} | {product.category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                              {product.featured && ' | Featured'}
-                              {product.bestSeller && ' | Best Seller'}
-                              {product.discount?.hasDiscount && ` | ${product.discount.discountPercentage}% OFF`}
-                            </ProductMeta>
+                            <ProductPrice>PKR {product.price}</ProductPrice>
+                            <ProductCategory>{product.category}</ProductCategory>
+                            <ProductStatus status={product.status}>
+                              {product.featured && 'Featured '}
+                              {product.bestSeller && 'Best Seller'}
+                              {!product.featured && !product.bestSeller && 'Regular'}
+                            </ProductStatus>
                           </ProductInfo>
-                          <ActionButtons>
-                            <ActionButton
-                              className="edit"
-                              onClick={() => handleEditProduct(product)}
+                          <ProductActions>
+                            <ActionButton 
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setProductData(product);
+                                setActiveTab('edit-product');
+                              }}
                             >
                               Edit
                             </ActionButton>
-                            <ActionButton
-                              className="delete"
+                            <ActionButton 
+                              danger
                               onClick={() => handleDeleteProduct(product.id)}
                             >
                               Delete
                             </ActionButton>
-                          </ActionButtons>
-                        </ProductItem>
+                          </ProductActions>
+                        </ProductCard>
                       ))
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        No products found. <a href="#" onClick={() => setActiveTab('add-product')}>Add your first product</a>
+                      </div>
                     )}
                   </ProductList>
-
-                  <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-
-                    <SubmitButton
-                      onClick={handleUpdateExistingProductsWithStyles}
-                      style={{ backgroundColor: '#f39c12' }}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Updating...' : 'Add Styles to Existing Products'}
-                    </SubmitButton>
-
-
-                    <SubmitButton
-                      onClick={() => {
-                        // dispatch(removeLensProducts());
-                        alert('Lens products removed from general listings!');
-                      }}
-                      style={{ backgroundColor: '#f39c12' }}
-                      disabled={isLoading}
-                    >
-                      Remove Lens Products from General Listings
-                    </SubmitButton>
-
-                    <SubmitButton
-                      onClick={async () => {
-                        if (window.confirm('This will refresh all products and apply the lens filter. Continue?')) {
-                          try {
-                            setIsLoading(true);
-                            await dispatch(fetchProducts()).unwrap();
-                            setIsLoading(false);
-                            alert('Products refreshed successfully! Lens products are now excluded from general listings.');
-                          } catch (error) {
-                            setIsLoading(false);
-                            console.error('Failed to refresh products:', error);
-                            alert('Error removing products: ' + error.message);
-                          }
-                        }
-                      }}
-                      style={{ backgroundColor: '#e74c3c' }}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Processing...' : 'Refresh Products & Apply Lens Filter'}
-                    </SubmitButton>
-                  </div>
                 </>
               )}
 
               {activeTab === 'orders' && (
-                <OrderDashboard />
-              )}
-
-              {activeTab === 'eyewear-products' && (
-                <>
-                  <h2>Eyewear Products Management</h2>
-
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
-
-                  <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-
-                    <SubmitButton
-                      onClick={handleUpdateExistingProductsWithStyles}
-                      style={{ backgroundColor: '#f39c12' }}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Updating...' : 'Add Styles to Existing Products'}
-                    </SubmitButton>
-
-                    <SubmitButton
-                      onClick={() => {
-                        alert('Lens products removed from eyewear listings!');
-                      }}
-                      style={{ backgroundColor: '#e74c3c' }}
-                      disabled={isLoading}
-                    >
-                      Remove Lens Products from Eyewear Listings
-                    </SubmitButton>
-
-                    <SubmitButton
-                      onClick={async () => {
-                        if (window.confirm('This will refresh all products and apply the lens filter. Continue?')) {
-                          try {
-                            setIsLoading(true);
-                            await dispatch(fetchProducts()).unwrap();
-                            setIsLoading(false);
-                            alert('Products refreshed successfully! Lens products are now excluded from general listings.');
-                          } catch (error) {
-                            setIsLoading(false);
-                            console.error('Failed to refresh products:', error);
-                            alert('Error removing products: ' + error.message);
-                          }
-                        }
-                      }}
-                      style={{ backgroundColor: '#e74c3c' }}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Processing...' : 'Refresh Products & Apply Lens Filter'}
-                    </SubmitButton>
-                  </div>
-
-                  <div style={{ marginTop: '20px' }}>
-                    <h3>Eyewear Product Categories</h3>
-                    <p>• Sunglasses</p>
-                    <p>• Eyeglasses</p>
-                    <p>• Reading Glasses</p>
-                    <p>• Safety Glasses</p>
-                  </div>
-
-                  <div style={{ marginTop: '30px' }}>
-                    <h3>Manage Eyewear Products</h3>
-                    <ProductList>
-                      {(products || []).filter(product => {
-                        const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                        const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                        const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-
-                        // Exclude lens products
-                        if (lensCategories.includes(product.category)) return false;
-                        if (lensNames.some(name => product.name && product.name.includes(name))) return false;
-                        if (lensBrands.includes(product.brand)) return false;
-
-                        return true;
-                      }).length === 0 ? (
-                        <p>No eyewear products found. Add some eyewear products to get started.</p>
-                      ) : (
-                        (products || []).filter(product => {
-                          const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                          const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                          const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-
-                          // Exclude lens products
-                          if (lensCategories.includes(product.category)) return false;
-                          if (lensNames.some(name => product.name && product.name.includes(name))) return false;
-                          if (lensBrands.includes(product.brand)) return false;
-
-                          return true;
-                        }).map(product => (
-                          <ProductItem key={product.id}>
-                            <ProductInfo>
-                              <h4>{product.name}</h4>
-                              <p>Price: PKR {product.price}</p>
-                              <p>Category: {product.category}</p>
-                              <p>Brand: {product.brand || 'N/A'}</p>
-                              <p>Status: {product.status}</p>
-                            </ProductInfo>
-                            <ActionButtons>
-                              <ActionButton
-                                className="edit"
-                                onClick={() => handleEditProduct(product)}
-                              >
-                                Edit
-                              </ActionButton>
-                              <ActionButton
-                                className="delete"
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                Delete
-                              </ActionButton>
-                            </ActionButtons>
-                          </ProductItem>
-                        ))
-                      )}
-                    </ProductList>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'lens-products' && (
-                <>
-                  <h2>Lens Products Management</h2>
-
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
-
-                  <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-
-                    <SubmitButton
-                      onClick={async () => {
-                        if (window.confirm('This will remove all lens products from the store. Continue?')) {
-                          try {
-                            setIsLoading(true);
-                            // dispatch(removeLensProducts());
-                            setIsLoading(false);
-                            alert('All lens products removed successfully!');
-                          } catch (error) {
-                            setIsLoading(false);
-                            console.error('Failed to remove lens products:', error);
-                            alert('Error removing lens products: ' + error.message);
-                          }
-                        }
-                      }}
-                      style={{ backgroundColor: '#e74c3c' }}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Removing...' : 'Remove All Lens Products'}
-                    </SubmitButton>
-                  </div>
-
-                  <div style={{ marginTop: '20px' }}>
-                    <h3>Lens Product Categories</h3>
-                    <p>• Contact Lenses</p>
-                    <p>• Transparent Lenses</p>
-                    <p>• Colored Lenses</p>
-                    <p>• Daily Disposable Lenses</p>
-                    <p>• Monthly Lenses</p>
-                    <p>• Annual Lenses</p>
-                  </div>
-
-                  <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-                    <h4>Lens Product Features</h4>
-                    <p>• Power/BC/DIA specifications</p>
-                    <p>• Color variations</p>
-                    <p>• Prescription upload functionality</p>
-                    <p>• Eye-specific power selection (OD/OS)</p>
-                    <p>• Separate routing (/lenses/:id)</p>
-                  </div>
-
-                  <div style={{ marginTop: '30px' }}>
-                    <h3>Manage Lens Products</h3>
-                    <ProductList>
-                      {(products || []).filter(product => {
-                        const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                        const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                        const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-
-                        // Include only lens products
-                        if (lensCategories.includes(product.category)) return true;
-                        if (lensNames.some(name => product.name.includes(name))) return true;
-                        if (lensBrands.includes(product.brand)) return true;
-
-                        return false;
-                      }).length === 0 ? (
-                        <p>No lens products found. Add some lens products to get started.</p>
-                      ) : (
-                        (products || []).filter(product => {
-                          const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                          const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                          const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-
-                          // Include only lens products
-                          if (lensCategories.includes(product.category)) return true;
-                          if (lensNames.some(name => product.name.includes(name))) return true;
-                          if (lensBrands.includes(product.brand)) return true;
-
-                          return false;
-                        }).map(product => (
-                          <ProductItem key={product.id}>
-                            <ProductInfo>
-                              <h4>{product.name}</h4>
-                              <p>Price: PKR {product.price}</p>
-                              <p>Category: {product.category}</p>
-                              <p>Brand: {product.brand || 'N/A'}</p>
-                              <p>Status: {product.status}</p>
-                              {product.power && <p>Power: {product.power}</p>}
-                              {product.bc && <p>BC: {product.bc}</p>}
-                              {product.dia && <p>DIA: {product.dia}</p>}
-                            </ProductInfo>
-                            <ActionButtons>
-                              <ActionButton
-                                className="edit"
-                                onClick={() => handleEditProduct(product)}
-                              >
-                                Edit
-                              </ActionButton>
-                              <ActionButton
-                                className="delete"
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                Delete
-                              </ActionButton>
-                            </ActionButtons>
-                          </ProductItem>
-                        ))
-                      )}
-                    </ProductList>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'customers' && (
-                <div>
-                  <h2>Customer Management</h2>
-                  <p>Customer management features coming soon...</p>
-                </div>
-              )}
-
-              {activeTab === 'reviews' && (
-                <div>
-                  <h2>Review Management</h2>
-
-                  {successMessage && (
-                    <div style={{
-                      padding: '1rem',
-                      backgroundColor: '#d4edda',
-                      border: '1px solid #c3e6cb',
-                      borderRadius: '4px',
-                      color: '#155724',
-                      marginBottom: '1rem'
-                    }}>
-                      {successMessage}
-                    </div>
-                  )}
-
-                  <div style={{ marginBottom: '2rem' }}>
-                    <h3>Filter Reviews</h3>
-                    <div style={{
-                      display: 'flex',
-                      gap: '1rem',
-                      marginBottom: '1rem',
-                      flexWrap: 'wrap'
-                    }}>
-                      <button
-                        onClick={() => setReviewFilter('all')}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          border: '1px solid #007bff',
-                          backgroundColor: reviewFilter === 'all' ? '#007bff' : 'transparent',
-                          color: reviewFilter === 'all' ? 'white' : '#007bff',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}>
-                        All Reviews ({reviews.length})
-                      </button>
-                      <button
-                        onClick={() => setReviewFilter('pending')}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          border: '1px solid #ffc107',
-                          backgroundColor: reviewFilter === 'pending' ? '#ffc107' : 'transparent',
-                          color: reviewFilter === 'pending' ? 'white' : '#ffc107',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}>
-                        Pending ({reviews.filter(r => !r.verified && r.status !== 'rejected').length})
-                      </button>
-                      <button
-                        onClick={() => setReviewFilter('approved')}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          border: '1px solid #28a745',
-                          backgroundColor: reviewFilter === 'approved' ? '#28a745' : 'transparent',
-                          color: reviewFilter === 'approved' ? 'white' : '#28a745',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}>
-                        Approved ({reviews.filter(r => r.verified).length})
-                      </button>
-                      <button
-                        onClick={() => setReviewFilter('rejected')}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          border: '1px solid #dc3545',
-                          backgroundColor: reviewFilter === 'rejected' ? '#dc3545' : 'transparent',
-                          color: reviewFilter === 'rejected' ? 'white' : '#dc3545',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}>
-                        Rejected ({reviews.filter(r => r.status === 'rejected').length})
-                      </button>
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: '2rem' }}>
-                    <h3>Reviews</h3>
-                    {reviewsLoading ? (
-                      <div style={{ textAlign: 'center', padding: '2rem' }}>
-                        Loading reviews...
-                      </div>
-                    ) : (
-                      <div>
-                        {reviews
-                          .filter(review => {
-                            if (reviewFilter === 'all') return true;
-                            if (reviewFilter === 'pending') return !review.verified && review.status !== 'rejected';
-                            if (reviewFilter === 'approved') return review.verified;
-                            if (reviewFilter === 'rejected') return review.status === 'rejected';
-                            return true;
-                          })
-                          .map(review => (
-                            <div key={review.id} style={{
-                              border: '1px solid #ddd',
-                              borderRadius: '8px',
-                              padding: '1rem',
-                              marginBottom: '1rem',
-                              backgroundColor: 'white'
-                            }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                                <div>
-                                  <h4 style={{ margin: '0 0 0.25rem 0' }}>{review.title}</h4>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                                    <div style={{ color: '#ffa500' }}>
-                                      {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
-                                    </div>
-                                    <span style={{ fontSize: '0.9rem', color: '#666' }}>by {review.name}</span>
-                                  </div>
-                                  <p style={{ margin: '0.5rem 0', color: '#333' }}>{review.text}</p>
-                                  <small style={{ color: '#666' }}>Product ID: {review.productId} | {new Date(review.createdAt).toLocaleDateString()}</small>
-                                </div>
-                                <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                                  <div style={{
-                                    padding: '0.25rem 0.5rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 'bold',
-                                    textAlign: 'center',
-                                    backgroundColor: review.verified ? '#d4edda' : (review.status === 'rejected' ? '#f8d7da' : '#fff3cd'),
-                                    color: review.verified ? '#155724' : (review.status === 'rejected' ? '#721c24' : '#856404')
-                                  }}>
-                                    {review.verified ? 'Approved' : (review.status === 'rejected' ? 'Rejected' : 'Pending')}
-                                  </div>
-                                  {!review.verified && review.status !== 'rejected' && (
-                                    <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                      <button
-                                        onClick={() => approveReview(review.id)}
-                                        style={{
-                                          padding: '0.25rem 0.5rem',
-                                          backgroundColor: '#28a745',
-                                          color: 'white',
-                                          border: 'none',
-                                          borderRadius: '4px',
-                                          cursor: 'pointer',
-                                          fontSize: '0.8rem'
-                                        }}
-                                      >
-                                        Approve
-                                      </button>
-                                      <button
-                                        onClick={() => rejectReview(review.id)}
-                                        style={{
-                                          padding: '0.25rem 0.5rem',
-                                          backgroundColor: '#dc3545',
-                                          color: 'white',
-                                          border: 'none',
-                                          borderRadius: '4px',
-                                          cursor: 'pointer',
-                                          fontSize: '0.8rem'
-                                        }}
-                                      >
-                                        Reject
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        }
-                        {reviews.filter(review => {
-                          if (reviewFilter === 'all') return true;
-                          if (reviewFilter === 'pending') return !review.verified && review.status !== 'rejected';
-                          if (reviewFilter === 'approved') return review.verified;
-                          if (reviewFilter === 'rejected') return review.status === 'rejected';
-                          return true;
-                        }).length === 0 && (
-                            <div style={{
-                              border: '1px solid #ddd',
-                              borderRadius: '8px',
-                              padding: '2rem',
-                              backgroundColor: '#f9f9f9',
-                              textAlign: 'center'
-                            }}>
-                              <p style={{ color: '#666', margin: 0 }}>
-                                {reviewFilter === 'all' ? 'No reviews found.' : `No ${reviewFilter} reviews found.`}
-                              </p>
-                            </div>
-                          )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <OrderManagement />
               )}
 
               {activeTab === 'edit-product' && (
@@ -3464,15 +3538,17 @@ const AdminPage = () => {
                   <Form onSubmit={handleUpdateSubmit}>
                     {/* Same form fields as Add Product, but with a different submit button */}
                     <FormGroup>
-                      <Label htmlFor="name">Product Name</Label>
+                      <Label htmlFor="name">Product Name *</Label>
                       <Input
                         type="text"
                         id="name"
                         name="name"
                         value={productData.name}
                         onChange={handleInputChange}
+                        placeholder="Sample Product"
                         required
                       />
+                      <FormHint>Add a name that is recommended to be unique.</FormHint>
                     </FormGroup>
 
                     <FormGroup>
@@ -3580,48 +3656,7 @@ const AdminPage = () => {
                       </ColorRadioContainer>
                     </FormGroup>
 
-                    <FormGroup>
-                      <Label>Product Image</Label>
-                      <ImageUploadContainer>
-                        <UploadActions>
-                          <UploadButton type="button" onClick={handleUploadClick}>
-                            Choose Image
-                          </UploadButton>
-                          <span>{selectedFile ? selectedFile.name : 'No file selected'}</span>
-                        </UploadActions>
-                        <FileInput
-                          type="file"
-                          ref={fileInputRef}
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                        />
-                        <ImagePreviewContainer>
-                          {previewUrl ? (
-                            <ImagePreview src={previewUrl} alt="Preview" />
-                          ) : productData.image ? (
-                            <ImagePreview src={productData.image} alt="Current" />
-                          ) : (
-                            <span>Image Preview</span>
-                          )}
-                        </ImagePreviewContainer>
-                      </ImageUploadContainer>
-                    </FormGroup>
 
-                    <FormGroup>
-                      <Label>Features</Label>
-                      <CheckboxContainer>
-                        {featureOptions.map(feature => (
-                          <CheckboxLabel key={feature}>
-                            <input
-                              type="checkbox"
-                              checked={productData.features?.includes(feature) || false}
-                              onChange={() => handleFeatureToggle(feature)}
-                            />
-                            {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                          </CheckboxLabel>
-                        ))}
-                      </CheckboxContainer>
-                    </FormGroup>
 
                     <FormGroup>
                       <Label htmlFor="productStatus">Product Status</Label>
@@ -3653,83 +3688,8 @@ const AdminPage = () => {
                       </Select>
                     </FormGroup>
 
-                    {/* Gallery Images */}
-                    <FormGroup>
-                      <Label>Product Gallery Images</Label>
-                      <ImageUploadContainer>
-                        <UploadActions>
-                          <UploadButton type="button" onClick={() => document.getElementById('galleryUpload').click()}>
-                            Add Gallery Images
-                          </UploadButton>
-                          <span>{productData.gallery?.length || 0} images selected</span>
-                        </UploadActions>
-                        <FileInput
-                          type="file"
-                          id="galleryUpload"
-                          accept="image/*"
-                          multiple
-                          onChange={handleGalleryUpload}
-                        />
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                          {productData.gallery?.map((img, index) => (
-                            <div key={index} style={{ position: 'relative', width: '80px', height: '80px' }}>
-                              <ImagePreview src={img} alt={`Gallery ${index}`} style={{ width: '100%', height: '100%' }} />
-                              <button
-                                type="button"
-                                onClick={() => removeGalleryImage(index)}
-                                style={{
-                                  position: 'absolute',
-                                  top: '-8px',
-                                  right: '-8px',
-                                  background: '#e74c3c',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '50%',
-                                  width: '20px',
-                                  height: '20px',
-                                  cursor: 'pointer',
-                                  fontSize: '12px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center'
-                                }}
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </ImageUploadContainer>
-                    </FormGroup>
 
-                    {/* Brand */}
-                    <FormGroup>
-                      <Label htmlFor="brand">Brand</Label>
-                      <Input
-                        type="text"
-                        id="brand"
-                        name="brand"
-                        value={productData.brand}
-                        onChange={handleInputChange}
-                      />
-                    </FormGroup>
 
-                    {/* Gender */}
-                    <FormGroup>
-                      <Label htmlFor="gender">Gender</Label>
-                      <Select
-                        id="gender"
-                        name="gender"
-                        value={productData.gender}
-                        onChange={handleInputChange}
-                      >
-                        {genders.map(gender => (
-                          <option key={gender} value={gender}>
-                            {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                          </option>
-                        ))}
-                      </Select>
-                    </FormGroup>
 
                     {/* Frame Color */}
                     <FormGroup>
@@ -3743,22 +3703,6 @@ const AdminPage = () => {
                       />
                     </FormGroup>
 
-                    {/* Sizes */}
-                    <FormGroup>
-                      <Label>Available Sizes</Label>
-                      <CheckboxContainer>
-                        {sizeOptions.map(size => (
-                          <CheckboxLabel key={size}>
-                            <input
-                              type="checkbox"
-                              checked={productData.sizes?.includes(size) || false}
-                              onChange={() => handleSizeToggle(size)}
-                            />
-                            {size}
-                          </CheckboxLabel>
-                        ))}
-                      </CheckboxContainer>
-                    </FormGroup>
 
                     {/* Lens Types */}
                     <FormGroup>

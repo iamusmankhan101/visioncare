@@ -15,6 +15,12 @@ const OrderContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding: 1rem;
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
 `;
 
 const StatsContainer = styled.div`
@@ -22,6 +28,17 @@ const StatsContainer = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
 `;
 
 const StatCard = styled.div`
@@ -30,18 +47,42 @@ const StatCard = styled.div`
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 1rem 0.75rem;
+  }
 `;
 
 const StatNumber = styled.div`
   font-size: 1.5rem;
   font-weight: bold;
   color: ${props => props.textColor || '#333'};
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const StatLabel = styled.div`
   font-size: 0.8rem;
   color: #666;
   margin-top: 0.25rem;
+  
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+  }
 `;
 
 const ToolbarContainer = styled.div`
@@ -62,6 +103,11 @@ const ToolbarTop = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const ToolbarLeft = styled.div`
@@ -70,18 +116,34 @@ const ToolbarLeft = styled.div`
   gap: 1rem;
   flex: 1;
   min-width: 300px;
+  
+  @media (max-width: 768px) {
+    min-width: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
 `;
 
 const ToolbarRight = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 `;
 
 const SearchContainer = styled.div`
   position: relative;
   flex: 1;
   max-width: 400px;
+  
+  @media (max-width: 768px) {
+    max-width: none;
+  }
 `;
 
 const SearchInputStyled = styled.input`
@@ -190,6 +252,30 @@ const ActionButton = styled.button`
     }
   }
   
+  &.view {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem;
+    
+    &:hover {
+      background: #f1f5f9;
+      color: #475569;
+    }
+  }
+  
+  &.delete {
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    padding: 0.5rem;
+    
+    &:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+  }
+  
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -198,6 +284,11 @@ const ActionButton = styled.button`
   svg {
     width: 16px;
     height: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
   }
 `;
 
@@ -208,12 +299,22 @@ const FiltersContainer = styled.div`
   border-top: 1px solid #f1f5f9;
   flex-wrap: wrap;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
 `;
 
 const FilterGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const FilterLabel = styled.label`
@@ -249,6 +350,11 @@ const FilterSelect = styled.select`
     outline: none;
     border-color: #3498db;
   }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: auto;
+  }
 `;
 
 const OrdersTable = styled.div`
@@ -271,8 +377,7 @@ const TableHeader = styled.div`
   letter-spacing: 0.025em;
   
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
+    display: none;
   }
 `;
 
@@ -294,9 +399,131 @@ const OrderRow = styled.div`
   }
   
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    padding: 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+`;
+
+const MobileOrderCard = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const MobileOrderHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+`;
+
+const MobileOrderInfo = styled.div`
+  flex: 1;
+`;
+
+const MobileOrderNumber = styled.div`
+  font-weight: 600;
+  color: #3498db;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+  cursor: pointer;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const MobileCustomerName = styled.div`
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.25rem;
+`;
+
+const MobileCustomerEmail = styled.div`
+  font-size: 0.9rem;
+  color: #666;
+`;
+
+const MobileOrderDetails = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
+const MobileDetailItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const MobileDetailLabel = styled.span`
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-weight: 500;
+`;
+
+const MobileDetailValue = styled.span`
+  font-weight: 500;
+  color: #333;
+`;
+
+const MobileItemsList = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const MobileItemsLabel = styled.div`
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+`;
+
+const MobileItem = styled.div`
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  
+  strong {
+    color: #333;
+  }
+  
+  span {
+    color: #64748b;
+  }
+`;
+
+const MobileActions = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+`;
+
+const MobileStatusContainer = styled.div`
+  flex: 1;
+`;
+
+const MobileActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const DesktopOrderRow = styled.div`
+  @media (max-width: 768px) {
+    display: none;
   }
 `;
 
@@ -388,6 +615,18 @@ const ModalContent = styled.div`
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    width: 95%;
+    padding: 1rem;
+    max-height: 90vh;
+    border-radius: 12px 12px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: none;
+  }
 `;
 
 const ModalHeader = styled.div`
@@ -457,6 +696,13 @@ const BulkActionsBar = styled.div`
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    padding: 1rem;
+  }
 `;
 
 const BulkActionsLeft = styled.div`
@@ -469,6 +715,11 @@ const BulkActionsRight = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 `;
 
 const SelectedCount = styled.span`
@@ -479,12 +730,18 @@ const SelectedCount = styled.span`
 
 const PaginationContainer = styled.div`
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
   background: white;
   border-top: 1px solid #f1f5f9;
   border-radius: 0 0 12px 12px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
 `;
 
 const PaginationInfo = styled.div`
@@ -497,6 +754,11 @@ const PaginationControls = styled.div`
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+    justify-content: center;
+  }
 `;
 
 const PaginationButton = styled.button`
@@ -572,6 +834,18 @@ const EmptyDescription = styled.p`
   margin: 0;
   font-size: 0.875rem;
   color: #64748b;
+`;
+
+const ModalGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 const LoadingState = styled.div`
@@ -1049,66 +1323,143 @@ const OrderManagement = () => {
               key={order.id}
               selected={selectedOrders.includes(order.id)}
             >
-              <div>
-                <Checkbox
-                  type="checkbox"
-                  checked={selectedOrders.includes(order.id)}
-                  onChange={() => handleSelectOrder(order.id)}
-                />
-              </div>
+              {/* Desktop View */}
+              <DesktopOrderRow>
+                <div>
+                  <Checkbox
+                    type="checkbox"
+                    checked={selectedOrders.includes(order.id)}
+                    onChange={() => handleSelectOrder(order.id)}
+                  />
+                </div>
+                
+                <OrderNumber onClick={() => setSelectedOrder(order)}>
+                  {order.orderNumber}
+                </OrderNumber>
+                
+                <CustomerInfo>
+                  <CustomerName>
+                    {order.customerInfo.firstName} {order.customerInfo.lastName}
+                  </CustomerName>
+                  <CustomerEmail>{order.customerInfo.email}</CustomerEmail>
+                </CustomerInfo>
+                
+                <div>{formatDate(order.orderDate)}</div>
+                
+                <div>{formatCurrency(order.total)}</div>
+                
+                <div>
+                  {order.items?.map((item, index) => (
+                    <div key={index} style={{ fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                      <strong>{item.name}</strong> x{item.quantity || 1}
+                      {item.selectedColor && <span style={{ color: '#64748b' }}> - {item.selectedColor}</span>}
+                      {item.selectedSize && <span style={{ color: '#64748b' }}> - {item.selectedSize}</span>}
+                    </div>
+                  )) || 'No items'}
+                </div>
+                
+                <div>
+                  <StatusSelect
+                    value={order.status}
+                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </StatusSelect>
+                </div>
+                
+                <ActionButtons>
+                  <ActionButton 
+                    className="view"
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    <FiEye />
+                  </ActionButton>
+                  <ActionButton 
+                    className="delete"
+                    onClick={() => handleDeleteOrder(order.id)}
+                  >
+                    <FiTrash2 />
+                  </ActionButton>
+                </ActionButtons>
+              </DesktopOrderRow>
               
-              <OrderNumber onClick={() => setSelectedOrder(order)}>
-                {order.orderNumber}
-              </OrderNumber>
-              
-              <CustomerInfo>
-                <CustomerName>
-                  {order.customerInfo.firstName} {order.customerInfo.lastName}
-                </CustomerName>
-                <CustomerEmail>{order.customerInfo.email}</CustomerEmail>
-              </CustomerInfo>
-              
-              <div>{formatDate(order.orderDate)}</div>
-              
-              <div>{formatCurrency(order.total)}</div>
-              
-              <div>
-                {order.items?.map((item, index) => (
-                  <div key={index} style={{ fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                    <strong>{item.name}</strong> x{item.quantity || 1}
-                    {item.selectedColor && <span style={{ color: '#64748b' }}> - {item.selectedColor}</span>}
-                    {item.selectedSize && <span style={{ color: '#64748b' }}> - {item.selectedSize}</span>}
-                  </div>
-                )) || 'No items'}
-              </div>
-              
-              <div>
-                <StatusSelect
-                  value={order.status}
-                  onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                >
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </StatusSelect>
-              </div>
-              
-              <ActionButtons>
-                <ActionButton 
-                  className="view"
-                  onClick={() => setSelectedOrder(order)}
-                >
-                  <FiEye />
-                </ActionButton>
-                <ActionButton 
-                  className="delete"
-                  onClick={() => handleDeleteOrder(order.id)}
-                >
-                  <FiTrash2 />
-                </ActionButton>
-              </ActionButtons>
+              {/* Mobile View */}
+              <MobileOrderCard>
+                <MobileOrderHeader>
+                  <MobileOrderInfo>
+                    <MobileOrderNumber onClick={() => setSelectedOrder(order)}>
+                      {order.orderNumber}
+                    </MobileOrderNumber>
+                    <MobileCustomerName>
+                      {order.customerInfo.firstName} {order.customerInfo.lastName}
+                    </MobileCustomerName>
+                    <MobileCustomerEmail>{order.customerInfo.email}</MobileCustomerEmail>
+                  </MobileOrderInfo>
+                  <Checkbox
+                    type="checkbox"
+                    checked={selectedOrders.includes(order.id)}
+                    onChange={() => handleSelectOrder(order.id)}
+                  />
+                </MobileOrderHeader>
+                
+                <MobileOrderDetails>
+                  <MobileDetailItem>
+                    <MobileDetailLabel>Date</MobileDetailLabel>
+                    <MobileDetailValue>{formatDate(order.orderDate)}</MobileDetailValue>
+                  </MobileDetailItem>
+                  <MobileDetailItem>
+                    <MobileDetailLabel>Total</MobileDetailLabel>
+                    <MobileDetailValue>{formatCurrency(order.total)}</MobileDetailValue>
+                  </MobileDetailItem>
+                </MobileOrderDetails>
+                
+                <MobileItemsList>
+                  <MobileItemsLabel>Items</MobileItemsLabel>
+                  {order.items?.map((item, index) => (
+                    <MobileItem key={index}>
+                      <strong>{item.name}</strong> x{item.quantity || 1}
+                      {item.selectedColor && <span> - {item.selectedColor}</span>}
+                      {item.selectedSize && <span> - {item.selectedSize}</span>}
+                    </MobileItem>
+                  )) || <MobileItem>No items</MobileItem>}
+                </MobileItemsList>
+                
+                <MobileActions>
+                  <MobileStatusContainer>
+                    <MobileDetailLabel>Status</MobileDetailLabel>
+                    <StatusSelect
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      style={{ width: '100%', marginTop: '0.25rem' }}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </StatusSelect>
+                  </MobileStatusContainer>
+                  
+                  <MobileActionButtons>
+                    <ActionButton 
+                      className="secondary"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      <FiEye />
+                    </ActionButton>
+                    <ActionButton 
+                      className="danger"
+                      onClick={() => handleDeleteOrder(order.id)}
+                    >
+                      <FiTrash2 />
+                    </ActionButton>
+                  </MobileActionButtons>
+                </MobileActions>
+              </MobileOrderCard>
             </OrderRow>
           ))}
 
@@ -1171,7 +1522,7 @@ const OrderManagement = () => {
             </ModalHeader>
             
             <OrderDetails>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <ModalGrid>
                 <DetailSection>
                   <SectionTitle>
                     <FiUser style={{ marginRight: '0.5rem' }} />
@@ -1209,7 +1560,7 @@ const OrderManagement = () => {
                     <div style={{ color: '#64748b', fontStyle: 'italic' }}>No shipping address provided</div>
                   )}
                 </DetailSection>
-              </div>
+              </ModalGrid>
 
               <DetailSection>
                 <SectionTitle>
@@ -1252,7 +1603,7 @@ const OrderManagement = () => {
                 </ItemList>
               </DetailSection>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <ModalGrid>
                 <DetailSection>
                   <SectionTitle>
                     <FiDollarSign style={{ marginRight: '0.5rem' }} />
@@ -1305,7 +1656,7 @@ const OrderManagement = () => {
                     </div>
                   </div>
                 </DetailSection>
-              </div>
+              </ModalGrid>
 
               {/* Quick Actions */}
               <div style={{ 
@@ -1315,7 +1666,8 @@ const OrderManagement = () => {
                 borderRadius: '8px',
                 display: 'flex',
                 gap: '0.75rem',
-                justifyContent: 'flex-end'
+                justifyContent: 'flex-end',
+                flexWrap: 'wrap'
               }}>
                 <ActionButton 
                   className="secondary"

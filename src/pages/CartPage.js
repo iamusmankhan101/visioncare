@@ -853,23 +853,36 @@ const CartPage = () => {
                   
                   {item.customizations?.blueLightOption && (
                     <SpecLine>
-                      <span className="label">  ◦ Blue Light: {item.customizations.blueLightOption}</span>
+                      <span className="label">  ◦ Blue Light: {
+                        item.customizations.blueLightOption === 'ebdblue-360' ? 'EBDBlue 360™' :
+                        item.customizations.blueLightOption === 'sightrelax' ? 'SightRelax' :
+                        item.customizations.blueLightOption === 'ebdblue-smart' ? 'EBDBlue Smart 1.6' :
+                        item.customizations.blueLightOption === 'ebdblue-plus' ? 'EBDBlue Plus™' :
+                        item.customizations.blueLightOption
+                      }</span>
                       <span className="value">
-                        {item.customizations.blueLightOption === 'EBDBlue 360™' ? 'PKR 89' :
-                         item.customizations.blueLightOption === 'SightRelax' ? 'PKR 49' :
-                         item.customizations.blueLightOption === 'EBDBlue Smart' ? 'PKR 69' :
-                         item.customizations.blueLightOption === 'EBDBlue Plus™' ? 'PKR 109' : 'Free'}
+                        {item.customizations.blueLightOption === 'ebdblue-360' ? 'PKR 69' :
+                         item.customizations.blueLightOption === 'sightrelax' ? 'PKR 86' :
+                         item.customizations.blueLightOption === 'ebdblue-smart' ? 'PKR 79' :
+                         item.customizations.blueLightOption === 'ebdblue-plus' ? 'PKR 23' : 'Free'}
                       </span>
                     </SpecLine>
                   )}
                   
                   {item.customizations?.transitionsOption && (
                     <SpecLine>
-                      <span className="label">  ◦ Transitions: {item.customizations.transitionsOption}</span>
+                      <span className="label">  ◦ Transitions: {
+                        item.customizations.transitionsOption === 'transitions-gen-s' ? 'Transitions® GEN S™' :
+                        item.customizations.transitionsOption === 'transitions-xtractive' ? 'Transitions® XTRActive®' :
+                        item.customizations.transitionsOption === 'transitions-drivewear' ? 'Transitions® Drivewear®' :
+                        item.customizations.transitionsOption === 'photochromic' ? 'Photochromic' :
+                        item.customizations.transitionsOption
+                      }</span>
                       <span className="value">
-                        {item.customizations.transitionsOption === 'GEN S™' ? 'PKR 149' :
-                         item.customizations.transitionsOption === 'XTRActive®' ? 'PKR 179' :
-                         item.customizations.transitionsOption === 'Drivewear®' ? 'PKR 199' : 'Free'}
+                        {item.customizations.transitionsOption === 'transitions-gen-s' ? 'PKR 99' :
+                         item.customizations.transitionsOption === 'transitions-xtractive' ? 'PKR 139' :
+                         item.customizations.transitionsOption === 'transitions-drivewear' ? 'PKR 149' :
+                         item.customizations.transitionsOption === 'photochromic' ? 'PKR 46' : 'Free'}
                       </span>
                     </SpecLine>
                   )}
@@ -892,6 +905,22 @@ const CartPage = () => {
                          item.customizations.sunOption === 'polarized' ? 'PKR 59' :
                          item.customizations.sunOption === 'mirrored' ? 'PKR 29' :
                          item.customizations.sunOption === 'gradient' ? 'PKR 13' : 'Free'}
+                      </span>
+                    </SpecLine>
+                  )}
+                  
+                  {item.customizations?.clearLensOption && (
+                    <SpecLine>
+                      <span className="label">• Clear Lens: {
+                        item.customizations.clearLensOption === 'kodak-advanced' ? 'KODAK Lens - Advanced' :
+                        item.customizations.clearLensOption === 'most-popular' ? 'Most Popular Lenses' :
+                        item.customizations.clearLensOption === 'standard' ? 'Standard Lenses' :
+                        item.customizations.clearLensOption
+                      }</span>
+                      <span className="value">
+                        {item.customizations.clearLensOption === 'kodak-advanced' ? 'PKR 86' :
+                         item.customizations.clearLensOption === 'most-popular' ? 'PKR 20' :
+                         item.customizations.clearLensOption === 'standard' ? 'PKR 7' : 'Free'}
                       </span>
                     </SpecLine>
                   )}

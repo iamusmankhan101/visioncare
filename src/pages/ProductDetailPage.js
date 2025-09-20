@@ -1832,7 +1832,25 @@ const ProductDetailPage = () => {
             
             <LensSelectionButton onClick={openLensModal}>
               <div className="lens-info">
-                <div className="lens-type">Choose lens type</div>
+                <div className="lens-type">
+                  {selectedUsage || selectedLensTypeOption || selectedPrescriptionMethod || selectedLensColor || selectedClearLensOption || selectedBlueLightOption || selectedTransitionsOption || selectedSunOption || selectedLensPackage ? (
+                    <div>
+                      <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>Lens Options Selected</div>
+                      <div style={{ fontSize: '0.85rem', opacity: '0.8' }}>
+                        {selectedUsage && `Usage: ${selectedUsage.replace('-', ' ')} • `}
+                        {selectedLensTypeOption && `Type: ${selectedLensTypeOption} • `}
+                        {selectedBlueLightOption && `Blue Light • `}
+                        {selectedTransitionsOption && `Transitions • `}
+                        {selectedSunOption && `Sun Protection • `}
+                        {selectedClearLensOption && `Clear Lens • `}
+                        {selectedLensPackage && `Package • `}
+                        Click to modify
+                      </div>
+                    </div>
+                  ) : (
+                    'Choose lens type'
+                  )}
+                </div>
               </div>
               <div className="arrow">→</div>
             </LensSelectionButton>
@@ -1843,14 +1861,93 @@ const ProductDetailPage = () => {
                   // Add product to cart and navigate to cart page
                   if (!product) return;
                   
+                  // Calculate lens pricing based on selections
+                  let lensPrice = 0;
+                  let customizations = {};
+                  
+                  // Add usage selection
+                  if (selectedUsage) {
+                    customizations.usage = selectedUsage;
+                  }
+                  
+                  // Add lens type selection and pricing
+                  if (selectedLensTypeOption) {
+                    customizations.lensType = selectedLensTypeOption;
+                    if (selectedLensTypeOption === 'blue-light') lensPrice += 49;
+                    else if (selectedLensTypeOption === 'progressive') lensPrice += 149;
+                    else if (selectedLensTypeOption === 'photochromic') lensPrice += 99;
+                  }
+                  
+                  // Add prescription method
+                  if (selectedPrescriptionMethod) {
+                    customizations.prescriptionMethod = selectedPrescriptionMethod;
+                  }
+                  
+                  // Add lens color selections and pricing
+                  if (selectedLensColor) {
+                    customizations.lensColor = selectedLensColor;
+                  }
+                  
+                  // Add clear lens option pricing
+                  if (selectedClearLensOption) {
+                    customizations.clearLensOption = selectedClearLensOption;
+                    if (selectedClearLensOption === 'kodak-advanced') lensPrice += 85.95;
+                    else if (selectedClearLensOption === 'most-popular') lensPrice += 19.95;
+                    else if (selectedClearLensOption === 'standard') lensPrice += 6.95;
+                  }
+                  
+                  // Add blue light option pricing
+                  if (selectedBlueLightOption) {
+                    customizations.blueLightOption = selectedBlueLightOption;
+                    if (selectedBlueLightOption === 'ebdblue-360') lensPrice += 68.95;
+                    else if (selectedBlueLightOption === 'sightrelax') lensPrice += 85.95;
+                    else if (selectedBlueLightOption === 'ebdblue-smart') lensPrice += 78.95;
+                    else if (selectedBlueLightOption === 'ebdblue-plus') lensPrice += 22.95;
+                  }
+                  
+                  // Add transitions option pricing
+                  if (selectedTransitionsOption) {
+                    customizations.transitionsOption = selectedTransitionsOption;
+                    if (selectedTransitionsOption === 'transitions-gen-s') lensPrice += 99;
+                    else if (selectedTransitionsOption === 'transitions-xtractive') lensPrice += 139;
+                    else if (selectedTransitionsOption === 'transitions-drivewear') lensPrice += 149;
+                    else if (selectedTransitionsOption === 'photochromic') lensPrice += 45.95;
+                  }
+                  
+                  // Add sun option pricing
+                  if (selectedSunOption) {
+                    customizations.sunOption = selectedSunOption;
+                    if (selectedSunOption === 'basic') lensPrice += 6.95;
+                    else if (selectedSunOption === 'polarized') lensPrice += 59;
+                    else if (selectedSunOption === 'mirrored') lensPrice += 29;
+                    else if (selectedSunOption === 'gradient') lensPrice += 12.95;
+                    
+                    // Add tint colors
+                    if (selectedTintColor) customizations.tintColor = selectedTintColor;
+                    if (selectedMirroredColor) customizations.mirroredColor = selectedMirroredColor;
+                    if (selectedGradientColor) customizations.gradientColor = selectedGradientColor;
+                  }
+                  
+                  // Add lens package pricing
+                  if (selectedLensPackage) {
+                    customizations.lensPackage = selectedLensPackage;
+                    if (selectedLensPackage === 'standard') lensPrice += 43;
+                    else if (selectedLensPackage === 'popular') lensPrice += 73;
+                  }
+                  
+                  const totalPrice = product.price + lensPrice;
+                  
                   const cartItem = {
                     id: product.id,
                     name: product.name,
-                    price: product.price,
-                    image: product.images?.[0] || '',
-                    color: selectedColor || product.colors?.[0] || '',
-                    size: selectedSize || product.sizes?.[0] || '',
-                    quantity: 1
+                    brand: product.brand || 'EyeBuyDirect',
+                    originalPrice: product.price,
+                    price: totalPrice,
+                    image: product.colors?.[selectedImage]?.image || product.image || '/images/eyeglasses.webp',
+                    color: selectedColor || product.colors?.[0]?.name || 'Black',
+                    size: selectedSize || product.sizes?.[0] || 'Medium',
+                    quantity: 1,
+                    customizations: Object.keys(customizations).length > 0 ? customizations : null
                   };
                   
                   dispatch(addToCart(cartItem));
@@ -3966,48 +4063,199 @@ const ProductDetailPage = () => {
                   </span>
                 </div>
                 
-                {/* Usage Selection */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: '0.5rem'
-                }}>
-                  <span style={{ fontSize: '0.95rem', color: '#333' }}>
-                    • Single Vision Distance
-                  </span>
-                  <span style={{ fontSize: '0.95rem', color: '#888' }}>
-                    Free
-                  </span>
-                </div>
+                {/* Dynamic Usage Selection */}
+                {selectedUsage && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Usage: {
+                        selectedUsage === 'single-vision' ? 'Single Vision (Distance)' :
+                        selectedUsage === 'bifocal-progressive' ? 'Bifocal & Progressive' :
+                        selectedUsage === 'reading' ? 'Reading' :
+                        selectedUsage === 'non-prescription' ? 'Non-Prescription' :
+                        selectedUsage
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      Free
+                    </span>
+                  </div>
+                )}
                 
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: '0.5rem'
-                }}>
-                  <span style={{ fontSize: '0.95rem', color: '#333' }}>
-                    • Clear Lenses
-                  </span>
-                  <span style={{ fontSize: '0.95rem', color: '#888' }}>
-                    
-                  </span>
-                </div>
+                {/* Dynamic Lens Type Selection */}
+                {selectedLensTypeOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Lens Type: {
+                        selectedLensTypeOption === 'progressive' ? 'Progressive' :
+                        selectedLensTypeOption === 'bifocal' ? 'Bifocal' :
+                        selectedLensTypeOption
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      Free
+                    </span>
+                  </div>
+                )}
                 
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: '1.5rem'
-                }}>
-                  <span style={{ fontSize: '0.95rem', color: '#333' }}>
-                    • KODAK Lens - Standard
-                  </span>
-                  <span style={{ fontSize: '0.95rem', color: '#888' }}>
-                    {formatPrice(4995)}
-                  </span>
-                </div>
+                {/* Dynamic Lens Color */}
+                {selectedLensColor && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Lens Color: {
+                        selectedLensColor === 'clear' ? 'Clear' :
+                        selectedLensColor === 'blue-light' ? 'Blue Light Filtering' :
+                        selectedLensColor === 'transitions' ? 'Transitions® & Photochromic' :
+                        selectedLensColor === 'sun' ? 'Sun' :
+                        selectedLensColor
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      Free
+                    </span>
+                  </div>
+                )}
+                
+                {/* Dynamic Clear Lens Option */}
+                {selectedClearLensOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Clear Lens: {
+                        selectedClearLensOption === 'kodak-advanced' ? 'KODAK Lens - Advanced' :
+                        selectedClearLensOption === 'most-popular' ? 'Most Popular Lenses' :
+                        selectedClearLensOption === 'standard' ? 'Standard Lenses' :
+                        selectedClearLensOption
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      {selectedClearLensOption === 'kodak-advanced' ? formatPrice(85.95) :
+                       selectedClearLensOption === 'most-popular' ? formatPrice(19.95) :
+                       selectedClearLensOption === 'standard' ? formatPrice(6.95) : 'Free'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Dynamic Blue Light Option */}
+                {selectedBlueLightOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Blue Light: {
+                        selectedBlueLightOption === 'ebdblue-360' ? 'EBDBlue 360™' :
+                        selectedBlueLightOption === 'sightrelax' ? 'SightRelax' :
+                        selectedBlueLightOption === 'ebdblue-smart' ? 'EBDBlue Smart 1.6' :
+                        selectedBlueLightOption === 'ebdblue-plus' ? 'EBDBlue Plus™' :
+                        selectedBlueLightOption
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      {selectedBlueLightOption === 'ebdblue-360' ? formatPrice(68.95) :
+                       selectedBlueLightOption === 'sightrelax' ? formatPrice(85.95) :
+                       selectedBlueLightOption === 'ebdblue-smart' ? formatPrice(78.95) :
+                       selectedBlueLightOption === 'ebdblue-plus' ? formatPrice(22.95) : 'Free'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Dynamic Transitions Option */}
+                {selectedTransitionsOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Transitions: {
+                        selectedTransitionsOption === 'transitions-gen-s' ? 'Transitions® GEN S™' :
+                        selectedTransitionsOption === 'transitions-xtractive' ? 'Transitions® XTRActive®' :
+                        selectedTransitionsOption === 'transitions-drivewear' ? 'Transitions® Drivewear®' :
+                        selectedTransitionsOption === 'photochromic' ? 'Photochromic' :
+                        selectedTransitionsOption
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      {selectedTransitionsOption === 'transitions-gen-s' ? formatPrice(99) :
+                       selectedTransitionsOption === 'transitions-xtractive' ? formatPrice(139) :
+                       selectedTransitionsOption === 'transitions-drivewear' ? formatPrice(149) :
+                       selectedTransitionsOption === 'photochromic' ? formatPrice(45.95) : 'Free'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Dynamic Sun Option */}
+                {selectedSunOption && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Sun Protection: {
+                        selectedSunOption === 'basic' ? 'Basic Tint' :
+                        selectedSunOption === 'polarized' ? 'Polarized' :
+                        selectedSunOption === 'mirrored' ? 'Mirrored' :
+                        selectedSunOption === 'gradient' ? 'Gradient' :
+                        selectedSunOption
+                      }
+                      {selectedTintColor && ` (${selectedTintColor})`}
+                      {selectedMirroredColor && ` (${selectedMirroredColor})`}
+                      {selectedGradientColor && ` (${selectedGradientColor})`}
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      {selectedSunOption === 'basic' ? formatPrice(6.95) :
+                       selectedSunOption === 'polarized' ? formatPrice(59) :
+                       selectedSunOption === 'mirrored' ? formatPrice(29) :
+                       selectedSunOption === 'gradient' ? formatPrice(12.95) : 'Free'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Dynamic Lens Package */}
+                {selectedLensPackage && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <span style={{ fontSize: '0.95rem', color: '#333' }}>
+                      • Lens Package: {
+                        selectedLensPackage === 'standard' ? 'Standard Lenses' :
+                        selectedLensPackage === 'popular' ? 'Most Popular Lenses' :
+                        selectedLensPackage
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.95rem', color: '#888' }}>
+                      {selectedLensPackage === 'standard' ? formatPrice(43) :
+                       selectedLensPackage === 'popular' ? formatPrice(73) : 'Free'}
+                    </span>
+                  </div>
+                )}
                 
                 {/* Subtotal Section */}
                 <div style={{ 
@@ -4025,7 +4273,27 @@ const ProductDetailPage = () => {
                       Subtotal
                     </span>
                     <span style={{ fontSize: '1.3rem', fontWeight: '700', color: '#333' }}>
-                      {formatPrice(10895)}
+                      {(() => {
+                        let lensPrice = 0;
+                        if (selectedClearLensOption === 'kodak-advanced') lensPrice += 85.95;
+                        else if (selectedClearLensOption === 'most-popular') lensPrice += 19.95;
+                        else if (selectedClearLensOption === 'standard') lensPrice += 6.95;
+                        if (selectedBlueLightOption === 'ebdblue-360') lensPrice += 68.95;
+                        else if (selectedBlueLightOption === 'sightrelax') lensPrice += 85.95;
+                        else if (selectedBlueLightOption === 'ebdblue-smart') lensPrice += 78.95;
+                        else if (selectedBlueLightOption === 'ebdblue-plus') lensPrice += 22.95;
+                        if (selectedTransitionsOption === 'transitions-gen-s') lensPrice += 99;
+                        else if (selectedTransitionsOption === 'transitions-xtractive') lensPrice += 139;
+                        else if (selectedTransitionsOption === 'transitions-drivewear') lensPrice += 149;
+                        else if (selectedTransitionsOption === 'photochromic') lensPrice += 45.95;
+                        if (selectedSunOption === 'basic') lensPrice += 6.95;
+                        else if (selectedSunOption === 'polarized') lensPrice += 59;
+                        else if (selectedSunOption === 'mirrored') lensPrice += 29;
+                        else if (selectedSunOption === 'gradient') lensPrice += 12.95;
+                        if (selectedLensPackage === 'standard') lensPrice += 43;
+                        else if (selectedLensPackage === 'popular') lensPrice += 73;
+                        return formatPrice((product?.price || 59) + lensPrice);
+                      })()}
                     </span>
                   </div>
                   
@@ -4046,39 +4314,97 @@ const ProductDetailPage = () => {
                 <ModalButton 
                   primary 
                   onClick={() => {
-                    // Calculate total price
-                    const basePrice = product?.price || 59;
-                    const lensPrice = 4995;
-                    const totalPrice = basePrice + lensPrice;
-
+                    // Calculate lens pricing based on selections
+                    let lensPrice = 0;
+                    let customizations = {};
+                    
+                    // Add usage selection
+                    if (selectedUsage) {
+                      customizations.usage = selectedUsage;
+                    }
+                    
+                    // Add lens type selection
+                    if (selectedLensTypeOption) {
+                      customizations.lensType = selectedLensTypeOption;
+                    }
+                    
+                    // Add prescription method
+                    if (selectedPrescriptionMethod) {
+                      customizations.prescriptionMethod = selectedPrescriptionMethod;
+                    }
+                    
+                    // Add lens color selections
+                    if (selectedLensColor) {
+                      customizations.lensColor = selectedLensColor;
+                    }
+                    
+                    // Add clear lens option pricing
+                    if (selectedClearLensOption) {
+                      customizations.clearLensOption = selectedClearLensOption;
+                      if (selectedClearLensOption === 'kodak-advanced') lensPrice += 85.95;
+                      else if (selectedClearLensOption === 'most-popular') lensPrice += 19.95;
+                      else if (selectedClearLensOption === 'standard') lensPrice += 6.95;
+                    }
+                    
+                    // Add blue light option pricing
+                    if (selectedBlueLightOption) {
+                      customizations.blueLightOption = selectedBlueLightOption;
+                      if (selectedBlueLightOption === 'ebdblue-360') lensPrice += 68.95;
+                      else if (selectedBlueLightOption === 'sightrelax') lensPrice += 85.95;
+                      else if (selectedBlueLightOption === 'ebdblue-smart') lensPrice += 78.95;
+                      else if (selectedBlueLightOption === 'ebdblue-plus') lensPrice += 22.95;
+                    }
+                    
+                    // Add transitions option pricing
+                    if (selectedTransitionsOption) {
+                      customizations.transitionsOption = selectedTransitionsOption;
+                      if (selectedTransitionsOption === 'transitions-gen-s') lensPrice += 99;
+                      else if (selectedTransitionsOption === 'transitions-xtractive') lensPrice += 139;
+                      else if (selectedTransitionsOption === 'transitions-drivewear') lensPrice += 149;
+                      else if (selectedTransitionsOption === 'photochromic') lensPrice += 45.95;
+                    }
+                    
+                    // Add sun option pricing
+                    if (selectedSunOption) {
+                      customizations.sunOption = selectedSunOption;
+                      if (selectedSunOption === 'basic') lensPrice += 6.95;
+                      else if (selectedSunOption === 'polarized') lensPrice += 59;
+                      else if (selectedSunOption === 'mirrored') lensPrice += 29;
+                      else if (selectedSunOption === 'gradient') lensPrice += 12.95;
+                      
+                      // Add tint colors
+                      if (selectedTintColor) customizations.tintColor = selectedTintColor;
+                      if (selectedMirroredColor) customizations.mirroredColor = selectedMirroredColor;
+                      if (selectedGradientColor) customizations.gradientColor = selectedGradientColor;
+                    }
+                    
+                    // Add lens package pricing
+                    if (selectedLensPackage) {
+                      customizations.lensPackage = selectedLensPackage;
+                      if (selectedLensPackage === 'standard') lensPrice += 43;
+                      else if (selectedLensPackage === 'popular') lensPrice += 73;
+                    }
+                    
+                    const totalPrice = (product?.price || 59) + lensPrice;
+                    
                     const cartItem = {
                       id: product?.id || Date.now(),
                       name: product?.name || 'Vinyl',
+                      brand: product?.brand || 'EyeBuyDirect',
+                      originalPrice: product?.price || 59,
                       price: totalPrice,
-                      image: product?.image || '/images/eyeglasses.webp',
+                      image: product?.colors?.[selectedImage]?.image || product?.image || '/images/eyeglasses.webp',
+                      color: selectedColor || product?.colors?.[0]?.name || 'Black',
+                      size: selectedSize || product?.sizes?.[0] || 'Medium',
                       quantity: 1,
-                      color: selectedColor,
-                      size: selectedSize,
-                      lensOptions: {
-                        usage: selectedUsage,
-                        lensType: selectedLensTypeOption,
-                        prescriptionMethod: selectedPrescriptionMethod,
-                        lensColor: selectedLensColor,
-                        clearLensOption: selectedClearLensOption,
-                        blueLightOption: selectedBlueLightOption,
-                        transitionsOption: selectedTransitionsOption,
-                        sunOption: selectedSunOption,
-                        tintColor: selectedTintColor,
-                        tintStrength: selectedTintStrength,
-                        mirroredColor: selectedMirroredColor,
-                        gradientColor: selectedGradientColor,
-                        lensPackage: selectedLensPackage,
-                        prescription: selectedPrescription
-                      }
+                      customizations: Object.keys(customizations).length > 0 ? customizations : null
                     };
 
                     // Add to cart
                     dispatch(addToCart(cartItem));
+                    
+                    // Close all modals
+                    closeAllModals();
                     
                     // Navigate to cart page
                     navigate('/cart');

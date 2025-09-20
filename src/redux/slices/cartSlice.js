@@ -12,8 +12,9 @@ const cartSlice = createSlice({
   reducers: {
     addToCart(state, action) {
       const newItem = action.payload;
-      // Create a unique identifier based on product configuration
-      const itemKey = `${newItem.id}-${newItem.selectedColor || 'default'}-${newItem.selectedSize || 'default'}-${newItem.lensType || 'none'}`;
+      // Create a unique identifier based on product configuration including customizations
+      const customizationKey = newItem.customizations ? JSON.stringify(newItem.customizations) : 'none';
+      const itemKey = `${newItem.id}-${newItem.color || 'default'}-${newItem.size || 'default'}-${customizationKey}`;
       const existingItem = state.items.find(item => item.itemKey === itemKey);
       
       if (!existingItem) {
@@ -21,13 +22,7 @@ const cartSlice = createSlice({
           ...newItem,
           itemKey,
           quantity: newItem.quantity || 1,
-          totalPrice: newItem.price * (newItem.quantity || 1),
-          selectedColor: newItem.selectedColor || 'Black',
-          selectedSize: newItem.selectedSize || 'Medium',
-          lensType: newItem.lensType || 'Non-Prescription',
-          lensColor: newItem.lensColor || 'Clear',
-          prescription: newItem.prescription || null,
-          addOns: newItem.addOns || {}
+          totalPrice: newItem.price * (newItem.quantity || 1)
         });
       } else {
         existingItem.quantity += newItem.quantity || 1;

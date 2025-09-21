@@ -24,7 +24,7 @@ const DashboardContainer = styled.div`
 `;
 
 const Sidebar = styled.div`
-  width: ${props => props.collapsed ? '70px' : '280px'};
+  width: ${props => props.collapsed ? '90px' : '280px'};
   background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
   border-right: 1px solid #e2e8f0;
   display: flex;
@@ -113,8 +113,8 @@ const NavItem = styled.div`
   margin: ${props => props.collapsed ? '0.25rem 0.5rem' : '0 0.5rem'};
   justify-content: ${props => props.collapsed ? 'center' : 'flex-start'};
   position: relative;
-  min-height: 44px;
-  width: ${props => props.collapsed ? '60px' : 'auto'};
+  min-height: 42px;
+  width: ${props => props.collapsed ? '70px' : 'auto'};
   
   /* Debug background when collapsed */
   ${props => props.collapsed && `
@@ -152,22 +152,7 @@ const NavItem = styled.div`
     display: block !important;
   }
   
-  /* Fallback for when icons don't load */
-  &::before {
-    content: ${props => {
-      if (props.collapsed) {
-        return props.active ? '"●"' : '"○"';
-      }
-      return '""';
-    }};
-    display: ${props => props.collapsed ? 'block' : 'none'};
-    width: 20px;
-    height: 20px;
-    color: #ffffff;
-    font-size: 12px;
-    text-align: center;
-    line-height: 20px;
-  }
+  /* Fallback removed - no circular indicators */
 `;
 
 const NavText = styled.span`
@@ -210,7 +195,7 @@ const IconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${props => props.collapsed ? '60px' : '20px'};
+  width: ${props => props.collapsed ? '50px' : '20px'};
   height: 20px;
   color: #ffffff !important;
   font-size: 16px;
@@ -232,6 +217,13 @@ const IconWrapper = styled.div`
     fill: currentColor !important;
     stroke: currentColor !important;
   }
+`;
+
+const CustomIcon = styled.img`
+  width: 18px;
+  height: 18px;
+  filter: brightness(0) invert(1); /* Makes icons white */
+  object-fit: contain;
 `;
 
 const LogoutButton = styled.button`
@@ -2571,7 +2563,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '⌂' : <FiHome />}
+              <CustomIcon src="/images/dashboard.png" alt="Dashboard" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Dashboard</NavText>
             <NavTooltip className="nav-tooltip">Dashboard</NavTooltip>
@@ -2582,7 +2574,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '🛒' : <FiShoppingBag />}
+              <CustomIcon src="/images/shopping-bag.png" alt="Orders" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Orders</NavText>
             <NavTooltip className="nav-tooltip">Orders</NavTooltip>
@@ -2593,7 +2585,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '📦' : <FiPackage />}
+              <CustomIcon src="/images/product.png" alt="Add Product" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Add Product</NavText>
             <NavTooltip className="nav-tooltip">Add Product</NavTooltip>
@@ -2604,7 +2596,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '📊' : <FiBarChart2 />}
+              <CustomIcon src="/images/product.png" alt="Manage Products" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Manage Products</NavText>
             <NavTooltip className="nav-tooltip">Manage Products</NavTooltip>
@@ -2615,7 +2607,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '👓' : <FiTrendingUp />}
+              <CustomIcon src="/images/glasses.png" alt="Eyewear Products" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Eyewear Products</NavText>
             <NavTooltip className="nav-tooltip">Eyewear Products</NavTooltip>
@@ -2626,7 +2618,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '🔍' : <FiSettings />}
+              <CustomIcon src="/images/eye-lens.png" alt="Lens Products" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Lens Products</NavText>
             <NavTooltip className="nav-tooltip">Lens Products</NavTooltip>
@@ -2637,7 +2629,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '👥' : <FiUsers />}
+              <CustomIcon src="/images/customer.png" alt="Customers" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Customers</NavText>
             <NavTooltip className="nav-tooltip">Customers</NavTooltip>
@@ -2648,7 +2640,7 @@ const AdminPage = () => {
             collapsed={isSidebarCollapsed}
           >
             <IconWrapper collapsed={isSidebarCollapsed}>
-              {isSidebarCollapsed ? '⭐' : <FiDollarSign />}
+              <CustomIcon src="/images/star.png" alt="Reviews" />
             </IconWrapper>
             <NavText collapsed={isSidebarCollapsed}>Reviews</NavText>
             <NavTooltip className="nav-tooltip">Reviews</NavTooltip>

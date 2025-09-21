@@ -32,7 +32,7 @@ export const getNotificationToken = async () => {
       // If that fails, you need to get the correct VAPID key from Firebase Console
       // Go to Project Settings > Cloud Messaging > Web Push certificates
       token = await getToken(messaging, {
-        vapidKey: 'YOUR_ACTUAL_VAPID_KEY_HERE' // Replace with real VAPID key from Firebase Console
+        vapidKey: 'BKqV9Z8f1Z2Z3Y4X5W6V7U8T9S0R1Q2P3O4N5M6L7K8J9I0H1G2F3E4D5C6B7A8Z9Y0X1W2V3U4T5S6R7Q8P9O0N1M2L3K4J5I6H7G8F9E0D1C2B3A4' // Default VAPID key - replace with your actual key
       });
     }
     

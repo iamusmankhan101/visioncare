@@ -1089,7 +1089,7 @@ const ProductDetailPage = () => {
   const [showPrescriptionMethod, setShowPrescriptionMethod] = useState(false);
   const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
   const [selectedUsage, setSelectedUsage] = useState('');
-  const [selectedLensTypeOption, setSelectedLensTypeOption] = useState('progressive');
+  const [selectedLensTypeOption, setSelectedLensTypeOption] = useState('');
   const [selectedPrescriptionMethod, setSelectedPrescriptionMethod] = useState('');
   const [showTwoPDNumbers, setShowTwoPDNumbers] = useState(false);
   const [showLensColorSelection, setShowLensColorSelection] = useState(false);
@@ -1109,10 +1109,10 @@ const ProductDetailPage = () => {
   const [selectedTransitionsOption, setSelectedTransitionsOption] = useState('');
   const [showSunOptions, setShowSunOptions] = useState(false);
   const [selectedSunOption, setSelectedSunOption] = useState('');
-  const [selectedTintStrength, setSelectedTintStrength] = useState('dark-80');
-  const [selectedTintColor, setSelectedTintColor] = useState('gray');
-  const [selectedMirroredColor, setSelectedMirroredColor] = useState('green');
-  const [selectedGradientColor, setSelectedGradientColor] = useState('gray');
+  const [selectedTintStrength, setSelectedTintStrength] = useState('');
+  const [selectedTintColor, setSelectedTintColor] = useState('');
+  const [selectedMirroredColor, setSelectedMirroredColor] = useState('');
+  const [selectedGradientColor, setSelectedGradientColor] = useState('');
   const [showLensPackage, setShowLensPackage] = useState(false);
   const [selectedLensPackage, setSelectedLensPackage] = useState('');
   const [showReviewSelections, setShowReviewSelections] = useState(false);
@@ -3405,7 +3405,12 @@ const ProductDetailPage = () => {
                             fontWeight: '600',
                             color: '#333'
                           }}>
-                            Tint Strength: <span style={{ color: '#666', fontWeight: '400' }}>Dark (80%)</span>
+                            Tint Strength: <span style={{ color: '#666', fontWeight: '400' }}>{
+                              selectedTintStrength === 'dark-80' ? 'Dark (80%)' :
+                              selectedTintStrength === 'medium-50' ? 'Medium (50%)' :
+                              selectedTintStrength === 'light-20' ? 'Light (20%)' :
+                              'Select strength'
+                            }</span>
                           </h4>
                           <div style={{ display: 'flex', gap: '1rem' }}>
                             {[
@@ -3459,7 +3464,7 @@ const ProductDetailPage = () => {
                                 { id: 'rose', name: 'Rose' },
                                 { id: 'teal', name: 'Teal' },
                                 { id: 'burgundy', name: 'Burgundy' }
-                              ].find(color => color.id === selectedTintColor)?.name || 'Gray'}
+                              ].find(color => color.id === selectedTintColor)?.name || 'Select color'}
                             </span>
                           </h4>
                           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -3588,7 +3593,15 @@ const ProductDetailPage = () => {
                             fontWeight: '600',
                             color: '#333'
                           }}>
-                            Color: <span style={{ color: '#666', fontWeight: '400' }}>Green</span>
+                            Color: <span style={{ color: '#666', fontWeight: '400' }}>{
+                              [
+                                { id: 'silver', name: 'Silver' },
+                                { id: 'gold', name: 'Gold' },
+                                { id: 'blue', name: 'Blue' },
+                                { id: 'purple', name: 'Purple' },
+                                { id: 'green', name: 'Green' }
+                              ].find(color => color.id === selectedMirroredColor)?.name || 'Select color'
+                            }</span>
                           </h4>
                           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                             {[
@@ -3650,7 +3663,7 @@ const ProductDetailPage = () => {
                                 { id: 'green', name: 'Green' },
                                 { id: 'purple', name: 'Purple' },
                                 { id: 'blue', name: 'Blue' }
-                              ].find(color => color.id === selectedGradientColor)?.name || 'Gray'}
+                              ].find(color => color.id === selectedGradientColor)?.name || 'Select color'}
                             </span>
                           </h4>
                           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -3954,10 +3967,57 @@ const ProductDetailPage = () => {
                     }}
                     onClick={() => {
                       setShowReviewSelections(false);
-                      setShowLensPackage(true);
+                      
+                      // Smart back navigation - go to the specific step of the last selection
+                      if (selectedLensPackage) {
+                        // Go back to the specific lens package selection
+                        setShowLensPackage(true);
+                      } else if (selectedClearLensOption) {
+                        // Go back to the specific clear lens options where KODAK was selected
+                        setShowClearLensOptions(true);
+                        setShowLensColorSelection(false);
+                      } else if (selectedBlueLightOption) {
+                        // Go back to the specific blue light options
+                        setShowBlueLightOptions(true);
+                        setShowLensColorSelection(false);
+                      } else if (selectedTransitionsOption) {
+                        // Go back to the specific transitions options
+                        setShowTransitionsOptions(true);
+                        setShowLensColorSelection(false);
+                      } else if (selectedSunOption) {
+                        // Go back to the specific sun options
+                        setShowSunOptions(true);
+                        setShowLensColorSelection(false);
+                      } else if (selectedLensColor) {
+                        // Go back to lens color selection
+                        setShowLensColorSelection(true);
+                      } else if (selectedPrescriptionMethod) {
+                        // Go back to prescription method selection
+                        setShowPrescriptionMethod(true);
+                      } else if (selectedLensTypeOption) {
+                        // Go back to lens type selection
+                        setShowLensTypeSelection(true);
+                      } else if (selectedUsage) {
+                        // Go back to usage selection
+                        setShowUsageSelection(true);
+                      } else {
+                        // Default fallback - go to usage selection
+                        setShowUsageSelection(true);
+                      }
                     }}
                   >
-                    ← Back to Edit
+                    ← {(() => {
+                      if (selectedLensPackage) return 'Back to Lens Package';
+                      if (selectedClearLensOption) return 'Back to Clear Lens Options';
+                      if (selectedBlueLightOption) return 'Back to Blue Light Options';
+                      if (selectedTransitionsOption) return 'Back to Transitions Options';
+                      if (selectedSunOption) return 'Back to Sun Protection Options';
+                      if (selectedLensColor) return 'Back to Lens Color';
+                      if (selectedPrescriptionMethod) return 'Back to Prescription Method';
+                      if (selectedLensTypeOption) return 'Back to Lens Type';
+                      if (selectedUsage) return 'Back to Usage Selection';
+                      return 'Back to Edit';
+                    })()}
                   </span>
                 </div>
                 <CloseButton onClick={closeAllModals}>×</CloseButton>

@@ -1,14 +1,5 @@
 // Email service for sending order confirmations
-let emailjs;
-try {
-  emailjs = require('@emailjs/browser');
-} catch (error) {
-  console.warn('EmailJS not available, using fallback');
-  emailjs = {
-    init: () => {},
-    send: () => Promise.resolve({ success: false, error: 'EmailJS not available' })
-  };
-}
+import emailjs from '@emailjs/browser';
 
 // EmailJS configuration
 // TODO: Replace these with your actual EmailJS credentials
@@ -18,11 +9,217 @@ const EMAIL_PUBLIC_KEY = 'PA1sBHzR3bGsllCLx'; // Replace with your EmailJS publi
 
 // Contact form specific EmailJS configuration
 const CONTACT_SERVICE_ID = 'service_c8oh7k9'; // Replace with your contact form service ID
-const CONTACT_TEMPLATE_ID = ''; // Replace with your contact form template ID
+const CONTACT_TEMPLATE_ID = 'template_6yf73tb'; // Contact form template ID
+
+// Admin email addresses
+const ADMIN_EMAILS = [
+  'visioncareoptometryclicnic@gmail.com',
+  'iamusmankhan101@gmail.com'
+];
 
 // Initialize EmailJS
+try {
+  emailjs.init(EMAIL_PUBLIC_KEY);
+  console.log('EmailJS initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize EmailJS:', error);
+}
 
-emailjs.init(EMAIL_PUBLIC_KEY);
+// Debug function to show EmailJS configuration
+export const debugEmailJSConfig = () => {
+  console.log('=== EmailJS Configuration Debug ===');
+  console.log('Service ID:', EMAIL_SERVICE_ID);
+  console.log('Template ID:', EMAIL_TEMPLATE_ID);
+  console.log('Public Key:', EMAIL_PUBLIC_KEY);
+  console.log('Contact Service ID:', CONTACT_SERVICE_ID);
+  console.log('Contact Template ID:', CONTACT_TEMPLATE_ID);
+  console.log('Admin Emails:', ADMIN_EMAILS);
+  console.log('EmailJS initialized:', typeof emailjs !== 'undefined');
+  console.log('===================================');
+  
+  return {
+    serviceId: EMAIL_SERVICE_ID,
+    templateId: EMAIL_TEMPLATE_ID,
+    publicKey: EMAIL_PUBLIC_KEY,
+    contactServiceId: CONTACT_SERVICE_ID,
+    contactTemplateId: CONTACT_TEMPLATE_ID,
+    adminEmails: ADMIN_EMAILS,
+    initialized: typeof emailjs !== 'undefined'
+  };
+};
+
+// Test EmailJS connection with real email
+export const testEmailJSWithRealEmail = async (testEmail = 'iamusmankhan101@gmail.com') => {
+  try {
+    console.log('Testing EmailJS with real email:', testEmail);
+    console.log('Service ID:', EMAIL_SERVICE_ID);
+    console.log('Template ID:', EMAIL_TEMPLATE_ID);
+    console.log('Public Key:', EMAIL_PUBLIC_KEY);
+    
+    const testParams = {
+      // Multiple email field formats to ensure compatibility
+      to_email: testEmail,
+      email: testEmail,
+      to_name: 'Test User',
+      customer_name: 'Test User',
+      order_number: 'TEST-123',
+      order_date: new Date().toLocaleDateString(),
+      items: 'Test Item - Qty: 1 - PKR 100',
+      subtotal: 'PKR 100',
+      shipping: 'PKR 50',
+      discount: 'None',
+      total: 'PKR 150',
+      shipping_address: 'Test Address, Test City',
+      phone: '+92 300 1234567',
+      payment_method: 'Test Payment',
+      // Additional common EmailJS fields
+      from_name: 'Eyewearr',
+      from_email: 'noreply@eyewearr.com',
+      reply_to: 'support@eyewearr.com'
+    };
+    
+    console.log('Sending test email with params:', testParams);
+    
+    const response = await emailjs.send(
+      EMAIL_SERVICE_ID,
+      EMAIL_TEMPLATE_ID,
+      testParams
+    );
+    
+    console.log('EmailJS test email sent successfully:', response);
+    return { success: true, response };
+  } catch (error) {
+    console.error('EmailJS test email failed:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      text: error.text,
+      name: error.name
+    });
+    return { success: false, error: error.text || error.message || 'Test email failed' };
+  }
+};
+
+// Test EmailJS connection (basic test)
+export const testEmailJSConnection = async () => {
+  try {
+    console.log('Testing EmailJS connection...');
+    console.log('Service ID:', EMAIL_SERVICE_ID);
+    console.log('Template ID:', EMAIL_TEMPLATE_ID);
+    console.log('Public Key:', EMAIL_PUBLIC_KEY);
+    
+    // Use admin email for testing
+    return await testEmailJSWithRealEmail('iamusmankhan101@gmail.com');
+  } catch (error) {
+    console.error('EmailJS connection test failed:', error);
+    return { success: false, error: error.text || error.message || 'Connection test failed' };
+  }
+};
+
+// Send order notification to admin emails
+export const sendOrderNotificationToAdmin = async (orderData) => {
+  try {
+    console.log('Sending order notification to admin emails...');
+    
+    // Ensure order data is available
+    if (!orderData || !orderData.customerInfo) {
+      console.error('Order data is missing');
+      return { success: false, error: 'Order data is required' };
+    }
+    
+    // Format order items for admin email
+    const orderItemsText = orderData.items?.map(item => 
+      `${item.name} - Qty: ${item.quantity || 1} - PKR ${item.price}`
+    ).join('\n') || 'No items';
+    
+    const results = [];
+    
+    // Send notification to each admin email
+    for (const adminEmail of ADMIN_EMAILS) {
+      try {
+        console.log(`Sending notification to: ${adminEmail}`);
+        
+        const adminTemplateParams = {
+          // Send to current admin email
+          to_email: adminEmail,
+          email: adminEmail,
+          to_name: 'Admin',
+          customer_name: `${orderData.customerInfo?.firstName || ''} ${orderData.customerInfo?.lastName || ''}`.trim(),
+          customer_email: orderData.customerInfo.email,
+          order_number: orderData.orderNumber || `ORD-${Date.now()}`,
+          order_date: new Date().toLocaleDateString(),
+          items: orderItemsText,
+          subtotal: `PKR ${(orderData.subtotal || 0).toFixed(2)}`,
+          shipping: `PKR ${(orderData.shipping || 0).toFixed(2)}`,
+          discount: orderData.discount > 0 ? `PKR ${orderData.discount.toFixed(2)}` : 'None',
+          total: `PKR ${(orderData.total || 0).toFixed(2)}`,
+          shipping_address: `${orderData.customerInfo?.address || ''}, ${orderData.customerInfo?.city || ''}, ${orderData.customerInfo?.state || ''} ${orderData.customerInfo?.zipCode || ''}`,
+          phone: `${orderData.customerInfo?.countryCode || ''} ${orderData.customerInfo?.phone || ''}`,
+          payment_method: orderData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment',
+          // Additional fields for admin notification
+          from_name: 'Eyewearr Order System',
+          from_email: 'orders@eyewearr.com',
+          reply_to: orderData.customerInfo.email,
+          // Admin-specific message
+          admin_message: `New order received from ${orderData.customerInfo?.firstName} ${orderData.customerInfo?.lastName} (${orderData.customerInfo.email}). Order total: PKR ${(orderData.total || 0).toFixed(2)}. Please process this order for dispatch.`
+        };
+
+        const response = await emailjs.send(
+          EMAIL_SERVICE_ID,
+          EMAIL_TEMPLATE_ID,
+          adminTemplateParams
+        );
+
+        console.log(`Admin notification sent successfully to ${adminEmail}:`, response);
+        results.push({ email: adminEmail, success: true, response });
+        
+        // Add small delay between emails to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+      } catch (error) {
+        console.error(`Failed to send admin notification to ${adminEmail}:`, error);
+        results.push({ 
+          email: adminEmail, 
+          success: false, 
+          error: error.text || error.message || 'Failed to send' 
+        });
+      }
+    }
+    
+    // Check if at least one email was sent successfully
+    const successCount = results.filter(r => r.success).length;
+    const totalCount = results.length;
+    
+    console.log(`Admin notifications: ${successCount}/${totalCount} sent successfully`);
+    
+    if (successCount > 0) {
+      return { 
+        success: true, 
+        results, 
+        message: `${successCount}/${totalCount} admin notifications sent successfully` 
+      };
+    } else {
+      return { 
+        success: false, 
+        results, 
+        error: 'Failed to send notifications to any admin email' 
+      };
+    }
+    
+  } catch (error) {
+    console.error('Failed to send admin order notifications:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      text: error.text,
+      name: error.name,
+      stack: error.stack
+    });
+    
+    const errorMessage = error.text || error.message || JSON.stringify(error);
+    return { success: false, error: errorMessage };
+  }
+};
 
 // Contact form notification service - sends to admin email
 export const sendContactFormNotification = async (formData) => {
@@ -34,9 +231,9 @@ export const sendContactFormNotification = async (formData) => {
     }
 
     const templateParams = {
-      // Send notification to your personal email
-      to_email: 'iamusmankhan101@gmail.com',
-      email: 'iamusmankhan101@gmail.com',
+      // Send notification to admin emails (using first admin email as primary)
+      to_email: ADMIN_EMAILS[0],
+      email: ADMIN_EMAILS[0],
       customer_name: `${formData.firstName} ${formData.lastName}`,
       from_email: formData.email,
       order_id: `CONTACT-${Date.now()}`,
@@ -108,6 +305,12 @@ export const sendContactFormConfirmation = async (formData) => {
 
 export const sendOrderConfirmationEmail = async (orderData) => {
   try {
+    // Check if EmailJS is properly configured
+    if (!EMAIL_SERVICE_ID || !EMAIL_TEMPLATE_ID || !EMAIL_PUBLIC_KEY) {
+      console.error('EmailJS configuration is incomplete');
+      return { success: false, error: 'EmailJS configuration is incomplete' };
+    }
+
     // Debug log to check email data
     console.log('Order data for email:', orderData);
     console.log('Customer email:', orderData.customerInfo?.email);
@@ -117,26 +320,47 @@ export const sendOrderConfirmationEmail = async (orderData) => {
       console.error('Customer email is missing from order data');
       return { success: false, error: 'Customer email is required' };
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(orderData.customerInfo.email)) {
+      console.error('Invalid email format:', orderData.customerInfo.email);
+      return { success: false, error: 'Invalid email format' };
+    }
+    
+    // Format order items for email
+    const orderItemsText = orderData.items?.map(item => 
+      `${item.name} - Qty: ${item.quantity || 1} - PKR ${item.price}`
+    ).join('\n') || 'No items';
     
     const templateParams = {
-      // Match EmailJS template field names exactly
+      // Multiple email field formats to ensure compatibility
+      to_email: orderData.customerInfo.email,
       email: orderData.customerInfo.email,
-      order_id: orderData.orderNumber || `ORD-${Date.now()}`,
-      orders: orderData.items?.map(item => 
-        `${item.name} ${item.quantity ? `(QTY: ${item.quantity})` : ''}`
-      ).join('\n') || 'No items',
-      order_items: orderData.items?.map(item => 
-        `${item.name} ${item.quantity ? `(QTY: ${item.quantity})` : ''}`
-      ).join('\n') || 'No items',
-      item_quantity: orderData.items?.map(item => item.quantity || 1).join(', ') || '1',
-      price: orderData.items?.map(item => `Rs ${item.price}`).join('\n') || 'Rs 0',
-      shipping_amount: `Rs ${(orderData.shipping || 0).toFixed(2)}`,
-      total_amount: `Rs ${(orderData.total || 0).toFixed(2)}`,
+      to_name: `${orderData.customerInfo?.firstName || ''} ${orderData.customerInfo?.lastName || ''}`.trim(),
       customer_name: `${orderData.customerInfo?.firstName || ''} ${orderData.customerInfo?.lastName || ''}`.trim(),
-      from_email: orderData.customerInfo.email
+      order_number: orderData.orderNumber || `ORD-${Date.now()}`,
+      order_date: new Date().toLocaleDateString(),
+      items: orderItemsText,
+      subtotal: `PKR ${(orderData.subtotal || 0).toFixed(2)}`,
+      shipping: `PKR ${(orderData.shipping || 0).toFixed(2)}`,
+      discount: orderData.discount > 0 ? `PKR ${orderData.discount.toFixed(2)}` : 'None',
+      total: `PKR ${(orderData.total || 0).toFixed(2)}`,
+      shipping_address: `${orderData.customerInfo?.address || ''}, ${orderData.customerInfo?.city || ''}, ${orderData.customerInfo?.state || ''} ${orderData.customerInfo?.zipCode || ''}`,
+      phone: `${orderData.customerInfo?.countryCode || ''} ${orderData.customerInfo?.phone || ''}`,
+      payment_method: orderData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment',
+      // Additional common EmailJS fields
+      from_name: 'Eyewearr',
+      from_email: 'noreply@eyewearr.com',
+      reply_to: 'support@eyewearr.com'
     };
     
     console.log('Email template params:', templateParams);
+
+    console.log('Attempting to send email with EmailJS...');
+    console.log('Service ID:', EMAIL_SERVICE_ID);
+    console.log('Template ID:', EMAIL_TEMPLATE_ID);
+    console.log('Public Key:', EMAIL_PUBLIC_KEY);
 
     const response = await emailjs.send(
       EMAIL_SERVICE_ID,
@@ -148,7 +372,17 @@ export const sendOrderConfirmationEmail = async (orderData) => {
     return { success: true, response };
   } catch (error) {
     console.error('Failed to send email:', error);
-    return { success: false, error };
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      text: error.text,
+      name: error.name,
+      stack: error.stack
+    });
+    
+    // Return a more detailed error message
+    const errorMessage = error.text || error.message || JSON.stringify(error);
+    return { success: false, error: errorMessage };
   }
 };
 

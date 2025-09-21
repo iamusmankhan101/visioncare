@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { FiSearch, FiUser, FiHeart, FiShoppingBag, FiChevronDown, FiMenu, FiX, FiSettings, FiLogOut, FiPhone, FiMail } from 'react-icons/fi';
 import { fetchProducts } from '../../redux/slices/productSlice';
 import { logout } from '../../redux/slices/authSlice';
+import PremiumBrandsMegaMenu from './PremiumBrandsMegaMenu';
 
 const TopBar = styled.div`
   background-color: #48b2ee;
@@ -1056,6 +1057,7 @@ const Header = () => {
     help: false
   });
   const [lensesMegaMenuOpen, setLensesMegaMenuOpen] = useState(false);
+  const [premiumBrandsMegaMenuOpen, setPremiumBrandsMegaMenuOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const searchRef = useRef(null);
@@ -1278,19 +1280,20 @@ const Header = () => {
           </Dropdown>
         </NavItem>
         
-        <NavItem>
+        <NavItem
+          onMouseEnter={() => setPremiumBrandsMegaMenuOpen(true)}
+          onMouseLeave={() => setPremiumBrandsMegaMenuOpen(false)}
+        >
           <NavButton>
             Premium Brands
             <DropdownIcon>
               <FiChevronDown />
             </DropdownIcon>
           </NavButton>
-          <Dropdown>
-            <DropdownLink to="/products?brand=ray-ban">Ray-Ban</DropdownLink>
-            <DropdownLink to="/products?brand=oakley">Oakley</DropdownLink>
-            <DropdownLink to="/products?brand=gucci">Gucci</DropdownLink>
-            <DropdownLink to="/products?brand=prada">Prada</DropdownLink>
-          </Dropdown>
+          <PremiumBrandsMegaMenu 
+            isOpen={premiumBrandsMegaMenuOpen}
+            onClose={() => setPremiumBrandsMegaMenuOpen(false)}
+          />
         </NavItem>
         
         <NavItem
@@ -1538,9 +1541,13 @@ const Header = () => {
             </MobileNavButton>
             <MobileDropdown isOpen={mobileDropdowns.premiumBrands}>
               <MobileDropdownLink to="/products?brand=ray-ban" onClick={() => setMobileMenuOpen(false)}>Ray-Ban</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=coach" onClick={() => setMobileMenuOpen(false)}>Coach</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=vogue" onClick={() => setMobileMenuOpen(false)}>Vogue Eyewear</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=ralph" onClick={() => setMobileMenuOpen(false)}>Ralph</MobileDropdownLink>
               <MobileDropdownLink to="/products?brand=oakley" onClick={() => setMobileMenuOpen(false)}>Oakley</MobileDropdownLink>
-              <MobileDropdownLink to="/products?brand=gucci" onClick={() => setMobileMenuOpen(false)}>Gucci</MobileDropdownLink>
-              <MobileDropdownLink to="/products?brand=prada" onClick={() => setMobileMenuOpen(false)}>Prada</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=armani-exchange" onClick={() => setMobileMenuOpen(false)}>Armani Exchange</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=arnette" onClick={() => setMobileMenuOpen(false)}>ARNETTE</MobileDropdownLink>
+              <MobileDropdownLink to="/products?brand=rflkt" onClick={() => setMobileMenuOpen(false)}>RFLKT®</MobileDropdownLink>
             </MobileDropdown>
           </div>
           

@@ -18,6 +18,8 @@ import MobileTestPage from './components/mobile/MobileTestPage';
 import AdminNotificationDashboard from './components/admin/AdminNotificationDashboard';
 import ShopifyDashboard from './components/admin/ShopifyDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import EmailTest from './components/EmailTest';
+import NotificationTest from './components/NotificationTest';
 import LensesPage from './pages/LensesPage';
 import LensProductDetailPage from './pages/LensProductDetailPage';
 import { CartProvider } from './context/CartContext';
@@ -29,10 +31,30 @@ import WishlistPage from './pages/WishlistPage';
 import NotFoundPage from './pages/NotFoundPage';
 import debugOrders from './utils/debugOrders';
 import testAdminAuth from './utils/testAdminAuth';
+import { testEmailJSConnection, debugEmailJSConfig } from './services/emailService';
+import notificationInit from './services/notificationInit';
 
 // Add debug function to window
 window.debugOrders = debugOrders;
 window.testAdminAuth = testAdminAuth;
+window.testEmailJS = testEmailJSConnection;
+window.debugEmailJS = debugEmailJSConfig;
+
+// Initialize notification services when app loads
+notificationInit.init().then(success => {
+  if (success) {
+    console.log('🎉 App loaded with notification services enabled');
+  } else {
+    console.warn('⚠️ App loaded but notification services failed to initialize');
+  }
+}).catch(error => {
+  console.error('❌ Error initializing notification services:', error);
+});
+
+// Add notification functions to window for debugging
+window.notificationInit = notificationInit;
+window.testNotifications = () => notificationInit.sendTestNotification();
+window.testOrderNotification = () => notificationInit.triggerOrderNotification();
 
 // Component to conditionally render layout
 function AppContent() {
@@ -91,6 +113,8 @@ function AppContent() {
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/email-test" element={<EmailTest />} />
+          <Route path="/notification-test" element={<NotificationTest />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

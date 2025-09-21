@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
-import { sendOrderConfirmationEmail } from '../services/emailService';
+import { sendOrderConfirmationEmail, sendOrderNotificationToAdmin } from '../services/emailService';
 import { saveOrder } from '../services/orderService';
 import { sendOrderWhatsAppNotification } from '../services/whatsappService';
 import formatPrice from '../utils/formatPrice';
@@ -360,10 +360,27 @@ const CheckoutPage = () => {
     };
 
     try {
+      // Save order first
       await saveOrder(orderData);
+      console.log('Order saved successfully');
       
       // Send email confirmation to customer
-      await sendOrderConfirmationEmail(orderData);
+      const emailResult = await sendOrderConfirmationEmail(orderData);
+      if (emailResult.success) {
+        console.log('Order confirmation email sent successfully');
+      } else {
+        console.warn('Email confirmation failed:', emailResult.error);
+        // Don't block the order process if email fails
+      }
+      
+      // Send order notification to admin
+      const adminEmailResult = await sendOrderNotificationToAdmin(orderData);
+      if (adminEmailResult.success) {
+        console.log('Admin order notification sent successfully');
+      } else {
+        console.warn('Admin email notification failed:', adminEmailResult.error);
+        // Don't block the order process if admin email fails
+      }
       
       // Send WhatsApp notification to business owner for order dispatch
       const whatsappResult = await sendOrderWhatsAppNotification(orderData);
@@ -372,6 +389,19 @@ const CheckoutPage = () => {
       } else {
         console.warn('WhatsApp notification failed:', whatsappResult.error);
         // Don't block the order process if WhatsApp fails
+      }
+      
+      // Send push notification to admin mobile devices
+      try {
+        if (window.notificationInit && window.notificationInit.isInitialized) {
+          await window.notificationInit.handleNewOrder(orderData);
+          console.log('Push notifications sent successfully');
+        } else {
+          console.warn('Push notification service not available');
+        }
+      } catch (error) {
+        console.warn('Push notification failed:', error);
+        // Don't block the order process if push notifications fail
       }
       
       navigate('/order-confirmation', { state: { orderData } });

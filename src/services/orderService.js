@@ -1,9 +1,10 @@
 // Order service for managing orders
 import { openDB } from 'idb';
 import { sendOrderWhatsAppNotification } from './whatsappService';
+import * as orderApiService from './orderApiService';
 
 const DB_NAME = 'EyewearrDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Increment version to force upgrade
 const ORDER_STORE = 'orders';
 
 // Initialize IndexedDB
@@ -21,37 +22,59 @@ const initDB = async () => {
   });
 };
 
-// Save order to IndexedDB and send notifications
+// Save order to backend database (with IndexedDB fallback)
 export const saveOrder = async (orderData) => {
   try {
-    const db = await initDB();
-    const tx = db.transaction(ORDER_STORE, 'readwrite');
-    const store = tx.objectStore(ORDER_STORE);
-    
-    const order = {
-      ...orderData,
-      id: Date.now(), // Simple ID generation
-      orderDate: new Date().toISOString(),
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    await store.add(order);
-    await tx.done;
-    
-    // Send notifications after successful order save
-    await sendOrderNotifications(order);
-    
-    // Trigger mobile notification check (for the mobile app)
-    if (window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('newOrder', { detail: order }));
-    }
-    
+    // Try to save to backend API first
+    console.log('Attempting to save order to backend database...');
+    const order = await orderApiService.saveOrder(orderData);
+    console.log('Order saved to backend successfully:', order.orderNumber);
     return order;
-  } catch (error) {
-    console.error('Error saving order:', error);
-    throw error;
+  } catch (backendError) {
+    console.error('❌ OrderService: Backend save failed:', backendError);
+    console.error('❌ OrderService: Backend error message:', backendError.message);
+    console.warn('🔄 OrderService: Falling back to IndexedDB...');
+    
+    // Fallback to IndexedDB if backend fails
+    try {
+      console.log('🔄 OrderService: Initializing IndexedDB...');
+      const db = await initDB();
+      console.log('✅ OrderService: IndexedDB initialized successfully');
+      console.log('📋 OrderService: Available object stores:', Array.from(db.objectStoreNames));
+      
+      const tx = db.transaction(ORDER_STORE, 'readwrite');
+      const store = tx.objectStore(ORDER_STORE);
+      console.log('✅ OrderService: Transaction and store created successfully');
+      
+      const order = {
+        ...orderData,
+        id: Date.now(), // Simple ID generation
+        orderNumber: `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+        orderDate: new Date().toISOString(),
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      await store.add(order);
+      await tx.done;
+      
+      // Send notifications after successful order save
+      await sendOrderNotifications(order);
+      
+      // Trigger mobile notification check (for the mobile app)
+      if (window.dispatchEvent) {
+        window.dispatchEvent(new CustomEvent('newOrder', { detail: order }));
+      }
+      
+      console.log('Order saved to IndexedDB as fallback:', order.orderNumber);
+      return order;
+    } catch (indexedDBError) {
+      console.error('❌ OrderService: IndexedDB save also failed:', indexedDBError);
+      console.error('❌ OrderService: IndexedDB error message:', indexedDBError.message);
+      console.error('❌ OrderService: Both backend and IndexedDB failed!');
+      throw new Error(`Failed to save order to both backend and local storage. Backend: ${backendError.message}, IndexedDB: ${indexedDBError.message}`);
+    }
   }
 };
 
@@ -105,23 +128,48 @@ const sendPushNotification = async (orderData) => {
   }
 };
 
-// Get all orders
-export const getAllOrders = async () => {
+// Get all orders (backend first, then IndexedDB fallback)
+export const getAllOrders = async (filters = {}) => {
   try {
-    const db = await initDB();
-    const tx = db.transaction(ORDER_STORE, 'readonly');
-    const store = tx.objectStore(ORDER_STORE);
+    // Try to fetch from backend API first
+    console.log('Attempting to fetch orders from backend database...');
+    const backendData = await orderApiService.getAllOrders(filters);
+    console.log('Backend response:', backendData);
+    console.log(`Fetched ${backendData.orders.length} orders from backend`);
+    console.log('First order:', backendData.orders[0]);
+    return backendData.orders;
+  } catch (backendError) {
+    console.warn('Backend fetch failed, falling back to IndexedDB:', backendError.message);
     
-    const orders = await store.getAll();
-    return orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    return [];
+    // Fallback to IndexedDB if backend fails
+    try {
+      const db = await initDB();
+      const tx = db.transaction(ORDER_STORE, 'readonly');
+      const store = tx.objectStore(ORDER_STORE);
+      
+      const orders = await store.getAll();
+      console.log(`Fetched ${orders.length} orders from IndexedDB fallback`);
+      return orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+    } catch (indexedDBError) {
+      console.error('Both backend and IndexedDB fetch failed:', indexedDBError);
+      return [];
+    }
   }
 };
 
-// Get order by ID
+// Get order by ID (backend first, then IndexedDB fallback)
 export const getOrderById = async (id) => {
+  try {
+    // Try to fetch from backend API first
+    const order = await orderApiService.getOrderById(id);
+    if (order) {
+      return order;
+    }
+  } catch (backendError) {
+    console.warn('Backend fetch failed, trying IndexedDB:', backendError.message);
+  }
+  
+  // Fallback to IndexedDB
   try {
     const db = await initDB();
     const tx = db.transaction(ORDER_STORE, 'readonly');
@@ -129,13 +177,24 @@ export const getOrderById = async (id) => {
     
     return await store.get(id);
   } catch (error) {
-    console.error('Error fetching order:', error);
+    console.error('Error fetching order from both sources:', error);
     return null;
   }
 };
 
-// Update order status
-export const updateOrderStatus = async (orderId, newStatus) => {
+// Update order status (backend first, then IndexedDB fallback)
+export const updateOrderStatus = async (orderId, newStatus, trackingNumber = null) => {
+  try {
+    // Try to update in backend API first
+    const updatedOrder = await orderApiService.updateOrderStatus(orderId, newStatus, trackingNumber);
+    if (updatedOrder) {
+      return updatedOrder;
+    }
+  } catch (backendError) {
+    console.warn('Backend update failed, trying IndexedDB:', backendError.message);
+  }
+  
+  // Fallback to IndexedDB
   try {
     const db = await initDB();
     const tx = db.transaction(ORDER_STORE, 'readwrite');
@@ -146,6 +205,9 @@ export const updateOrderStatus = async (orderId, newStatus) => {
       const oldStatus = order.status;
       order.status = newStatus;
       order.updatedAt = new Date().toISOString();
+      if (trackingNumber) {
+        order.trackingNumber = trackingNumber;
+      }
       
       // Add status history
       if (!order.statusHistory) {
@@ -179,20 +241,33 @@ export const updateOrderStatus = async (orderId, newStatus) => {
   }
 };
 
-// Delete order
+// Delete order (backend first, then IndexedDB fallback)
 export const deleteOrder = async (orderId) => {
   try {
-    const db = await initDB();
-    const tx = db.transaction(ORDER_STORE, 'readwrite');
-    const store = tx.objectStore(ORDER_STORE);
+    // Try to delete from backend API first
+    console.log('🗑️ OrderService: Attempting to delete order from backend:', orderId);
+    const result = await orderApiService.deleteOrder(orderId);
+    console.log('✅ OrderService: Order deleted from backend successfully');
+    return result;
+  } catch (backendError) {
+    console.error('❌ OrderService: Backend delete failed:', backendError);
+    console.warn('🔄 OrderService: Falling back to IndexedDB delete...');
     
-    await store.delete(orderId);
-    await tx.done;
-    
-    return true;
-  } catch (error) {
-    console.error('Error deleting order:', error);
-    throw error;
+    // Fallback to IndexedDB if backend fails
+    try {
+      const db = await initDB();
+      const tx = db.transaction(ORDER_STORE, 'readwrite');
+      const store = tx.objectStore(ORDER_STORE);
+      
+      await store.delete(orderId);
+      await tx.done;
+      
+      console.log('✅ OrderService: Order deleted from IndexedDB fallback');
+      return true;
+    } catch (indexedDBError) {
+      console.error('❌ OrderService: IndexedDB delete also failed:', indexedDBError);
+      throw new Error(`Failed to delete order from both backend and local storage. Backend: ${backendError.message}, IndexedDB: ${indexedDBError.message}`);
+    }
   }
 };
 

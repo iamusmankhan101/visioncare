@@ -339,16 +339,36 @@ export const sendOrderConfirmationEmail = async (orderData) => {
       email: orderData.customerInfo.email,
       to_name: `${orderData.customerInfo?.firstName || ''} ${orderData.customerInfo?.lastName || ''}`.trim(),
       customer_name: `${orderData.customerInfo?.firstName || ''} ${orderData.customerInfo?.lastName || ''}`.trim(),
+      
+      // Template-specific variables (matching the EmailJS template)
+      order_id: orderData.orderNumber || `ORD-${Date.now()}`,
       order_number: orderData.orderNumber || `ORD-${Date.now()}`,
       order_date: new Date().toLocaleDateString(),
+      
+      // Order items formatted for template
+      orders: orderItemsText,
+      order_items: orderItemsText,
       items: orderItemsText,
+      
+      // Individual item details (for first item if available)
+      item_quantity: orderData.items?.[0]?.quantity || 1,
+      price: `PKR ${orderData.items?.[0]?.price || 0}`,
+      
+      // Financial details
       subtotal: `PKR ${(orderData.subtotal || 0).toFixed(2)}`,
-      shipping: `PKR ${(orderData.shipping || 0).toFixed(2)}`,
-      discount: orderData.discount > 0 ? `PKR ${orderData.discount.toFixed(2)}` : 'None',
+      shipping: `PKR ${(orderData.shippingCost || 0).toFixed(2)}`,
+      shipping_amount: `PKR ${(orderData.shippingCost || 0).toFixed(2)}`,
+      discount: orderData.discountAmount > 0 ? `PKR ${orderData.discountAmount.toFixed(2)}` : 'None',
       total: `PKR ${(orderData.total || 0).toFixed(2)}`,
-      shipping_address: `${orderData.customerInfo?.address || ''}, ${orderData.customerInfo?.city || ''}, ${orderData.customerInfo?.state || ''} ${orderData.customerInfo?.zipCode || ''}`,
-      phone: `${orderData.customerInfo?.countryCode || ''} ${orderData.customerInfo?.phone || ''}`,
+      total_amount: `PKR ${(orderData.total || 0).toFixed(2)}`,
+      
+      // Address and contact
+      shipping_address: orderData.shippingAddress ? 
+        `${orderData.shippingAddress.street || ''}, ${orderData.shippingAddress.city || ''}, ${orderData.shippingAddress.state || ''} ${orderData.shippingAddress.zipCode || ''}` :
+        `${orderData.customerInfo?.address || ''}, ${orderData.customerInfo?.city || ''}, ${orderData.customerInfo?.state || ''} ${orderData.customerInfo?.zipCode || ''}`,
+      phone: orderData.customerInfo?.phone || '',
       payment_method: orderData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment',
+      
       // Additional common EmailJS fields
       from_name: 'Eyewearr',
       from_email: 'noreply@eyewearr.com',

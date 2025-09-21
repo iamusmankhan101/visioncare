@@ -352,17 +352,41 @@ const CheckoutPage = () => {
       orderNumber: `EW${Date.now().toString().slice(-6)}`,
       items: cartItems,
       subtotal,
-      shipping,
-      discount: appliedDiscount,
+      shippingCost: shipping,
+      discountAmount: appliedDiscount,
+      taxAmount: 0, // Add tax amount (0 for now)
       total: finalTotal,
-      customerInfo: data,
-      paymentMethod: selectedPayment
+      customerInfo: {
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        email: data.email || '',
+        phone: data.phone || ''
+      },
+      shippingAddress: {
+        street: data.address || '',
+        city: data.city || '',
+        state: data.state || '',
+        zipCode: data.zipCode || '',
+        country: data.country || 'Pakistan'
+      },
+      billingAddress: {
+        street: data.address || '',
+        city: data.city || '',
+        state: data.state || '',
+        zipCode: data.zipCode || '',
+        country: data.country || 'Pakistan'
+      },
+      paymentMethod: selectedPayment,
+      notes: data.notes || ''
     };
 
     try {
+      console.log('🛒 Checkout: Starting order submission...');
+      console.log('📦 Checkout: Order data:', orderData);
+      
       // Save order first
-      await saveOrder(orderData);
-      console.log('Order saved successfully');
+      const savedOrder = await saveOrder(orderData);
+      console.log('✅ Checkout: Order saved successfully:', savedOrder);
       
       // Send email confirmation to customer
       const emailResult = await sendOrderConfirmationEmail(orderData);
@@ -406,8 +430,10 @@ const CheckoutPage = () => {
       
       navigate('/order-confirmation', { state: { orderData } });
     } catch (error) {
-      console.error('Order processing error:', error);
-      alert('There was an error processing your order. Please try again.');
+      console.error('❌ Checkout: Order processing error:', error);
+      console.error('❌ Checkout: Error details:', error.message);
+      console.error('❌ Checkout: Error stack:', error.stack);
+      alert(`There was an error processing your order: ${error.message}. Please try again.`);
     }
   };
 

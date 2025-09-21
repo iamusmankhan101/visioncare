@@ -5,9 +5,9 @@ import cartReducer from './slices/cartSlice';
 import productReducer from './slices/productSlice';
 import authReducer from './slices/authSlice';
 import wishlistReducer from './slices/wishlistSlice';
-// import storeReducer from './slices/storeSlice';
-// import vendorReducer from './slices/vendorSlice';
-// import orderReducer from './slices/orderSlice';
+import storeReducer from './slices/storeSlice';
+import vendorReducer from './slices/vendorSlice';
+import orderReducer from './slices/orderSlice';
 
 // Persist config for cart
 const cartPersistConfig = {
@@ -30,9 +30,9 @@ export const store = configureStore({
     products: productReducer, // No longer persisted since we'll fetch from API
     auth: persistedAuthReducer,
     wishlist: wishlistReducer,
-    // store: storeReducer,
-    // vendor: vendorReducer,
-    // order: orderReducer,
+    store: storeReducer,
+    vendor: vendorReducer,
+    order: orderReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

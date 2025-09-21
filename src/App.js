@@ -20,6 +20,10 @@ import ShopifyDashboard from './components/admin/ShopifyDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import EmailTest from './components/EmailTest';
 import NotificationTest from './components/NotificationTest';
+import OrderTest from './components/OrderTest';
+import ApiTest from './components/ApiTest';
+import AdminDebug from './components/AdminDebug';
+import OrderItemsDebug from './components/OrderItemsDebug';
 import LensesPage from './pages/LensesPage';
 import LensProductDetailPage from './pages/LensProductDetailPage';
 import { CartProvider } from './context/CartContext';
@@ -115,6 +119,10 @@ function AppContent() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/email-test" element={<EmailTest />} />
           <Route path="/notification-test" element={<NotificationTest />} />
+          <Route path="/order-test" element={<OrderTest />} />
+          <Route path="/api-test" element={<ApiTest />} />
+          <Route path="/admin-debug" element={<AdminDebug />} />
+          <Route path="/order-items-debug" element={<OrderItemsDebug />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

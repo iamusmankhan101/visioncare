@@ -376,14 +376,14 @@ const TableHeader = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.025em;
   
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
     display: none;
   }
 `;
 
 const OrderRow = styled.div`
-  display: grid;
-  grid-template-columns: 40px 120px 1fr 150px 120px 200px 120px 150px;
+  display: grid !important;
+  grid-template-columns: 40px 120px 1fr 150px 120px 200px 120px 150px !important;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
   align-items: center;
@@ -398,8 +398,8 @@ const OrderRow = styled.div`
     border-bottom: none;
   }
   
-  @media (max-width: 768px) {
-    display: flex;
+  @media (max-width: 480px) {
+    display: flex !important;
     flex-direction: column;
     gap: 1rem;
     padding: 1.5rem 1rem;
@@ -410,10 +410,10 @@ const OrderRow = styled.div`
 `;
 
 const MobileOrderCard = styled.div`
-  display: none;
+  display: none !important;
   
-  @media (max-width: 768px) {
-    display: block;
+  @media (max-width: 480px) {
+    display: block !important;
   }
 `;
 
@@ -522,8 +522,10 @@ const MobileActionButtons = styled.div`
 `;
 
 const DesktopOrderRow = styled.div`
-  @media (max-width: 768px) {
-    display: none;
+  display: contents !important;
+  
+  @media (max-width: 480px) {
+    display: none !important;
   }
 `;
 
@@ -897,11 +899,16 @@ const OrderManagement = () => {
   const loadOrders = async () => {
     try {
       setLoading(true);
+      console.log('🔄 OrderManagement: Starting to load orders...');
       const orderData = await getAllOrders();
+      console.log('📦 OrderManagement: Received order data:', orderData);
+      console.log('📊 OrderManagement: Order data type:', typeof orderData);
+      console.log('📋 OrderManagement: Order data length:', Array.isArray(orderData) ? orderData.length : 'Not an array');
       setOrders(orderData);
       setFilteredOrders(orderData);
+      console.log('✅ OrderManagement: Orders set successfully');
     } catch (error) {
-      console.error('Error loading orders:', error);
+      console.error('❌ OrderManagement: Error loading orders:', error);
     } finally {
       setLoading(false);
     }
@@ -1011,14 +1018,17 @@ const OrderManagement = () => {
   };
 
   const handleDeleteOrder = async (orderId) => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
+    if (window.confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
       try {
+        console.log('🗑️ Admin: Deleting order:', orderId);
         await deleteOrder(orderId);
+        console.log('✅ Admin: Order deleted successfully');
         await loadOrders();
         await loadStats();
+        alert('Order deleted successfully!');
       } catch (error) {
-        console.error('Error deleting order:', error);
-        alert('Failed to delete order');
+        console.error('❌ Admin: Error deleting order:', error);
+        alert(`Failed to delete order: ${error.message}`);
       }
     }
   };

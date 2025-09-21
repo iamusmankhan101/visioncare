@@ -147,11 +147,21 @@ function initializeTables() {
       quantity INTEGER NOT NULL,
       unit_price REAL NOT NULL,
       total_price REAL NOT NULL,
+      variant_info TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (order_id) REFERENCES admin_orders (id),
       FOREIGN KEY (product_id) REFERENCES vendor_products (id)
     )
   `);
+
+  // Add variant_info column if it doesn't exist (for existing databases)
+  db.run(`
+    ALTER TABLE admin_order_items ADD COLUMN variant_info TEXT
+  `, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+      console.error('Error adding variant_info column:', err.message);
+    }
+  });
 
   // Inventory tracking table
   db.run(`
@@ -526,14 +536,39 @@ app.get('/api/orders', (req, res) => {
       countParams.push(vendor_id);
     }
     
-    db.get(countSql, countParams, (err, countResult) => {
+    db.get(countSql, countParams, async (err, countResult) => {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
       
+      // Fetch items for each order
+      const ordersWithItems = await Promise.all(orders.map(async (order) => {
+        return new Promise((resolve, reject) => {
+          const itemsSql = `
+            SELECT * FROM admin_order_items 
+            WHERE order_id = ? 
+            ORDER BY id ASC
+          `;
+          
+          db.all(itemsSql, [order.id], (err, items) => {
+            if (err) {
+              console.error('Error fetching items for order', order.id, ':', err);
+              resolve({ ...order, items: [] });
+            } else {
+              // Parse variant_info JSON for each item
+              const parsedItems = items.map(item => ({
+                ...item,
+                variant_info: item.variant_info ? JSON.parse(item.variant_info) : {}
+              }));
+              resolve({ ...order, items: parsedItems });
+            }
+          });
+        });
+      }));
+      
       res.json({
-        orders,
+        orders: ordersWithItems,
         pagination: {
           currentPage: parseInt(page),
           totalPages: Math.ceil(countResult.total / limit),
@@ -542,6 +577,98 @@ app.get('/api/orders', (req, res) => {
         }
       });
     });
+  });
+});
+
+// Create new order
+app.post('/api/orders', (req, res) => {
+  const {
+    order_number,
+    customer_email,
+    customer_name,
+    customer_phone,
+    shipping_address,
+    billing_address,
+    subtotal,
+    shipping_amount,
+    tax_amount,
+    discount_amount,
+    total,
+    payment_method,
+    payment_status,
+    fulfillment_status,
+    notes,
+    items
+  } = req.body;
+
+  // Insert order into admin_orders table
+  const orderSql = `
+    INSERT INTO admin_orders (
+      order_number, customer_email, customer_name, customer_phone,
+      shipping_address, billing_address, subtotal, shipping_amount,
+      tax_amount, discount_amount, total, payment_method,
+      payment_status, fulfillment_status, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.run(orderSql, [
+    order_number, customer_email, customer_name, customer_phone,
+    shipping_address, billing_address, subtotal, shipping_amount,
+    tax_amount, discount_amount, total, payment_method,
+    payment_status || 'pending', fulfillment_status || 'pending', notes
+  ], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+
+    const orderId = this.lastID;
+
+    // Insert order items if provided
+    if (items && items.length > 0) {
+      const itemSql = `
+        INSERT INTO admin_order_items (
+          order_id, product_id, product_name, product_sku,
+          quantity, unit_price, total_price, variant_info
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      const itemPromises = items.map(item => {
+        return new Promise((resolve, reject) => {
+          db.run(itemSql, [
+            orderId,
+            item.product_id || 0, // Default product_id if not provided
+            item.product_name,
+            item.product_sku,
+            item.quantity,
+            item.unit_price,
+            item.total_price,
+            item.variant_info || '{}'
+          ], function(err) {
+            if (err) reject(err);
+            else resolve(this.lastID);
+          });
+        });
+      });
+
+      Promise.all(itemPromises)
+        .then(() => {
+          res.status(201).json({
+            id: orderId,
+            order_number,
+            message: 'Order created successfully'
+          });
+        })
+        .catch(err => {
+          res.status(500).json({ error: 'Failed to create order items: ' + err.message });
+        });
+    } else {
+      res.status(201).json({
+        id: orderId,
+        order_number,
+        message: 'Order created successfully'
+      });
+    }
   });
 });
 
@@ -568,6 +695,43 @@ app.patch('/api/orders/:id/status', (req, res) => {
         return;
       }
       res.json(row);
+    });
+  });
+});
+
+// Delete order
+app.delete('/api/orders/:id', (req, res) => {
+  const { id } = req.params;
+
+  // First delete order items
+  const deleteItemsSql = 'DELETE FROM admin_order_items WHERE order_id = ?';
+  
+  db.run(deleteItemsSql, [id], function(err) {
+    if (err) {
+      res.status(500).json({ error: 'Failed to delete order items: ' + err.message });
+      return;
+    }
+
+    // Then delete the order
+    const deleteOrderSql = 'DELETE FROM admin_orders WHERE id = ?';
+    
+    db.run(deleteOrderSql, [id], function(err) {
+      if (err) {
+        res.status(500).json({ error: 'Failed to delete order: ' + err.message });
+        return;
+      }
+
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Order not found' });
+        return;
+      }
+
+      res.json({ 
+        success: true, 
+        message: 'Order deleted successfully',
+        deletedOrderId: id,
+        deletedItems: true
+      });
     });
   });
 });

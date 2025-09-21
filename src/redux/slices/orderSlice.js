@@ -12,7 +12,7 @@ export const fetchOrders = createAsyncThunk(
         ...(vendorId && { vendorId })
       });
       
-      const response = await fetch(`http://localhost:5003/api/orders?${params}`, {
+      const response = await fetch(`http://localhost:5005/api/orders?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -33,7 +33,7 @@ export const updateOrderStatus = createAsyncThunk(
   'order/updateOrderStatus',
   async ({ orderId, status, trackingNumber }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:5003/api/orders/${orderId}/status`, {
+      const response = await fetch(`http://localhost:5005/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ export const processRefund = createAsyncThunk(
   'order/processRefund',
   async ({ orderId, amount, reason }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:5003/api/orders/${orderId}/refund`, {
+      const response = await fetch(`http://localhost:5005/api/orders/${orderId}/refund`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

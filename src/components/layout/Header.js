@@ -4,6 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { FiSearch, FiUser, FiHeart, FiShoppingBag, FiChevronDown, FiMenu, FiX, FiSettings, FiLogOut, FiPhone, FiMail } from 'react-icons/fi';
 import { fetchProducts } from '../../redux/slices/productSlice';
+import formatPrice from '../../utils/formatPrice';
+import { generateUniqueSlug } from '../../utils/slugUtils';
 import { logout } from '../../redux/slices/authSlice';
 import PremiumBrandsMegaMenu from './PremiumBrandsMegaMenu';
 
@@ -1109,10 +1111,10 @@ const Header = () => {
     setSearchMegaMenuOpen(!searchMegaMenuOpen);
   };
   
-  const handleProductClick = (productId) => {
+  const handleProductClick = (product) => {
     setSearchMegaMenuOpen(false);
     setMobileSearchOverlayOpen(false);
-    navigate(`/products/${productId}`);
+    navigate(`/products/${generateUniqueSlug(product.name, product.id)}`);
   };
   
   const handleMobileSearchClick = () => {
@@ -1406,7 +1408,7 @@ const Header = () => {
               <SectionTitle>Suggested for you:</SectionTitle>
               <ProductGrid>
                 {filteredProducts.slice(0, 4).map(product => (
-                  <ProductCard key={product.id} onClick={() => handleProductClick(product.id)}>
+                  <ProductCard key={product.id} onClick={() => handleProductClick(product)}>
                     <ProductImage 
                       src={product.image} 
                       alt={product.name}
@@ -1648,7 +1650,7 @@ const Header = () => {
             searchQuery.trim() ? (
               filteredProducts.length > 0 ? (
                 filteredProducts.map(product => (
-                  <ProductCard key={product.id} onClick={() => handleProductClick(product.id)}>
+                  <ProductCard key={product.id} onClick={() => handleProductClick(product)}>
                     <ProductImage 
                       src={product.image} 
                       alt={product.name}
@@ -1668,7 +1670,7 @@ const Header = () => {
               )
             ) : (
               products.slice(0, 12).map(product => (
-                <ProductCard key={product.id} onClick={() => handleProductClick(product.id)}>
+                <ProductCard key={product.id} onClick={() => handleProductClick(product)}>
                   <ProductImage 
                     src={product.image} 
                     alt={product.name}

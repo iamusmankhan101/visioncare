@@ -1,6 +1,45 @@
 const express = require('express');
 const router = express.Router();
 
+// Utility functions for slug handling
+const generateSlug = (name) => {
+  if (!name) return '';
+  
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+    .replace(/[\s_-]+/g, '-') // Replace spaces, underscores, and multiple hyphens with single hyphen
+    .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
+};
+
+const generateUniqueSlug = (name, id) => {
+  const baseSlug = generateSlug(name);
+  return `${baseSlug}-${id}`;
+};
+
+const extractIdFromSlug = (slug) => {
+  if (!slug) return null;
+  
+  const parts = slug.split('-');
+  const lastPart = parts[parts.length - 1];
+  const id = parseInt(lastPart);
+  
+  return isNaN(id) ? null : id;
+};
+
+const productMatchesSlug = (product, slug) => {
+  if (!product || !slug) return false;
+  
+  // Try to match by generated slug
+  const productSlug = generateUniqueSlug(product.name, product.id);
+  if (productSlug === slug) return true;
+  
+  // Fallback: try to extract ID from slug and match
+  const extractedId = extractIdFromSlug(slug);
+  return extractedId === product.id;
+};
+
 // Mock product data with dynamic colors
 const products = [
   {
@@ -47,7 +86,23 @@ router.get('/', (req, res) => {
   }
 });
 
-// GET /api/products/:id - Get single product
+// GET /api/products/slug/:slug - Get single product by slug
+router.get('/slug/:slug', (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const product = products.find(p => productMatchesSlug(p, slug));
+    
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching product', error: error.message });
+  }
+});
+
+// GET /api/products/:id - Get single product (legacy support)
 router.get('/:id', (req, res) => {
   try {
     const product = products.find(p => p.id === parseInt(req.params.id));

@@ -8,6 +8,7 @@ import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice
 import { FiShoppingBag, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import * as reviewService from '../services/reviewService';
+import { findProductBySlug, extractIdFromSlug, generateUniqueSlug } from '../utils/slugUtils';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -1061,7 +1062,7 @@ const ModalButton = styled.button`
 `;
 
 const ProductDetailPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
@@ -1129,17 +1130,15 @@ const ProductDetailPage = () => {
   const [reviewText, setReviewText] = useState('');
   const [reviewPhotos, setReviewPhotos] = useState([]);
 
-  // Fetch product data from API
+  // Fetch all products from API (since we need to search by slug)
   useEffect(() => {
-    if (id) {
-      dispatch(fetchProductById(id));
-    }
-  }, [dispatch, id]);
+    dispatch(fetchProducts());
+  }, [dispatch]);
 
   // Set product from Redux store when data is loaded
   useEffect(() => {
     if (products && products.length > 0) {
-      const foundProduct = products.find(p => p.id === parseInt(id));
+      const foundProduct = findProductBySlug(products, slug);
       if (foundProduct) {
         setProduct(foundProduct);
         // Set default selections
@@ -1151,7 +1150,7 @@ const ProductDetailPage = () => {
         }
       }
     }
-  }, [products, id]);
+  }, [products, slug]);
 
   const openLensModal = () => {
     handleContinueToUsage();
@@ -1330,7 +1329,7 @@ const ProductDetailPage = () => {
     
     try {
       const reviewData = {
-        productId: parseInt(id),
+        productId: product?.id,
         name: reviewUsername || 'Anonymous',
         email: reviewEmail,
         rating: reviewRating,
@@ -1624,7 +1623,7 @@ const ProductDetailPage = () => {
   // Get related products from Redux store (exclude current product)
   const relatedProducts = products
     ? products
-        .filter(p => p.id !== parseInt(id)) // Exclude current product
+        .filter(p => p.id !== product?.id) // Exclude current product
         .slice(0, 4) // Limit to 4 products
         .map(p => ({
           id: p.id,
@@ -2056,7 +2055,7 @@ const ProductDetailPage = () => {
           {relatedProducts.map((relatedProduct) => (
             <RelatedProductCard 
               key={relatedProduct.id}
-              onClick={() => navigate(`/products/${relatedProduct.id}`)}
+              onClick={() => navigate(`/products/${generateUniqueSlug(relatedProduct.name, relatedProduct.id)}`)}
             >
               {relatedProduct.discount && (
                 <DiscountBadge>{relatedProduct.discount}</DiscountBadge>

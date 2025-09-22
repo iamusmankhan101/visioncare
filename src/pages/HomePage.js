@@ -6,6 +6,7 @@ import { addToCart } from '../redux/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
 import { FiShoppingBag, FiHeart, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
+import { generateUniqueSlug } from '../utils/slugUtils';
 import styled from 'styled-components';
 
 const HeroSection = styled.section`
@@ -950,7 +951,7 @@ const HomePage = () => {
       name: product.name,
       price: formatPrice(product.price),
       image: selectedColor?.image || product.image,
-      link: `/products/${product.id}`,
+      link: `/products/${generateUniqueSlug(product.name, product.id)}`,
       colors: product.colors || [],
       badge: 'Featured',
       brand: product.brand || 'Designer Collection',
@@ -969,7 +970,7 @@ const HomePage = () => {
       name: product.name,
       price: formatPrice(product.price),
       image: selectedColor?.image || product.image,
-      link: `/products/${product.id}`,
+      link: `/products/${generateUniqueSlug(product.name, product.id)}`,
       colors: product.colors || [],
       badge: 'Best Seller',
       brand: product.brand || 'Designer Collection',
@@ -1221,7 +1222,7 @@ const HomePage = () => {
                 <FiHeart fill={isInWishlist(product.id) ? '#ff4757' : 'none'} />
               </WishlistButton>
               
-              <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link to={`/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <ProductImage image={product.image} />
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
@@ -1275,7 +1276,7 @@ const HomePage = () => {
                 <FiHeart fill={isInWishlist(product.id) ? '#ff4757' : 'none'} />
               </WishlistButton>
               
-              <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link to={`/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <ProductImage image={product.image} />
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>

@@ -24,6 +24,7 @@ import OrderTest from './components/OrderTest';
 import ApiTest from './components/ApiTest';
 import AdminDebug from './components/AdminDebug';
 import OrderItemsDebug from './components/OrderItemsDebug';
+import SlugTest from './components/SlugTest';
 import LensesPage from './pages/LensesPage';
 import LensProductDetailPage from './pages/LensProductDetailPage';
 import { CartProvider } from './context/CartContext';
@@ -106,7 +107,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductListingPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/products/:slug" element={<ProductDetailPage />} />
           <Route path="/lenses" element={<LensesPage />} />
           <Route path="/lenses/:id" element={<LensProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
@@ -123,6 +124,7 @@ function AppContent() {
           <Route path="/api-test" element={<ApiTest />} />
           <Route path="/admin-debug" element={<AdminDebug />} />
           <Route path="/order-items-debug" element={<OrderItemsDebug />} />
+          <Route path="/slug-test" element={<SlugTest />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

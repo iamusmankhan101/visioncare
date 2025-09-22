@@ -6,7 +6,8 @@ import { fetchProducts, setFilters, resetFilters, setSortOption, initializeFilte
 import { addToCart } from '../redux/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
 // Import formatPrice utility
-import formatPrice from '../utils/formatPrice';
+import formatPrice from '../../utils/formatPrice';
+import { generateUniqueSlug } from '../../utils/slugUtils';
 // At the top of the file, keep only one import for the icons
 import { FiHeart } from 'react-icons/fi';
 
@@ -1316,7 +1317,7 @@ const ProductListingPage = () => {
                                     <FiHeart fill={isInWishlist(product.id) ? '#ff4757' : 'none'} />
                                   </WishlistButton>
                                   
-                                  <Link to={`/products/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                  <Link to={`/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                     <ProductImage image={product.image}>
                                      
                                     </ProductImage>

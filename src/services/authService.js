@@ -10,7 +10,7 @@ class AuthService {
     try {
       // In a real application, this would be an API call
       // For now, we'll use the hardcoded admin credentials
-      if (email === 'Visioncareoptometryclinic@gmail.com' && password === 'admin123') {
+      if (email.toLowerCase() === 'visioncareoptometryclinic@gmail.com' && password === 'admin123') {
         const userData = {
           email: email,
           name: 'Vision Care Optometry Clinic',

@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FiBell, FiSettings, FiUser, FiShoppingBag, FiUsers, FiLogOut } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
 
 // Styled Components for Header Dropdowns
 const DropdownContainer = styled.div`
@@ -268,6 +269,7 @@ const AdminHeader = ({
   handleLogout,
   setActiveTab
 }) => {
+  const { user } = useAuth();
   const handleNotificationClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -336,8 +338,8 @@ const AdminHeader = ({
         {showProfileMenu && (
           <ProfileDropdown>
             <ProfileHeader>
-              <ProfileName>Usman Khan</ProfileName>
-              <ProfileEmail>iamusmankhan101@gmail.com</ProfileEmail>
+              <ProfileName>{user?.name || 'Admin User'}</ProfileName>
+              <ProfileEmail>{user?.email || 'admin@example.com'}</ProfileEmail>
             </ProfileHeader>
             <ProfileMenu>
               <ProfileMenuItem onClick={() => setActiveTab('settings')}>

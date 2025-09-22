@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync, deleteProductAsync, resetFilters } from '../redux/slices/productSlice';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
@@ -1328,6 +1329,27 @@ const SubmitButton = styled.button`
     background-color: #ccc;
     cursor: not-allowed;
   }
+  
+  /* Mobile positioning - stick to bottom */
+  @media (max-width: 768px) {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    width: calc(100% - 40px);
+    z-index: 1000;
+    margin-top: 0;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    
+    &:hover {
+      background-color: #2980b9;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+    }
+  }
 `;
 
 const SuccessMessage = styled.div`
@@ -1533,6 +1555,11 @@ const ProductFormMain = styled.div`
   
   form {
     padding: 1.5rem;
+    
+    /* Add bottom padding on mobile to account for fixed submit button */
+    @media (max-width: 768px) {
+      padding-bottom: 100px;
+    }
   }
 `;
 
@@ -1753,6 +1780,7 @@ const TagInput = styled.input`
 const AdminPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { items: products, status, error } = useSelector(state => state.products);
   const isProductsLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -2677,7 +2705,7 @@ const AdminPage = () => {
             </DashboardHeader>
 
             <WelcomeSection>
-              <WelcomeTitle>Welcome Back, Usman Khan!</WelcomeTitle>
+              <WelcomeTitle>Welcome Back, {user?.name || 'Admin'}!</WelcomeTitle>
               <WelcomeSubtitle>Here's what happening with your store today</WelcomeSubtitle>
             </WelcomeSection>
 
@@ -3298,10 +3326,6 @@ const AdminPage = () => {
                         onChange={handleInputChange}
                       />
                     </FormGroup>
-
-                          <SubmitButton type="submit" disabled={isLoading}>
-                            {isLoading ? 'Adding Product...' : 'Add Product'}
-                          </SubmitButton>
                         </Form>
                       </ProductFormMain>
                       

@@ -8,6 +8,7 @@ import { FiShoppingBag, FiHeart, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import { generateUniqueSlug } from '../utils/slugUtils';
 import styled from 'styled-components';
+import UrlDebug from '../components/UrlDebug';
 
 const HeroSection = styled.section`
   height: 500px;
@@ -1439,6 +1440,9 @@ const HomePage = () => {
           </ModalContent>
         </ModalOverlay>
       )}
+      
+      {/* Temporary Debug Component */}
+      <UrlDebug onClose={() => {}} />
       </div>
     );
   }

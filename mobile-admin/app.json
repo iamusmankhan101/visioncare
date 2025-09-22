@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Eyewearr Admin",
+    "slug": "eyewearr-admin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android", "web"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.eyewearr.admin"
+    },
+    "android": {
+      "package": "com.eyewearr.admin",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

@@ -275,11 +275,11 @@ const Footer = () => {
         </MenuSection>
         
         <MenuSection>
-          <FooterTitle>Navegação</FooterTitle>
-          <FooterLink to="/benefits">Benefícios principais</FooterLink>
-          <FooterLink to="/services">Os nossos serviços</FooterLink>
-          <FooterLink to="/why-us">Porquê selecionar-nos</FooterLink>
-          <FooterLink to="/testimonials">Testemunhos</FooterLink>
+          <FooterTitle>Help</FooterTitle>
+          <FooterLink to="/size-guide">Size Guide</FooterLink>
+          <FooterLink to="/prescription-guide">Prescription Guide</FooterLink>
+          <FooterLink to="/returns-exchanges">Returns & Exchanges</FooterLink>
+          <FooterLink to="/faq">FAQ</FooterLink>
         </MenuSection>
         
         <ContactSection>

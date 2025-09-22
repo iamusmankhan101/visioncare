@@ -1329,27 +1329,6 @@ const SubmitButton = styled.button`
     background-color: #ccc;
     cursor: not-allowed;
   }
-  
-  /* Mobile positioning - stick to bottom */
-  @media (max-width: 768px) {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    width: calc(100% - 40px);
-    z-index: 1000;
-    margin-top: 0;
-    padding: 1rem 1.5rem;
-    font-size: 1.1rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    
-    &:hover {
-      background-color: #2980b9;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
-    }
-  }
 `;
 
 const SuccessMessage = styled.div`
@@ -1555,11 +1534,6 @@ const ProductFormMain = styled.div`
   
   form {
     padding: 1.5rem;
-    
-    /* Add bottom padding on mobile to account for fixed submit button */
-    @media (max-width: 768px) {
-      padding-bottom: 100px;
-    }
   }
 `;
 
@@ -3654,6 +3628,22 @@ const AdminPage = () => {
                         </SidebarSection>
                       </ProductFormSidebar>
                     </ProductFormLayout>
+                    
+                    {/* Submit button positioned after Product Gallery */}
+                    <SubmitButton 
+                      type="button" 
+                      disabled={isLoading}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const form = document.querySelector('form');
+                        if (form) {
+                          const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                          form.dispatchEvent(submitEvent);
+                        }
+                      }}
+                    >
+                      {isLoading ? 'Adding Product...' : 'Add Product'}
+                    </SubmitButton>
                   </ProductFormContainer>
                 </>
               )}
@@ -3993,9 +3983,6 @@ const AdminPage = () => {
                       />
                     </FormGroup>
 
-                          <SubmitButton type="submit" disabled={isLoading}>
-                            {isLoading ? 'Updating Product...' : 'Update Product'}
-                          </SubmitButton>
                         </Form>
                       </ProductFormMain>
                       

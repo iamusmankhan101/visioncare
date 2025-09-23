@@ -279,7 +279,7 @@ const Footer = () => {
           <FooterLink to="/size-guide">Size Guide</FooterLink>
           <FooterLink to="/prescription-guide">Prescription Guide</FooterLink>
           <FooterLink to="/help/exchange-return">Returns & Exchanges</FooterLink>
-          <FooterLink to="/faq">FAQ</FooterLink>
+          <FooterLink to="/help/faq">FAQ</FooterLink>
         </MenuSection>
         
         <ContactSection>

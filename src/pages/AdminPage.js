@@ -1772,6 +1772,7 @@ const AdminPage = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [productData, setProductData] = useState({
     name: '',
     price: '',
@@ -2049,6 +2050,21 @@ const AdminPage = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [activeTab]);
 
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Computed collapsed state - mobile always expanded, desktop respects collapse state
+  const effectiveCollapsed = isMobile ? false : isSidebarCollapsed;
+
   // Prevent auto-scroll to bottom on page load
   useEffect(() => {
     // Set scroll restoration to manual to prevent browser auto-scroll
@@ -2170,7 +2186,10 @@ const AdminPage = () => {
   // Helper function to handle tab changes and auto-collapse sidebar
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
-    setIsSidebarCollapsed(true); // Auto-collapse sidebar when switching tabs
+    // Only auto-collapse sidebar on mobile devices
+    if (isMobile) {
+      setIsSidebarCollapsed(true); // Auto-collapse sidebar when switching tabs on mobile
+    }
     setIsMobileMenuOpen(false); // Close mobile sidebar when switching tabs
   };
 
@@ -2556,8 +2575,8 @@ const AdminPage = () => {
     <DashboardContainer>
       <MobileOverlay isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
       <Sidebar collapsed={isSidebarCollapsed} mobileOpen={isMobileMenuOpen}>
-        <SidebarHeader collapsed={false}>
-          <Logo>
+        <SidebarHeader collapsed={effectiveCollapsed}>
+          <Logo style={{ display: effectiveCollapsed ? 'none' : 'flex' }}>
             <LogoImage src="/images/logo2.png" alt="Vision Care Logo" />
           </Logo>
           <CollapseButton onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
@@ -2569,89 +2588,89 @@ const AdminPage = () => {
           <NavItem
             active={activeTab === 'dashboard'}
             onClick={() => handleTabChange('dashboard')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/dashboard.png" alt="Dashboard" />
             </IconWrapper>
-            <NavText collapsed={false}>Dashboard</NavText>
+            <NavText collapsed={effectiveCollapsed}>Dashboard</NavText>
             <NavTooltip className="nav-tooltip">Dashboard</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'orders'}
             onClick={() => handleTabChange('orders')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/shopping-bag.png" alt="Orders" />
             </IconWrapper>
-            <NavText collapsed={false}>Orders</NavText>
+            <NavText collapsed={effectiveCollapsed}>Orders</NavText>
             <NavTooltip className="nav-tooltip">Orders</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'add-product'}
             onClick={() => handleTabChange('add-product')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/product.png" alt="Add Product" />
             </IconWrapper>
-            <NavText collapsed={false}>Add Product</NavText>
+            <NavText collapsed={effectiveCollapsed}>Add Product</NavText>
             <NavTooltip className="nav-tooltip">Add Product</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'manage-products'}
             onClick={() => handleTabChange('manage-products')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/product.png" alt="Manage Products" />
             </IconWrapper>
-            <NavText collapsed={false}>Manage Products</NavText>
+            <NavText collapsed={effectiveCollapsed}>Manage Products</NavText>
             <NavTooltip className="nav-tooltip">Manage Products</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'eyewear-products'}
             onClick={() => handleTabChange('eyewear-products')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/glasses.png" alt="Eyewear Products" />
             </IconWrapper>
-            <NavText collapsed={false}>Eyewear Products</NavText>
+            <NavText collapsed={effectiveCollapsed}>Eyewear Products</NavText>
             <NavTooltip className="nav-tooltip">Eyewear Products</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'lens-products'}
             onClick={() => handleTabChange('lens-products')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/lens.png" alt="Lens Products" />
             </IconWrapper>
-            <NavText collapsed={false}>Lens Products</NavText>
+            <NavText collapsed={effectiveCollapsed}>Lens Products</NavText>
             <NavTooltip className="nav-tooltip">Lens Products</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'customers'}
             onClick={() => handleTabChange('customers')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/customer.png" alt="Customers" />
             </IconWrapper>
-            <NavText collapsed={false}>Customers</NavText>
+            <NavText collapsed={effectiveCollapsed}>Customers</NavText>
             <NavTooltip className="nav-tooltip">Customers</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'reviews'}
             onClick={() => handleTabChange('reviews')}
-            collapsed={false}
+            collapsed={effectiveCollapsed}
           >
-            <IconWrapper collapsed={false}>
+            <IconWrapper collapsed={effectiveCollapsed}>
               <CustomIcon src="/images/review.png" alt="Reviews" />
             </IconWrapper>
-            <NavText collapsed={false}>Reviews</NavText>
+            <NavText collapsed={effectiveCollapsed}>Reviews</NavText>
             <NavTooltip className="nav-tooltip">Reviews</NavTooltip>
           </NavItem>
         </NavSection>
@@ -3597,6 +3616,12 @@ const AdminPage = () => {
                       </ProductFormSidebar>
                     </ProductFormLayout>
                   </ProductFormContainer>
+                </>
+              )}
+
+              {activeTab === 'orders' && (
+                <>
+                  <OrderManagement />
                 </>
               )}
 

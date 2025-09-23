@@ -163,8 +163,8 @@ class NotificationService {
       };
     }
 
-    // Also show in-app notification
-    this.showInAppNotification({ title, body, data });
+    // Also show in-app notification - DISABLED to prevent popup on website
+    // this.showInAppNotification({ title, body, data });
   }
 
   // Play notification sound

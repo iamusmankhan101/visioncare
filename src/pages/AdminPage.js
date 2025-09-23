@@ -2193,7 +2193,7 @@ const AdminPage = () => {
     setIsMobileMenuOpen(false); // Close mobile sidebar when switching tabs
   };
 
-  // Generate chart data based on date range
+  // Generate chart data based on real orders
   const chartData = useMemo(() => {
     const data = [];
     const startDate = new Date();
@@ -2202,16 +2202,27 @@ const AdminPage = () => {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
+      const dateString = date.toISOString().split('T')[0];
 
-      // Generate consistent data based on date to prevent flickering
-      const seed = date.getTime();
-      const baseOrders = Math.floor((Math.sin(seed / 86400000) * 5) + 10);
-      const baseRevenue = baseOrders * (1500 + (Math.cos(seed / 86400000) * 1000));
+      // Filter real orders for this specific date
+      const dayOrders = realOrders.filter(order => {
+        if (!order.createdAt) return false;
+        const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
+        return orderDate === dateString;
+      });
+
+      // Calculate real revenue for this day
+      const dayRevenue = dayOrders.reduce((total, order) => {
+        const orderTotal = order.items?.reduce((sum, item) => {
+          return sum + (parseFloat(item.price || 0) * parseInt(item.quantity || 1));
+        }, 0) || parseFloat(order.total || 0);
+        return total + orderTotal;
+      }, 0);
 
       data.push({
-        date: date.toISOString().split('T')[0],
-        orders: Math.max(1, baseOrders),
-        revenue: Math.round(Math.max(500, baseRevenue)),
+        date: dateString,
+        orders: dayOrders.length,
+        revenue: Math.round(dayRevenue),
         shortLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       });
     }
@@ -2220,7 +2231,7 @@ const AdminPage = () => {
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
 
     return { orderData: data, maxRevenue, maxOrders };
-  }, [chartDateOffset]);
+  }, [chartDateOffset, realOrders]);
 
   // Available options for form selects
   const categories = ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];

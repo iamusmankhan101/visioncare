@@ -32,13 +32,14 @@ const Sidebar = styled.div`
   flex-direction: column;
   position: fixed;
   height: 100vh;
-  z-index: 100;
+  z-index: 1000;
   transition: all 0.3s ease;
   
   @media (max-width: 768px) {
-    transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-100%)'};
-    box-shadow: ${props => props.isOpen ? '0 0 20px rgba(0, 0, 0, 0.3)' : 'none'};
+    display: ${props => props.mobileOpen ? 'flex' : 'none'};
     width: 280px;
+    left: ${props => props.mobileOpen ? '0' : '-280px'};
+    transform: translateX(${props => props.mobileOpen ? '0' : '-100%'});
   }
 `;
 
@@ -82,6 +83,10 @@ const CollapseButton = styled.button`
   svg {
     width: 16px;
     height: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    display: none;
   }
 `;
 
@@ -342,17 +347,17 @@ const MobileMenuButton = styled.button`
 `;
 
 const MobileOverlay = styled.div`
-  display: none;
+  display: ${props => props.isOpen ? 'block' : 'none'};
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 99;
+  z-index: 999;
   
-  @media (max-width: 768px) {
-    display: ${props => props.isOpen ? 'block' : 'none'};
+  @media (min-width: 769px) {
+    display: none;
   }
 `;
 
@@ -2162,6 +2167,13 @@ const AdminPage = () => {
     navigate('/admin/login');
   };
 
+  // Helper function to handle tab changes and auto-collapse sidebar
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+    setIsSidebarCollapsed(true); // Auto-collapse sidebar when switching tabs
+    setIsMobileMenuOpen(false); // Close mobile sidebar when switching tabs
+  };
+
   // Generate chart data based on date range
   const chartData = useMemo(() => {
     const data = [];
@@ -2542,17 +2554,12 @@ const AdminPage = () => {
 
   return (
     <DashboardContainer>
-      <MobileOverlay
-        isOpen={isMobileMenuOpen}
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
-      <Sidebar isOpen={isMobileMenuOpen} collapsed={isSidebarCollapsed}>
-        <SidebarHeader collapsed={isSidebarCollapsed}>
-          {!isSidebarCollapsed && (
-            <Logo>
-              <LogoImage src="/images/logo2.png" alt="Vision Care Logo" />
-            </Logo>
-          )}
+      <MobileOverlay isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
+      <Sidebar collapsed={isSidebarCollapsed} mobileOpen={isMobileMenuOpen}>
+        <SidebarHeader collapsed={false}>
+          <Logo>
+            <LogoImage src="/images/logo2.png" alt="Vision Care Logo" />
+          </Logo>
           <CollapseButton onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
             {isSidebarCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
           </CollapseButton>
@@ -2561,90 +2568,90 @@ const AdminPage = () => {
         <NavSection>
           <NavItem
             active={activeTab === 'dashboard'}
-            onClick={() => setActiveTab('dashboard')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('dashboard')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
+            <IconWrapper collapsed={false}>
               <CustomIcon src="/images/dashboard.png" alt="Dashboard" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Dashboard</NavText>
+            <NavText collapsed={false}>Dashboard</NavText>
             <NavTooltip className="nav-tooltip">Dashboard</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'orders'}
-            onClick={() => setActiveTab('orders')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('orders')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
+            <IconWrapper collapsed={false}>
               <CustomIcon src="/images/shopping-bag.png" alt="Orders" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Orders</NavText>
+            <NavText collapsed={false}>Orders</NavText>
             <NavTooltip className="nav-tooltip">Orders</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'add-product'}
-            onClick={() => setActiveTab('add-product')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('add-product')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
+            <IconWrapper collapsed={false}>
               <CustomIcon src="/images/product.png" alt="Add Product" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Add Product</NavText>
+            <NavText collapsed={false}>Add Product</NavText>
             <NavTooltip className="nav-tooltip">Add Product</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'manage-products'}
-            onClick={() => setActiveTab('manage-products')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('manage-products')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
+            <IconWrapper collapsed={false}>
               <CustomIcon src="/images/product.png" alt="Manage Products" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Manage Products</NavText>
+            <NavText collapsed={false}>Manage Products</NavText>
             <NavTooltip className="nav-tooltip">Manage Products</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'eyewear-products'}
-            onClick={() => setActiveTab('eyewear-products')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('eyewear-products')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
+            <IconWrapper collapsed={false}>
               <CustomIcon src="/images/glasses.png" alt="Eyewear Products" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Eyewear Products</NavText>
+            <NavText collapsed={false}>Eyewear Products</NavText>
             <NavTooltip className="nav-tooltip">Eyewear Products</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'lens-products'}
-            onClick={() => setActiveTab('lens-products')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('lens-products')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
-              <CustomIcon src="/images/eye-lens.png" alt="Lens Products" />
+            <IconWrapper collapsed={false}>
+              <CustomIcon src="/images/lens.png" alt="Lens Products" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Lens Products</NavText>
+            <NavText collapsed={false}>Lens Products</NavText>
             <NavTooltip className="nav-tooltip">Lens Products</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'customers'}
-            onClick={() => setActiveTab('customers')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('customers')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
+            <IconWrapper collapsed={false}>
               <CustomIcon src="/images/customer.png" alt="Customers" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Customers</NavText>
+            <NavText collapsed={false}>Customers</NavText>
             <NavTooltip className="nav-tooltip">Customers</NavTooltip>
           </NavItem>
           <NavItem
             active={activeTab === 'reviews'}
-            onClick={() => setActiveTab('reviews')}
-            collapsed={isSidebarCollapsed}
+            onClick={() => handleTabChange('reviews')}
+            collapsed={false}
           >
-            <IconWrapper collapsed={isSidebarCollapsed}>
-              <CustomIcon src="/images/star.png" alt="Reviews" />
+            <IconWrapper collapsed={false}>
+              <CustomIcon src="/images/review.png" alt="Reviews" />
             </IconWrapper>
-            <NavText collapsed={isSidebarCollapsed}>Reviews</NavText>
+            <NavText collapsed={false}>Reviews</NavText>
             <NavTooltip className="nav-tooltip">Reviews</NavTooltip>
           </NavItem>
         </NavSection>
@@ -2657,7 +2664,7 @@ const AdminPage = () => {
             <DashboardHeader>
               <HeaderLeft>
                 <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                  {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+                  <FiMenu />
                 </MobileMenuButton>
                 <SearchContainer>
                   <SearchIcon />
@@ -3019,7 +3026,7 @@ const AdminPage = () => {
             <DashboardHeader>
               <HeaderLeft>
                 <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                  {isMobileMenuOpen ? <FiX /> : <FiMenu />}
+                  <FiMenu />
                 </MobileMenuButton>
                 <SearchContainer>
                   <SearchIcon />

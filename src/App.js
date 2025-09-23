@@ -35,6 +35,7 @@ import AuthPage from './pages/AuthPage';
 import AccountPage from './pages/AccountPage';
 import WishlistPage from './pages/WishlistPage';
 import NotFoundPage from './pages/NotFoundPage';
+import ExchangeReturnPage from './pages/ExchangeReturnPage';
 import debugOrders from './utils/debugOrders';
 import testAdminAuth from './utils/testAdminAuth';
 import { testEmailJSConnection, debugEmailJSConfig } from './services/emailService';
@@ -115,6 +116,7 @@ function AppContent() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/help/exchange-return" element={<ExchangeReturnPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/login" element={<LoginPage />} />

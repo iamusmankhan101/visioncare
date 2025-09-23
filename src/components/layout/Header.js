@@ -1351,7 +1351,7 @@ const Header = () => {
           <Dropdown>
             <DropdownLink to="/help/size-guide">Size Guide</DropdownLink>
             <DropdownLink to="/help/prescription-guide">Prescription Guide</DropdownLink>
-            <DropdownLink to="/help/returns">Returns & Exchanges</DropdownLink>
+            <DropdownLink to="/help/exchange-return">Returns & Exchanges</DropdownLink>
             <DropdownLink to="/help/faq">FAQ</DropdownLink>
           </Dropdown>
         </NavItem>
@@ -1572,7 +1572,7 @@ const Header = () => {
             <MobileDropdown isOpen={mobileDropdowns.help}>
               <MobileDropdownLink to="/help/size-guide" onClick={() => setMobileMenuOpen(false)}>Size Guide</MobileDropdownLink>
               <MobileDropdownLink to="/help/prescription-guide" onClick={() => setMobileMenuOpen(false)}>Prescription Guide</MobileDropdownLink>
-              <MobileDropdownLink to="/help/returns" onClick={() => setMobileMenuOpen(false)}>Returns & Exchanges</MobileDropdownLink>
+              <MobileDropdownLink to="/help/exchange-return" onClick={() => setMobileMenuOpen(false)}>Returns & Exchanges</MobileDropdownLink>
               <MobileDropdownLink to="/help/faq" onClick={() => setMobileMenuOpen(false)}>FAQ</MobileDropdownLink>
             </MobileDropdown>
           </div>

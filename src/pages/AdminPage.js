@@ -2195,6 +2195,9 @@ const AdminPage = () => {
 
   // Generate chart data based on real orders
   const chartData = useMemo(() => {
+    console.log('📊 Chart: Generating chart data with', realOrders.length, 'orders');
+    console.log('📊 Chart: Sample order:', realOrders[0]);
+    
     const data = [];
     const startDate = new Date();
     startDate.setDate(startDate.getDate() + (chartDateOffset * 7));
@@ -2206,25 +2209,33 @@ const AdminPage = () => {
 
       // Filter real orders for this specific date
       const dayOrders = realOrders.filter(order => {
-        if (!order.createdAt) return false;
-        const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
+        // Handle both createdAt and created_at field names
+        const orderCreatedAt = order.createdAt || order.created_at;
+        if (!orderCreatedAt) return false;
+        const orderDate = new Date(orderCreatedAt).toISOString().split('T')[0];
         return orderDate === dateString;
       });
 
       // Calculate real revenue for this day
       const dayRevenue = dayOrders.reduce((total, order) => {
+        // Try to calculate from items first, then fall back to order total
         const orderTotal = order.items?.reduce((sum, item) => {
-          return sum + (parseFloat(item.price || 0) * parseInt(item.quantity || 1));
+          const itemPrice = parseFloat(item.unit_price || item.price || 0);
+          const itemQuantity = parseInt(item.quantity || 1);
+          return sum + (itemPrice * itemQuantity);
         }, 0) || parseFloat(order.total || 0);
         return total + orderTotal;
       }, 0);
 
-      data.push({
+      const dayData = {
         date: dateString,
         orders: dayOrders.length,
         revenue: Math.round(dayRevenue),
         shortLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      });
+      };
+      
+      console.log(`📊 Chart: ${dateString} - ${dayOrders.length} orders, Rs ${dayRevenue}`);
+      data.push(dayData);
     }
 
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);

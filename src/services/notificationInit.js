@@ -77,19 +77,20 @@ class NotificationInitService {
     console.log('🛍️ Processing new order notification:', orderData.orderNumber);
     
     try {
-      // Send push notification if service is available
+      // Send push notification if service is available - NOTIFICATIONS DISABLED
       if (this.services.mobilePush && notificationService.token) {
-        // Show local notification
-        notificationService.showCustomNotification({
-          title: `🛍️ New Order #${orderData.orderNumber}`,
-          body: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName} placed an order for Rs ${orderData.total}`,
-          data: {
-            orderId: orderData.id?.toString(),
-            orderNumber: orderData.orderNumber,
-            customerName: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`,
-            total: orderData.total?.toString()
-          }
-        });
+        // Disabled: Show local notification to prevent popup on website
+        console.log('🔕 Order notification blocked for website users:', orderData.orderNumber);
+        // notificationService.showCustomNotification({
+        //   title: `🛍️ New Order #${orderData.orderNumber}`,
+        //   body: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName} placed an order for Rs ${orderData.total}`,
+        //   data: {
+        //     orderId: orderData.id?.toString(),
+        //     orderNumber: orderData.orderNumber,
+        //     customerName: `${orderData.customerInfo.firstName} ${orderData.customerInfo.lastName}`,
+        //     total: orderData.total?.toString()
+        //   }
+        // });
       }
 
       console.log('✅ Order notifications sent successfully');

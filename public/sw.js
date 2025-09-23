@@ -127,9 +127,9 @@ self.addEventListener('push', (event) => {
   console.log('📲 Showing notification:', notificationData);
 
   event.waitUntil(
-    self.registration.showNotification(notificationData.title, notificationData)
-      .then(() => {
-        console.log('✅ Mobile notification shown successfully');
+    // DISABLED: Notification to prevent popup on website
+    Promise.resolve().then(() => {
+      console.log('🔕 Mobile notification blocked:', notificationData.title);
         
         // Send analytics or tracking data
         self.clients.matchAll().then(clients => {
@@ -253,7 +253,9 @@ self.addEventListener('message', (event) => {
       }
     };
     
-    self.registration.showNotification(notificationData.title, notificationData);
+    // DISABLED: Notification to prevent popup on website
+    console.log('🔕 Service worker notification blocked:', notificationData.title);
+    // self.registration.showNotification(notificationData.title, notificationData);
   }
   
   if (event.data && event.data.type === 'SKIP_WAITING') {

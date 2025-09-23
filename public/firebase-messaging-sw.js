@@ -14,32 +14,33 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Handle background messages
+// Handle background messages - NOTIFICATIONS DISABLED
 messaging.onBackgroundMessage((payload) => {
-  console.log('Received background message:', payload);
+  console.log('🔕 Background notification blocked:', payload);
+  
+  // ALL NOTIFICATIONS DISABLED to prevent popups on website
+  // const notificationTitle = payload.notification?.title || 'New Order';
+  // const notificationOptions = {
+  //   body: payload.notification?.body || 'A new order has been placed',
+  //   icon: '/favicon.ico',
+  //   badge: '/favicon.ico',
+  //   tag: 'order-notification',
+  //   requireInteraction: true,
+  //   actions: [
+  //     {
+  //       action: 'view',
+  //       title: 'View Order'
+  //     },
+  //     {
+  //       action: 'dismiss',
+  //       title: 'Dismiss'
+  //     }
+  //   ],
+  //   data: payload.data
+  // };
 
-  const notificationTitle = payload.notification?.title || 'New Order';
-  const notificationOptions = {
-    body: payload.notification?.body || 'A new order has been placed',
-    icon: '/favicon.ico',
-    badge: '/favicon.ico',
-    tag: 'order-notification',
-    requireInteraction: true,
-    actions: [
-      {
-        action: 'view',
-        title: 'View Order'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ],
-    data: payload.data
-  };
-
-  // Show notification
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  // Disabled: Show notification
+  // self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // Handle notification clicks

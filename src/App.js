@@ -4,6 +4,7 @@ import React from 'react';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import ScrollToTopButton from './components/common/ScrollToTopButton';
+import ScrollToTop from './components/common/ScrollToTop';
 import HomePage from './pages/HomePage';
 import ProductListingPage from './pages/ProductListingPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -139,6 +140,7 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
+          <ScrollToTop />
           <div className="App">
             <AppContent />
           </div>

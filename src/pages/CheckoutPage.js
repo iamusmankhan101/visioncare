@@ -384,51 +384,59 @@ const CheckoutPage = () => {
       console.log('🛒 Checkout: Starting order submission...');
       console.log('📦 Checkout: Order data:', orderData);
       
-      // Save order first
+      // Save order first - this is the only critical step
       const savedOrder = await saveOrder(orderData);
       console.log('✅ Checkout: Order saved successfully:', savedOrder);
       
-      // Send email confirmation to customer
-      const emailResult = await sendOrderConfirmationEmail(orderData);
-      if (emailResult.success) {
-        console.log('Order confirmation email sent successfully');
-      } else {
-        console.warn('Email confirmation failed:', emailResult.error);
-        // Don't block the order process if email fails
-      }
-      
-      // Send order notification to admin
-      const adminEmailResult = await sendOrderNotificationToAdmin(orderData);
-      if (adminEmailResult.success) {
-        console.log('Admin order notification sent successfully');
-      } else {
-        console.warn('Admin email notification failed:', adminEmailResult.error);
-        // Don't block the order process if admin email fails
-      }
-      
-      // Send WhatsApp notification to business owner for order dispatch
-      const whatsappResult = await sendOrderWhatsAppNotification(orderData);
-      if (whatsappResult.success) {
-        console.log('WhatsApp notification sent successfully');
-      } else {
-        console.warn('WhatsApp notification failed:', whatsappResult.error);
-        // Don't block the order process if WhatsApp fails
-      }
-      
-      // Send push notification to admin mobile devices
-      try {
-        if (window.notificationInit && window.notificationInit.isInitialized) {
-          await window.notificationInit.handleNewOrder(orderData);
-          console.log('Push notifications sent successfully');
-        } else {
-          console.warn('Push notification service not available');
-        }
-      } catch (error) {
-        console.warn('Push notification failed:', error);
-        // Don't block the order process if push notifications fail
-      }
-      
+      // Navigate immediately after saving order - don't wait for notifications
       navigate('/order-confirmation', { state: { orderData } });
+      
+      // Send all notifications in parallel (non-blocking)
+      Promise.allSettled([
+        // Send email confirmation to customer
+        sendOrderConfirmationEmail(orderData).then(result => {
+          if (result.success) {
+            console.log('✅ Order confirmation email sent successfully');
+          } else {
+            console.warn('⚠️ Email confirmation failed:', result.error);
+          }
+        }),
+        
+        // Send order notification to admin
+        sendOrderNotificationToAdmin(orderData).then(result => {
+          if (result.success) {
+            console.log('✅ Admin order notification sent successfully');
+          } else {
+            console.warn('⚠️ Admin email notification failed:', result.error);
+          }
+        }),
+        
+        // Send WhatsApp notification to business owner
+        sendOrderWhatsAppNotification(orderData).then(result => {
+          if (result.success) {
+            console.log('✅ WhatsApp notification sent successfully');
+          } else {
+            console.warn('⚠️ WhatsApp notification failed:', result.error);
+          }
+        }),
+        
+        // Send push notification to admin mobile devices
+        (async () => {
+          try {
+            if (window.notificationInit && window.notificationInit.isInitialized) {
+              await window.notificationInit.handleNewOrder(orderData);
+              console.log('✅ Push notifications sent successfully');
+            } else {
+              console.warn('⚠️ Push notification service not available');
+            }
+          } catch (error) {
+            console.warn('⚠️ Push notification failed:', error);
+          }
+        })()
+      ]).then(results => {
+        console.log('📧 All notifications processed:', results.length, 'total');
+      });
+      
     } catch (error) {
       console.error('❌ Checkout: Order processing error:', error);
       console.error('❌ Checkout: Error details:', error.message);

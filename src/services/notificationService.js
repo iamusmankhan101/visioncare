@@ -139,31 +139,34 @@ class NotificationService {
       .catch((err) => console.log('Failed to receive message: ', err));
   }
 
-  // Show custom notification with actions
+  // Show custom notification with actions - COMPLETELY DISABLED
   showCustomNotification({ title, body, data }) {
-    // Create notification sound
-    this.playNotificationSound();
+    // ALL NOTIFICATIONS DISABLED to prevent popups on website
+    console.log('🔕 Notification blocked:', title, body);
+    
+    // Disabled: Create notification sound
+    // this.playNotificationSound();
 
-    // Show browser notification
-    if (Notification.permission === 'granted') {
-      const notification = new Notification(title, {
-        body,
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
-        tag: 'order-notification',
-        requireInteraction: true
-      });
+    // Disabled: Show browser notification
+    // if (Notification.permission === 'granted') {
+    //   const notification = new Notification(title, {
+    //     body,
+    //     icon: '/favicon.ico',
+    //     badge: '/favicon.ico',
+    //     tag: 'order-notification',
+    //     requireInteraction: true
+    //   });
 
-      notification.onclick = () => {
-        window.focus();
-        if (data?.orderId) {
-          window.location.href = `/admin/orders/${data.orderId}`;
-        }
-        notification.close();
-      };
-    }
+    //   notification.onclick = () => {
+    //     window.focus();
+    //     if (data?.orderId) {
+    //       window.location.href = `/admin/orders/${data.orderId}`;
+    //     }
+    //     notification.close();
+    //   };
+    // }
 
-    // Also show in-app notification - DISABLED to prevent popup on website
+    // Disabled: Also show in-app notification
     // this.showInAppNotification({ title, body, data });
   }
 

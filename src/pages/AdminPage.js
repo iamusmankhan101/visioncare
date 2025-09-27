@@ -8,6 +8,7 @@ import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
 import AdminHeader from '../components/admin/AdminHeader';
 import { getAllOrders, getOrderStats } from '../services/orderService';
+import { useAuth } from '../context/AuthContext';
 
 // Modern Dashboard Styled Components
 const DashboardContainer = styled.div`
@@ -25,7 +26,7 @@ const DashboardContainer = styled.div`
 
 const Sidebar = styled.div`
   width: 280px;
-  background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+  background: linear-gradient(135deg, #279EFF 0%, #0E21A0 100%);
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -628,7 +629,7 @@ const StatHeader = styled.div`
 const StatTitle = styled.h3`
   font-size: 0.875rem;
   font-weight: 500;
-  color: #64748b;
+  color: #ffffff;
   margin: 0;
 `;
 
@@ -650,7 +651,7 @@ const StatChange = styled.div`
   align-items: center;
   gap: 0.25rem;
   font-size: 0.875rem;
-  color: ${props => props.positive ? '#10b981' : '#ef4444'};
+  color: #ffffff;
   font-weight: 500;
 `;
 
@@ -1503,34 +1504,6 @@ const ProductFormSidebar = styled.div`
   gap: 1.5rem;
 `;
 
-const MobileSubmitButtonContainer = styled.div`
-  display: none;
-  
-  @media (max-width: 1024px) {
-    display: block;
-    margin-top: 1.5rem;
-    padding: 0 1rem;
-  }
-`;
-
-const DesktopSubmitButton = styled(SubmitButton)`
-  @media (max-width: 1024px) {
-    display: none;
-  }
-`;
-
-const MobileSubmitButton = styled(SubmitButton)`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
-  
-  &:hover {
-    background: linear-gradient(135deg, #2AA8E8 0%, #2461DE 100%);
-  }
-`;
-
 const SidebarSection = styled.div`
   background: white;
   border: 1px solid #e2e8f0;
@@ -1650,6 +1623,7 @@ const TagInput = styled.input`
 const AdminPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { items: products, status, error } = useSelector(state => state.products);
   const isProductsLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -2451,80 +2425,56 @@ const AdminPage = () => {
         <NavSection>
           <NavItem
             active={activeTab === 'dashboard'}
-            onClick={() => {
-              setActiveTab('dashboard');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('dashboard')}
           >
             <FiHome />
             Dashboard
           </NavItem>
           <NavItem
             active={activeTab === 'orders'}
-            onClick={() => {
-              setActiveTab('orders');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('orders')}
           >
             <FiShoppingBag />
             Orders
           </NavItem>
           <NavItem
             active={activeTab === 'add-product'}
-            onClick={() => {
-              setActiveTab('add-product');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('add-product')}
           >
             <FiPackage />
             Add Product
           </NavItem>
           <NavItem
             active={activeTab === 'manage-products'}
-            onClick={() => {
-              setActiveTab('manage-products');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('manage-products')}
           >
             <FiBarChart2 />
             Manage Products
           </NavItem>
           <NavItem
             active={activeTab === 'eyewear-products'}
-            onClick={() => {
-              setActiveTab('eyewear-products');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('eyewear-products')}
           >
             <FiTrendingUp />
             Eyewear Products
           </NavItem>
           <NavItem
             active={activeTab === 'lens-products'}
-            onClick={() => {
-              setActiveTab('lens-products');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('lens-products')}
           >
             <FiSettings />
             Lens Products
           </NavItem>
           <NavItem
             active={activeTab === 'customers'}
-            onClick={() => {
-              setActiveTab('customers');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('customers')}
           >
             <FiUsers />
             Customers
           </NavItem>
           <NavItem
             active={activeTab === 'reviews'}
-            onClick={() => {
-              setActiveTab('reviews');
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => setActiveTab('reviews')}
           >
             <FiDollarSign />
             Reviews
@@ -2561,56 +2511,56 @@ const AdminPage = () => {
             </DashboardHeader>
 
             <WelcomeSection>
-              <WelcomeTitle>Welcome Back, Usman Khan!</WelcomeTitle>
+              <WelcomeTitle>Welcome Back, {user?.name || 'Vision Care'}!</WelcomeTitle>
               <WelcomeSubtitle>Here's what happening with your store today</WelcomeSubtitle>
             </WelcomeSection>
 
             <StatsGrid>
-              <StatCard style={{ background: 'linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%)' }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #279EFF 0%, #0E21A0 100%)' }}>
                 <StatHeader>
                   <StatTitle>Total Revenue</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#ffffff', fontSize: '2rem', fontWeight: '700' }}>
                   {formatPKR(orderStats.totalRevenue)}
                 </StatValue>
                 <StatChange positive>
-                  ↗ {orderStats.totalRevenue > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>({orderStats.deliveredOrders} delivered)</span>
+                  ↗ {orderStats.totalRevenue > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#e2e8f0', fontSize: '0.75rem' }}>({orderStats.deliveredOrders} delivered)</span>
                 </StatChange>
               </StatCard>
 
-              <StatCard style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)' }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #279EFF 0%, #0E21A0 100%)' }}>
                 <StatHeader>
                   <StatTitle>New Customers</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#ffffff', fontSize: '2rem', fontWeight: '700' }}>
                   {orderStats.totalOrders - orderStats.pendingOrders}
                 </StatValue>
                 <StatChange positive>
-                  ↗ {orderStats.totalOrders > 0 ? (((orderStats.totalOrders - orderStats.pendingOrders) / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>({orderStats.totalOrders - orderStats.pendingOrders} completed)</span>
+                  ↗ {orderStats.totalOrders > 0 ? (((orderStats.totalOrders - orderStats.pendingOrders) / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#e2e8f0', fontSize: '0.75rem' }}>({orderStats.totalOrders - orderStats.pendingOrders} completed)</span>
                 </StatChange>
               </StatCard>
 
-              <StatCard style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #bae6fd 100%)' }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #279EFF 0%, #0E21A0 100%)' }}>
                 <StatHeader>
                   <StatTitle>Total Orders</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#ffffff', fontSize: '2rem', fontWeight: '700' }}>
                   {orderStats.totalOrders.toLocaleString()}
                 </StatValue>
                 <StatChange positive>
-                  ↗ {orderStats.pendingOrders} <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>pending orders</span>
+                  ↗ {orderStats.pendingOrders} <span style={{ color: '#e2e8f0', fontSize: '0.75rem' }}>pending orders</span>
                 </StatChange>
               </StatCard>
 
-              <StatCard style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)' }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #279EFF 0%, #0E21A0 100%)' }}>
                 <StatHeader>
                   <StatTitle>Average Order Value</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#ffffff', fontSize: '2rem', fontWeight: '700' }}>
                   {formatPKR(Math.round(orderStats.totalRevenue / Math.max(orderStats.totalOrders, 1)))}
                 </StatValue>
                 <StatChange positive>
-                  ↗ {orderStats.totalOrders > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>delivery rate</span>
+                  ↗ {orderStats.totalOrders > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#e2e8f0', fontSize: '0.75rem' }}>delivery rate</span>
                 </StatChange>
               </StatCard>
 
@@ -2943,23 +2893,6 @@ const AdminPage = () => {
                           </FormGroup>
 
                           <FormGroup>
-                            <Label htmlFor="category">Category</Label>
-                            <Select
-                              id="category"
-                              name="category"
-                              value={productData.category}
-                              onChange={handleInputChange}
-                              required
-                            >
-                              {categories.map(category => (
-                                <option key={category} value={category}>
-                                  {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                </option>
-                              ))}
-                            </Select>
-                          </FormGroup>
-
-                          <FormGroup>
                             <Label htmlFor="material">Material</Label>
                             <Select
                               id="material"
@@ -3052,38 +2985,6 @@ const AdminPage = () => {
 
 
 
-                          <FormGroup>
-                            <Label htmlFor="productStatus">Product Status</Label>
-                            <Select
-                              id="productStatus"
-                              name="productStatus"
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setProductData({
-                                  ...productData,
-                                  featured: value === 'featured' || value === 'both',
-                                  bestSeller: value === 'bestSeller' || value === 'both'
-                                });
-                              }}
-                              value={
-                                productData.featured && productData.bestSeller
-                                  ? 'both'
-                                  : productData.featured
-                                    ? 'featured'
-                                    : productData.bestSeller
-                                      ? 'bestSeller'
-                                      : 'none'
-                              }
-                            >
-                              <option value="none">Regular Product</option>
-                              <option value="featured">Featured Product</option>
-                              <option value="bestSeller">Best Seller</option>
-                              <option value="both">Featured & Best Seller</option>
-                            </Select>
-                          </FormGroup>
-
-
-
 
                           {/* Frame Color */}
                           <FormGroup>
@@ -3171,9 +3072,9 @@ const AdminPage = () => {
                             />
                           </FormGroup>
 
-                          <DesktopSubmitButton type="submit" disabled={isLoading}>
+                          <SubmitButton type="submit" disabled={isLoading}>
                             {isLoading ? 'Adding Product...' : 'Add Product'}
-                          </DesktopSubmitButton>
+                          </SubmitButton>
                         </Form>
                       </ProductFormMain>
 
@@ -3501,22 +3402,6 @@ const AdminPage = () => {
                           </DetailsList>
                         </SidebarSection>
                       </ProductFormSidebar>
-                      
-                      <MobileSubmitButtonContainer>
-                        <MobileSubmitButton 
-                          type="button" 
-                          disabled={isLoading}
-                          onClick={() => {
-                            // Find the form and submit it
-                            const form = document.querySelector('form');
-                            if (form) {
-                              form.requestSubmit();
-                            }
-                          }}
-                        >
-                          {isLoading ? 'Adding Product...' : 'Add Product'}
-                        </MobileSubmitButton>
-                      </MobileSubmitButtonContainer>
                     </ProductFormLayout>
                   </ProductFormContainer>
                 </>
@@ -3598,18 +3483,13 @@ const AdminPage = () => {
 
               {activeTab === 'edit-product' && (
                 <>
-                  <ProductFormContainer>
-                    <ProductFormHeader>
-                      <h2>Edit Product</h2>
-                    </ProductFormHeader>
+                  <h2>Edit Product</h2>
 
-                    {successMessage && (
-                      <SuccessMessage>{successMessage}</SuccessMessage>
-                    )}
+                  {successMessage && (
+                    <SuccessMessage>{successMessage}</SuccessMessage>
+                  )}
 
-                    <ProductFormLayout>
-                      <ProductFormMain>
-                        <Form onSubmit={handleUpdateSubmit}>
+                  <Form onSubmit={handleUpdateSubmit}>
                     {/* Same form fields as Add Product, but with a different submit button */}
                     <FormGroup>
                       <Label htmlFor="name">Product Name *</Label>
@@ -3637,23 +3517,6 @@ const AdminPage = () => {
                         onChange={handleInputChange}
                         required
                       />
-                    </FormGroup>
-
-                    <FormGroup>
-                      <Label htmlFor="category">Category</Label>
-                      <Select
-                        id="category"
-                        name="category"
-                        value={productData.category}
-                        onChange={handleInputChange}
-                        required
-                      >
-                        {categories.map(category => (
-                          <option key={category} value={category}>
-                            {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                          </option>
-                        ))}
-                      </Select>
                     </FormGroup>
 
                     <FormGroup>
@@ -3729,39 +3592,6 @@ const AdminPage = () => {
                         ))}
                       </ColorRadioContainer>
                     </FormGroup>
-
-
-
-                    <FormGroup>
-                      <Label htmlFor="productStatus">Product Status</Label>
-                      <Select
-                        id="productStatus"
-                        name="productStatus"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setProductData({
-                            ...productData,
-                            featured: value === 'featured' || value === 'both',
-                            bestSeller: value === 'bestSeller' || value === 'both'
-                          });
-                        }}
-                        value={
-                          productData.featured && productData.bestSeller
-                            ? 'both'
-                            : productData.featured
-                              ? 'featured'
-                              : productData.bestSeller
-                                ? 'bestSeller'
-                                : 'none'
-                        }
-                      >
-                        <option value="none">Regular Product</option>
-                        <option value="featured">Featured Product</option>
-                        <option value="bestSeller">Best Seller</option>
-                        <option value="both">Featured & Best Seller</option>
-                      </Select>
-                    </FormGroup>
-
 
 
 
@@ -3851,354 +3681,329 @@ const AdminPage = () => {
                       />
                     </FormGroup>
 
-                          <DesktopSubmitButton type="submit" disabled={isLoading}>
-                            {isLoading ? 'Updating...' : 'Update Product'}
-                          </DesktopSubmitButton>
-                        </Form>
-                      </ProductFormMain>
+                    <SubmitButton type="submit" disabled={isLoading}>
+                      {isLoading ? 'Updating...' : 'Update Product'}
+                    </SubmitButton>
+                  </Form>
+                </>
+              )}
 
-                      <ProductFormSidebar>
-                        <SidebarSection>
-                          <SidebarTitle>Thumbnail</SidebarTitle>
-                          <ThumbnailContainer>
-                            <ThumbnailImage onClick={handleUploadClick}>
-                              {(productData.image || previewUrl) ? (
-                                <img src={productData.image || previewUrl} alt="Product thumbnail" />
+              {activeTab === 'eyewear-products' && (
+                <>
+                  <h2>Eyewear Products</h2>
+                  
+                  {successMessage && (
+                    <SuccessMessage>{successMessage}</SuccessMessage>
+                  )}
+
+                  <ProductList>
+                    {isProductsLoading ? (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        Loading eyewear products...
+                      </div>
+                    ) : products && products.length > 0 ? (
+                      products
+                        .filter(product => 
+                          product.category === 'Sunglasses' ||
+                          product.category === 'Eyeglasses' || 
+                          product.category === 'Reading Glasses' || 
+                          product.category === 'Computer Glasses' ||
+                          product.category === 'Sports Glasses'
+                        )
+                        .map(product => (
+                          <ProductCard key={product.id}>
+                            <ProductImage>
+                              {product.image ? (
+                                <img src={product.image} alt={product.name} />
                               ) : (
-                                <ThumbnailPlaceholder>
-                                  <span>📷</span>
-                                  <span>Click to upload thumbnail image</span>
-                                </ThumbnailPlaceholder>
-                              )}
-                            </ThumbnailImage>
-                            <FileInput
-                              type="file"
-                              ref={fileInputRef}
-                              accept="image/*"
-                              onChange={handleFileSelect}
-                            />
-                          </ThumbnailContainer>
-                        </SidebarSection>
-
-                        <SidebarSection>
-                          <SidebarTitle>Status</SidebarTitle>
-                          <StatusContainer>
-                            <StatusIndicator status="draft" />
-                            <Select
-                              value={productData.featured && productData.bestSeller ? 'both' : productData.featured ? 'featured' : productData.bestSeller ? 'bestSeller' : 'draft'}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setProductData({
-                                  ...productData,
-                                  featured: value === 'featured' || value === 'both',
-                                  bestSeller: value === 'bestSeller' || value === 'both'
-                                });
-                              }}
-                            >
-                              <option value="draft">Draft</option>
-                              <option value="featured">Featured</option>
-                              <option value="bestSeller">Best Seller</option>
-                              <option value="both">Featured & Best Seller</option>
-                            </Select>
-                          </StatusContainer>
-                        </SidebarSection>
-
-                        <SidebarSection>
-                          <SidebarTitle>Product Details</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Label>Categories</Label>
-                              <Select
-                                name="category"
-                                value={productData.category}
-                                onChange={handleInputChange}
-                                required
-                              >
-                                {categories.map(category => (
-                                  <option key={category} value={category}>
-                                    {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                  </option>
-                                ))}
-                              </Select>
-                            </DetailsItem>
-
-                            <DetailsItem>
-                              <Label>Material</Label>
-                              <Select
-                                name="material"
-                                value={productData.material}
-                                onChange={handleInputChange}
-                              >
-                                <option value="">Select Material</option>
-                                {materials.map(material => (
-                                  <option key={material} value={material}>
-                                    {material.charAt(0).toUpperCase() + material.slice(1)}
-                                  </option>
-                                ))}
-                              </Select>
-                            </DetailsItem>
-
-                            <DetailsItem>
-                              <Label>Tags</Label>
-                              <TagsContainer>
-                                <TagInput placeholder="Sunglasses" />
-                              </TagsContainer>
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-
-                        <SidebarSection>
-                          <SidebarTitle>Brand</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Input
-                                type="text"
-                                name="brand"
-                                value={productData.brand}
-                                onChange={handleInputChange}
-                                placeholder="Enter brand name"
-                              />
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-
-                        <SidebarSection>
-                          <SidebarTitle>Gender</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Select
-                                name="gender"
-                                value={productData.gender}
-                                onChange={handleInputChange}
-                              >
-                                {genders.map(gender => (
-                                  <option key={gender} value={gender}>
-                                    {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                                  </option>
-                                ))}
-                              </Select>
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-
-                        <SidebarSection>
-                          <SidebarTitle>Available Sizes</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Select
-                                name="sizes"
-                                value={productData.sizes?.[0] || ''}
-                                onChange={(e) => {
-                                  const selectedSize = e.target.value;
-                                  if (selectedSize && !productData.sizes?.includes(selectedSize)) {
-                                    setProductData({
-                                      ...productData,
-                                      sizes: [...(productData.sizes || []), selectedSize]
-                                    });
-                                  }
-                                }}
-                              >
-                                <option value="">Select a size</option>
-                                {sizeOptions.map(size => (
-                                  <option key={size} value={size}>
-                                    {size}
-                                  </option>
-                                ))}
-                              </Select>
-                              {productData.sizes && productData.sizes.length > 0 && (
-                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                  {productData.sizes.map((size, index) => (
-                                    <span
-                                      key={index}
-                                      style={{
-                                        background: '#3b82f6',
-                                        color: 'white',
-                                        padding: '4px 8px',
-                                        borderRadius: '12px',
-                                        fontSize: '12px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px'
-                                      }}
-                                    >
-                                      {size}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setProductData({
-                                            ...productData,
-                                            sizes: productData.sizes.filter(s => s !== size)
-                                          });
-                                        }}
-                                        style={{
-                                          background: 'none',
-                                          border: 'none',
-                                          color: 'white',
-                                          cursor: 'pointer',
-                                          fontSize: '14px',
-                                          padding: '0',
-                                          lineHeight: '1'
-                                        }}
-                                      >
-                                        ×
-                                      </button>
-                                    </span>
-                                  ))}
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  height: '100%',
+                                  background: '#f8fafc',
+                                  color: '#64748b'
+                                }}>
+                                  No Image
                                 </div>
                               )}
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-
-                        <SidebarSection>
-                          <SidebarTitle>Features</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Select
-                                name="features"
-                                value=""
-                                onChange={(e) => {
-                                  const selectedFeature = e.target.value;
-                                  if (selectedFeature && !productData.features?.includes(selectedFeature)) {
-                                    setProductData({
-                                      ...productData,
-                                      features: [...(productData.features || []), selectedFeature]
-                                    });
-                                  }
+                            </ProductImage>
+                            <ProductInfo>
+                              <ProductName>{product.name}</ProductName>
+                              <ProductPrice>PKR {product.price}</ProductPrice>
+                              <ProductCategory>{product.category}</ProductCategory>
+                              <ProductStatus status={product.status}>
+                                {product.featured && 'Featured '}
+                                {product.bestSeller && 'Best Seller'}
+                                {!product.featured && !product.bestSeller && 'Regular'}
+                              </ProductStatus>
+                            </ProductInfo>
+                            <ProductActions>
+                              <ActionButton
+                                onClick={() => {
+                                  setSelectedProduct(product);
+                                  setProductData(product);
+                                  setActiveTab('edit-product');
                                 }}
                               >
-                                <option value="">Select a feature</option>
-                                {featureOptions.map(feature => (
-                                  <option key={feature} value={feature}>
-                                    {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                  </option>
-                                ))}
-                              </Select>
-                              {productData.features && productData.features.length > 0 && (
-                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                  {productData.features.map((feature, index) => (
-                                    <span
-                                      key={index}
-                                      style={{
-                                        background: '#10b981',
-                                        color: 'white',
-                                        padding: '4px 8px',
-                                        borderRadius: '12px',
-                                        fontSize: '12px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px'
-                                      }}
-                                    >
-                                      {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setProductData({
-                                            ...productData,
-                                            features: productData.features.filter(f => f !== feature)
-                                          });
-                                        }}
-                                        style={{
-                                          background: 'none',
-                                          border: 'none',
-                                          color: 'white',
-                                          cursor: 'pointer',
-                                          fontSize: '14px',
-                                          padding: '0',
-                                          lineHeight: '1'
-                                        }}
-                                      >
-                                        ×
-                                      </button>
-                                    </span>
-                                  ))}
+                                Edit
+                              </ActionButton>
+                              <ActionButton
+                                danger
+                                onClick={() => handleDeleteProduct(product.id)}
+                              >
+                                Delete
+                              </ActionButton>
+                            </ProductActions>
+                          </ProductCard>
+                        ))
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        No eyewear products found. <a href="#" onClick={() => setActiveTab('add-product')}>Add your first eyewear product</a>
+                      </div>
+                    )}
+                  </ProductList>
+                </>
+              )}
+
+              {activeTab === 'lens-products' && (
+                <>
+                  <h2>Lens Products</h2>
+                  
+                  {successMessage && (
+                    <SuccessMessage>{successMessage}</SuccessMessage>
+                  )}
+
+                  <ProductList>
+                    {isProductsLoading ? (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        Loading lens products...
+                      </div>
+                    ) : products && products.length > 0 ? (
+                      products
+                        .filter(product => 
+                          product.category === 'Contact Lenses' || 
+                          product.category === 'Transparent Lenses' || 
+                          product.category === 'Colored Lenses'
+                        )
+                        .map(product => (
+                          <ProductCard key={product.id}>
+                            <ProductImage>
+                              {product.image ? (
+                                <img src={product.image} alt={product.name} />
+                              ) : (
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  height: '100%',
+                                  background: '#f8fafc',
+                                  color: '#64748b'
+                                }}>
+                                  No Image
                                 </div>
                               )}
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
+                            </ProductImage>
+                            <ProductInfo>
+                              <ProductName>{product.name}</ProductName>
+                              <ProductPrice>PKR {product.price}</ProductPrice>
+                              <ProductCategory>{product.category}</ProductCategory>
+                              <ProductStatus status={product.status}>
+                                {product.featured && 'Featured '}
+                                {product.bestSeller && 'Best Seller'}
+                                {!product.featured && !product.bestSeller && 'Regular'}
+                              </ProductStatus>
+                            </ProductInfo>
+                            <ProductActions>
+                              <ActionButton
+                                onClick={() => {
+                                  setSelectedProduct(product);
+                                  setProductData(product);
+                                  setActiveTab('edit-product');
+                                }}
+                              >
+                                Edit
+                              </ActionButton>
+                              <ActionButton
+                                danger
+                                onClick={() => handleDeleteProduct(product.id)}
+                              >
+                                Delete
+                              </ActionButton>
+                            </ProductActions>
+                          </ProductCard>
+                        ))
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        No lens products found. <a href="#" onClick={() => setActiveTab('add-product')}>Add your first lens product</a>
+                      </div>
+                    )}
+                  </ProductList>
+                </>
+              )}
 
-                        <SidebarSection>
-                          <SidebarTitle>Product Gallery</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <MediaUploadArea onClick={() => document.getElementById('editGalleryUpload').click()}>
-                                <MediaUploadIcon>🖼️</MediaUploadIcon>
-                                <MediaUploadText>
-                                  {productData.gallery?.length || 0} images selected
-                                  <br />
-                                  Click to add gallery images
-                                </MediaUploadText>
-                                <FileInput
-                                  type="file"
-                                  id="editGalleryUpload"
-                                  accept="image/*"
-                                  multiple
-                                  onChange={handleGalleryUpload}
-                                />
-                              </MediaUploadArea>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
-                                {productData.gallery?.map((img, index) => (
-                                  <div key={index} style={{ position: 'relative', width: '60px', height: '60px' }}>
-                                    <img
-                                      src={img}
-                                      alt={`Gallery ${index}`}
-                                      style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e2e8f0'
-                                      }}
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeGalleryImage(index)}
-                                      style={{
-                                        position: 'absolute',
-                                        top: '-6px',
-                                        right: '-6px',
-                                        background: '#ef4444',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '18px',
-                                        height: '18px',
-                                        cursor: 'pointer',
-                                        fontSize: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                      }}
-                                    >
-                                      ×
-                                    </button>
-                                  </div>
-                                ))}
+              {activeTab === 'customers' && (
+                <>
+                  <h2>Customer Management</h2>
+                  
+                  <div style={{ 
+                    background: 'white', 
+                    padding: '2rem', 
+                    borderRadius: '12px', 
+                    border: '1px solid #e2e8f0',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
+                    <h3 style={{ color: '#1a202c', marginBottom: '0.5rem' }}>Customer Management</h3>
+                    <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
+                      Customer management functionality will be implemented here.
+                    </p>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                      gap: '1rem',
+                      marginTop: '2rem'
+                    }}>
+                      <div style={{
+                        background: '#f8fafc',
+                        padding: '1.5rem',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <h4 style={{ color: '#3b82f6', margin: '0 0 0.5rem 0' }}>Total Customers</h4>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1a202c', margin: 0 }}>0</p>
+                      </div>
+                      <div style={{
+                        background: '#f8fafc',
+                        padding: '1.5rem',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <h4 style={{ color: '#10b981', margin: '0 0 0.5rem 0' }}>Active Customers</h4>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1a202c', margin: 0 }}>0</p>
+                      </div>
+                      <div style={{
+                        background: '#f8fafc',
+                        padding: '1.5rem',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <h4 style={{ color: '#f59e0b', margin: '0 0 0.5rem 0' }}>New This Month</h4>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1a202c', margin: 0 }}>0</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'reviews' && (
+                <>
+                  <h2>Product Reviews</h2>
+                  
+                  {successMessage && (
+                    <SuccessMessage>{successMessage}</SuccessMessage>
+                  )}
+
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <select 
+                      value={reviewFilter} 
+                      onChange={(e) => setReviewFilter(e.target.value)}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '6px',
+                        background: 'white'
+                      }}
+                    >
+                      <option value="all">All Reviews</option>
+                      <option value="pending">Pending Approval</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+
+                  {reviewsLoading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                      Loading reviews...
+                    </div>
+                  ) : reviews && reviews.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {reviews
+                        .filter(review => reviewFilter === 'all' || review.status === reviewFilter)
+                        .map(review => (
+                          <div key={review.id} style={{
+                            background: 'white',
+                            padding: '1.5rem',
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0'
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                              <div>
+                                <h4 style={{ margin: '0 0 0.5rem 0', color: '#1a202c' }}>{review.customerName}</h4>
+                                <p style={{ margin: '0', color: '#64748b', fontSize: '0.875rem' }}>
+                                  Product: {review.productName} • {new Date(review.createdAt).toLocaleDateString()}
+                                </p>
                               </div>
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-                      </ProductFormSidebar>
-                      
-                      <MobileSubmitButtonContainer>
-                        <MobileSubmitButton 
-                          type="button" 
-                          disabled={isLoading}
-                          onClick={() => {
-                            // Find the form and submit it
-                            const form = document.querySelector('form');
-                            if (form) {
-                              form.requestSubmit();
-                            }
-                          }}
-                        >
-                          {isLoading ? 'Updating...' : 'Update Product'}
-                        </MobileSubmitButton>
-                      </MobileSubmitButtonContainer>
-                    </ProductFormLayout>
-                  </ProductFormContainer>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                              </div>
+                            </div>
+                            <p style={{ margin: '0 0 1rem 0', color: '#374151' }}>{review.comment}</p>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              {review.status === 'pending' && (
+                                <>
+                                  <button
+                                    onClick={() => approveReview(review.id)}
+                                    style={{
+                                      background: '#10b981',
+                                      color: 'white',
+                                      border: 'none',
+                                      padding: '0.5rem 1rem',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.875rem'
+                                    }}
+                                  >
+                                    Approve
+                                  </button>
+                                  <button
+                                    onClick={() => rejectReview(review.id)}
+                                    style={{
+                                      background: '#ef4444',
+                                      color: 'white',
+                                      border: 'none',
+                                      padding: '0.5rem 1rem',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.875rem'
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+                              <span style={{
+                                padding: '0.25rem 0.75rem',
+                                borderRadius: '12px',
+                                fontSize: '0.75rem',
+                                fontWeight: '500',
+                                background: review.status === 'approved' ? '#dcfce7' : review.status === 'rejected' ? '#fee2e2' : '#fef3c7',
+                                color: review.status === 'approved' ? '#166534' : review.status === 'rejected' ? '#991b1b' : '#92400e'
+                              }}>
+                                {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⭐</div>
+                      <h3 style={{ color: '#1a202c', marginBottom: '0.5rem' }}>No Reviews Yet</h3>
+                      <p style={{ color: '#64748b' }}>Customer reviews will appear here once they start reviewing your products.</p>
+                    </div>
+                  )}
                 </>
               )}
             </ContentArea>

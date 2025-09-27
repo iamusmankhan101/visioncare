@@ -1255,21 +1255,24 @@ const SubmitButton = styled.button`
 const MobileAddProductButton = styled.button`
   display: none;
   width: 100%;
-  padding: 1rem;
-  margin-top: 1rem;
+  padding: 1.25rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
   background: linear-gradient(135deg, #279EFF 0%, #0E21A0 100%);
   color: white;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(39, 158, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(39, 158, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(39, 158, 255, 0.4);
+    box-shadow: 0 8px 24px rgba(39, 158, 255, 0.5);
   }
   
   &:active {
@@ -1277,10 +1280,14 @@ const MobileAddProductButton = styled.button`
   }
   
   @media (max-width: 768px) {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+  }
+  
+  svg {
+    font-size: 1.2rem;
   }
 `;
 
@@ -1445,6 +1452,7 @@ const UploadActions = styled.div`
 const ProductFormContainer = styled.div`
   display: flex;
   flex-direction: column;
+  width: 100%;
   gap: 2rem;
 `;
 
@@ -2965,14 +2973,13 @@ const AdminPage = () => {
                       )}
                     </ProductFormHeader>
 
-                    <ProductFormLayout>
-                      <ProductFormMain>
-                        <TabContainer>
-                          <TabButton active={true}>General</TabButton>
+                    <Form onSubmit={handleSubmit}>
+                      <ProductFormLayout>
+                        <ProductFormMain>
+                          <TabContainer>
+                            <TabButton active={true}>General</TabButton>
 
-                        </TabContainer>
-
-                        <Form onSubmit={handleSubmit}>
+                          </TabContainer>
                           <FormGroup>
                             <Label htmlFor="name">Product Name</Label>
                             <Input
@@ -3178,12 +3185,7 @@ const AdminPage = () => {
                               onChange={handleInputChange}
                             />
                           </FormGroup>
-
-                          <SubmitButton type="submit" disabled={isLoading}>
-                            {isLoading ? 'Adding Product...' : 'Add Product'}
-                          </SubmitButton>
-                        </Form>
-                      </ProductFormMain>
+                        </ProductFormMain>
 
                       <ProductFormSidebar>
                         <SidebarSection>
@@ -3507,9 +3509,14 @@ const AdminPage = () => {
                               </div>
                             </DetailsItem>
                           </DetailsList>
+                          <SubmitButton type="submit" disabled={isLoading}>
+                            {isLoading ? 'Adding Product...' : 'Add Product'}
+                          </SubmitButton>
+                          
                         </SidebarSection>
                       </ProductFormSidebar>
                     </ProductFormLayout>
+                    </Form>
                   </ProductFormContainer>
                 </>
               )}
@@ -3582,7 +3589,7 @@ const AdminPage = () => {
                     )}
                   </ProductList>
                   
-                  {/* Mobile Add Product Button */}
+                  {/* Mobile Add Product Button - Below Product Gallery */}
                   <MobileAddProductButton onClick={() => handleTabClick('add-product')}>
                     <FiPlus />
                     Add New Product
@@ -4122,6 +4129,7 @@ const AdminPage = () => {
             </ContentArea>
           </>
         )}
+        
       </MainContent>
 
       <LogoutButton onClick={handleLogout}>

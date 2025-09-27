@@ -991,17 +991,16 @@ const XAxis = styled.div`
 
 const XAxisLabel = styled.div`
   font-size: 0.75rem;
-  color: #94a3b8;
-  font-weight: 400;
   text-align: center;
 `;
 
-const LineChart = styled.svg`
+const BarChart = styled.svg`
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
 `;
 
 const ChartGrid = styled.div`
@@ -2031,34 +2030,51 @@ const AdminPage = () => {
     navigate('/admin/login');
   };
 
-  // Generate chart data based on date range
+  // Generate chart data based on real orders only
   const chartData = useMemo(() => {
     const data = [];
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() + (chartDateOffset * 7));
+    
+    // Get the last 7 days starting from today going backwards
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i); // Go back i days from today
+      date.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+      const dateString = date.toISOString().split('T')[0];
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
+      // Filter real orders for this specific date
+      const ordersForDate = realOrders.filter(order => {
+        if (!order.createdAt && !order.date) return false;
+        const orderDate = new Date(order.createdAt || order.date);
+        orderDate.setHours(0, 0, 0, 0); // Set to start of day
+        return orderDate.toISOString().split('T')[0] === dateString;
+      });
 
-      // Generate consistent data based on date to prevent flickering
-      const seed = date.getTime();
-      const baseOrders = Math.floor((Math.sin(seed / 86400000) * 5) + 10);
-      const baseRevenue = baseOrders * (1500 + (Math.cos(seed / 86400000) * 1000));
+      // Calculate actual revenue for this date (only from real orders)
+      const dailyRevenue = ordersForDate.reduce((total, order) => {
+        return total + (parseFloat(order.total) || parseFloat(order.amount) || 0);
+      }, 0);
 
       data.push({
-        date: date.toISOString().split('T')[0],
-        orders: Math.max(1, baseOrders),
-        revenue: Math.round(Math.max(500, baseRevenue)),
+        date: dateString,
+        orders: ordersForDate.length, // Actual count, could be 0
+        revenue: Math.round(dailyRevenue), // Actual revenue, could be 0
         shortLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       });
     }
 
+    // Debug: Log the data to console
+    console.log('Chart Debug - Real Orders:', realOrders.length);
+    console.log('Chart Debug - Processed Data:', data);
+    
+    // Calculate max values for scaling (minimum 1 to prevent division by zero)
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
+    
+    const hasAnyData = data.some(d => d.orders > 0 || d.revenue > 0);
+    console.log('Chart Debug - Has Any Data:', hasAnyData);
 
-    return { orderData: data, maxRevenue, maxOrders };
-  }, [chartDateOffset]);
+    return { orderData: data, maxRevenue, maxOrders, hasAnyData };
+  }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
 
   // Available options for form selects
   const categories = ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
@@ -2569,15 +2585,15 @@ const AdminPage = () => {
             <ContentGrid>
               <ChartContainer>
                 <ChartHeader>
-                  <ChartTitle>Sales Chart</ChartTitle>
+                  <ChartTitle>Sales & Orders Overview</ChartTitle>
                   <ChartControls>
                     <ChartLegend>
                       <LegendItem>
-                        <LegendDot color="#1f2937" />
-                        Sales
+                        <LegendDot color="#0891b2" />
+                        Revenue
                       </LegendItem>
                       <LegendItem>
-                        <LegendDot color="#a855f7" />
+                        <LegendDot color="#22c55e" />
                         Orders
                       </LegendItem>
                     </ChartLegend>
@@ -2632,7 +2648,26 @@ const AdminPage = () => {
                     )}
                     {(() => {
                       // Extract data from chartData
-                      const { orderData, maxRevenue, maxOrders } = chartData;
+                      const { orderData, maxRevenue, maxOrders, hasAnyData } = chartData;
+                      
+                      // Show "no data" message if there are no real orders
+                      if (!hasAnyData) {
+                        return (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: '300px',
+                            color: '#64748b',
+                            textAlign: 'center'
+                          }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
+                            <h3 style={{ color: '#1a202c', marginBottom: '0.5rem' }}>No Sales Data Yet</h3>
+                            <p>Your sales chart will appear here once you start receiving orders.</p>
+                          </div>
+                        );
+                      }
 
                       // Memoize normalized data to prevent re-calculation on hover
                       const revenuePoints = orderData.map((data, index) => ({
@@ -2668,101 +2703,70 @@ const AdminPage = () => {
                                 <YAxisLabel key={index}>{label}</YAxisLabel>
                               ))}
                             </YAxis>
-                            <LineChart viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <BarChart viewBox="0 0 100 100" preserveAspectRatio="none">
                               <defs>
+                                <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                  <stop offset="0%" stopColor="#0891b2" stopOpacity="0.8" />
+                                  <stop offset="100%" stopColor="#0891b2" stopOpacity="0.6" />
+                                </linearGradient>
                                 <linearGradient id="orderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-                                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.8" />
+                                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0.6" />
                                 </linearGradient>
                               </defs>
 
-                              {/* Revenue Line (teal) */}
-                              <path
-                                d={(() => {
-                                  let path = '';
-                                  revenuePoints.forEach((point, index) => {
-                                    const x = 15 + (index / (revenuePoints.length - 1)) * 70;
-                                    const y = 5 + (1 - point.normalized) * 80;
-                                    if (index === 0) {
-                                      path += `M ${x} ${y}`;
-                                    } else {
-                                      const prevX = 15 + ((index - 1) / (revenuePoints.length - 1)) * 70;
-                                      const prevY = 5 + (1 - revenuePoints[index - 1].normalized) * 80;
-                                      const cpX1 = prevX + (x - prevX) * 0.5;
-                                      path += ` C ${cpX1} ${prevY}, ${cpX1} ${y}, ${x} ${y}`;
-                                    }
-                                  });
-                                  return path;
-                                })()}
-                                stroke="#0891b2"
-                                strokeWidth="0.3"
-                                fill="none"
-                                style={{ filter: 'drop-shadow(0 2px 4px rgba(8, 145, 178, 0.2))' }}
-                              />
-
-                              {/* Order Line (green) */}
-                              <path
-                                d={(() => {
-                                  let path = '';
-                                  orderPoints.forEach((point, index) => {
-                                    const x = 15 + (index / (orderPoints.length - 1)) * 70;
-                                    const y = 5 + (1 - point.normalized) * 80;
-                                    if (index === 0) {
-                                      path += `M ${x} ${y}`;
-                                    } else {
-                                      const prevX = 15 + ((index - 1) / (orderPoints.length - 1)) * 70;
-                                      const prevY = 5 + (1 - orderPoints[index - 1].normalized) * 80;
-                                      const cpX1 = prevX + (x - prevX) * 0.5;
-                                      path += ` C ${cpX1} ${prevY}, ${cpX1} ${y}, ${x} ${y}`;
-                                    }
-                                  });
-                                  return path;
-                                })()}
-                                stroke="#22c55e"
-                                strokeWidth="0.3"
-                                fill="none"
-                                style={{ filter: 'drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2))' }}
-                              />
-
-                              {/* Data points */}
+                              {/* Revenue Bars */}
                               {revenuePoints.map((point, index) => {
-                                const x = 15 + (index / (revenuePoints.length - 1)) * 70;
-                                const y = 5 + (1 - point.normalized) * 80;
+                                const barWidth = 70 / (revenuePoints.length * 2); // Half width for grouped bars
+                                const x = 15 + (index / (revenuePoints.length - 1)) * 70 - barWidth;
+                                const barHeight = point.normalized * 80;
+                                const y = 85 - barHeight;
                                 return (
-                                  <circle
-                                    key={`revenue-${index}`}
-                                    cx={x}
-                                    cy={y}
-                                    r="1.2"
-                                    fill="#0891b2"
-                                    stroke="white"
-                                    strokeWidth="0.3"
-                                    style={{ cursor: 'pointer' }}
+                                  <rect
+                                    key={`revenue-bar-${index}`}
+                                    x={x}
+                                    y={y}
+                                    width={barWidth}
+                                    height={barHeight}
+                                    fill="url(#revenueGradient)"
+                                    stroke="#0891b2"
+                                    strokeWidth="0.1"
+                                    style={{ 
+                                      cursor: 'pointer',
+                                      filter: 'drop-shadow(0 2px 4px rgba(8, 145, 178, 0.2))'
+                                    }}
                                     onMouseEnter={(e) => handlePointHover(e, point, 'revenue')}
                                     onMouseLeave={handlePointLeave}
                                   />
                                 );
                               })}
 
+                              {/* Order Bars */}
                               {orderPoints.map((point, index) => {
+                                const barWidth = 70 / (orderPoints.length * 2); // Half width for grouped bars
                                 const x = 15 + (index / (orderPoints.length - 1)) * 70;
-                                const y = 5 + (1 - point.normalized) * 80;
+                                const barHeight = point.normalized * 80;
+                                const y = 85 - barHeight;
                                 return (
-                                  <circle
-                                    key={`order-${index}`}
-                                    cx={x}
-                                    cy={y}
-                                    r="1.2"
-                                    fill="#22c55e"
-                                    stroke="white"
-                                    strokeWidth="0.3"
-                                    style={{ cursor: 'pointer' }}
+                                  <rect
+                                    key={`order-bar-${index}`}
+                                    x={x}
+                                    y={y}
+                                    width={barWidth}
+                                    height={barHeight}
+                                    fill="url(#orderGradient)"
+                                    stroke="#22c55e"
+                                    strokeWidth="0.1"
+                                    style={{ 
+                                      cursor: 'pointer',
+                                      filter: 'drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2))'
+                                    }}
                                     onMouseEnter={(e) => handlePointHover(e, point, 'orders')}
                                     onMouseLeave={handlePointLeave}
                                   />
                                 );
                               })}
-                            </LineChart>
+                            </BarChart>
                           </ChartArea>
                           <XAxis>
                             {orderData.map((data, index) => (

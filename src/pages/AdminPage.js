@@ -2362,7 +2362,7 @@ const AdminPage = () => {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     try {
@@ -2372,9 +2372,8 @@ const AdminPage = () => {
         price: parseFloat(productData.price)
       };
 
-      // Dispatch async action to add product
-      await dispatch(createProductAsync(formattedProduct)).unwrap();
-      dispatch(resetFilters());
+      // Dispatch action to add product
+      dispatch(addProduct(formattedProduct));
 
       // Show success message
       setSuccessMessage('Product added successfully!');
@@ -2430,10 +2429,10 @@ const AdminPage = () => {
   };
 
   // Handle delete product - MOVED INSIDE COMPONENT
-  const handleDeleteProduct = async (productId) => {
+  const handleDeleteProduct = (productId) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await dispatch(deleteProductAsync(productId)).unwrap();
+        dispatch(deleteProduct(productId));
         setSuccessMessage('Product deleted successfully!');
         setTimeout(() => setSuccessMessage(''), 3000);
       } catch (error) {
@@ -2445,7 +2444,7 @@ const AdminPage = () => {
   };
 
   // Handle update product submission - MOVED INSIDE COMPONENT
-  const handleUpdateSubmit = async (e) => {
+  const handleUpdateSubmit = (e) => {
     e.preventDefault();
 
     try {
@@ -2455,11 +2454,11 @@ const AdminPage = () => {
         price: parseFloat(productData.price)
       };
 
-      // Dispatch async action to update product
-      await dispatch(updateProductAsync({
+      // Dispatch action to update product
+      dispatch(updateProduct({
         id: updatedProduct.id,
-        productData: updatedProduct
-      })).unwrap();
+        ...updatedProduct
+      }));
 
       // Show success message
       setSuccessMessage('Product updated successfully!');
@@ -2482,7 +2481,7 @@ const AdminPage = () => {
 
 
   // Update existing products with random style values
-  const handleUpdateExistingProductsWithStyles = async () => {
+  const handleUpdateExistingProductsWithStyles = () => {
     if (window.confirm('This will update all existing products without style data with random styles. Continue?')) {
       try {
         setIsLoading(true);
@@ -2492,10 +2491,10 @@ const AdminPage = () => {
           if (!product.style) {
             const randomStyle = styleOptions[Math.floor(Math.random() * styleOptions.length)];
             const updatedProduct = { ...product, style: randomStyle };
-            await dispatch(updateProductAsync({
+            dispatch(updateProduct({
               id: product.id,
-              productData: updatedProduct
-            })).unwrap();
+              ...updatedProduct
+            }));
           }
         }
 

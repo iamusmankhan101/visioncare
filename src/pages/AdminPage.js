@@ -1578,6 +1578,180 @@ const MediaUploadText = styled.p`
   font-size: 0.875rem;
 `;
 
+const GalleryContainer = styled.div`
+  margin-top: 1rem;
+`;
+
+const GalleryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const GalleryItem = styled.div`
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: #3ABEF9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(58, 190, 249, 0.2);
+  }
+`;
+
+const GalleryImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const GalleryRemoveButton = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+  }
+`;
+
+const GalleryAddButton = styled.div`
+  aspect-ratio: 1;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f8fafc;
+  
+  &:hover {
+    border-color: #3ABEF9;
+    background: #f0f9ff;
+    transform: translateY(-2px);
+  }
+  
+  svg {
+    font-size: 1.5rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+  }
+  
+  span {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-align: center;
+  }
+`;
+
+const ImageSection = styled.div`
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e2e8f0;
+`;
+
+const SectionTitle = styled.h3`
+  margin: 0 0 1rem 0;
+  color: #1a202c;
+  font-size: 1.125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const MainImageContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+`;
+
+const MainImagePreview = styled.div`
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  overflow: hidden;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .placeholder {
+    color: #94a3b8;
+    text-align: center;
+    font-size: 0.875rem;
+  }
+`;
+
+const ImageActions = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const ImageActionButton = styled.button`
+  padding: 0.75rem 1rem;
+  border: 2px solid #3ABEF9;
+  background: ${props => props.primary ? '#3ABEF9' : 'white'};
+  color: ${props => props.primary ? 'white' : '#3ABEF9'};
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: ${props => props.primary ? '#2563eb' : '#f0f9ff'};
+    border-color: ${props => props.primary ? '#2563eb' : '#2563eb'};
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
 const PricingContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -3602,27 +3776,150 @@ const AdminPage = () => {
 
               {activeTab === 'edit-product' && (
                 <>
-                  <h2>Edit Product</h2>
+                  <ProductFormContainer>
+                    <ProductFormHeader>
+                      <h2>Edit Product</h2>
+                      {successMessage && (
+                        <SuccessMessage>{successMessage}</SuccessMessage>
+                      )}
+                    </ProductFormHeader>
 
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
+                    <ProductFormLayout>
+                      <ProductFormMain>
+                        <TabContainer>
+                          <TabButton active={true}>General</TabButton>
+                        </TabContainer>
+                        
+                        <Form onSubmit={handleUpdateSubmit}>
+                          {/* Main Product Image Section */}
+                          <ImageSection>
+                            <SectionTitle>
+                              📷 Product Image
+                            </SectionTitle>
+                            <MainImageContainer>
+                              <MainImagePreview>
+                                {productData.image ? (
+                                  <img src={productData.image} alt="Product preview" />
+                                ) : (
+                                  <div className="placeholder">
+                                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📷</div>
+                                    <div>No image selected</div>
+                                  </div>
+                                )}
+                              </MainImagePreview>
+                              <ImageActions>
+                                <ImageActionButton
+                                  type="button"
+                                  primary
+                                  onClick={() => document.getElementById('edit-main-image-input').click()}
+                                >
+                                  <FiUpload />
+                                  {productData.image ? 'Change Image' : 'Upload Image'}
+                                </ImageActionButton>
+                                {productData.image && (
+                                  <ImageActionButton
+                                    type="button"
+                                    onClick={() => setProductData({...productData, image: ''})}
+                                  >
+                                    <FiX />
+                                    Remove Image
+                                  </ImageActionButton>
+                                )}
+                                <HiddenFileInput
+                                  id="edit-main-image-input"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        setProductData({...productData, image: reader.result});
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                />
+                              </ImageActions>
+                            </MainImageContainer>
+                          </ImageSection>
 
-                  <Form onSubmit={handleUpdateSubmit}>
-                    {/* Same form fields as Add Product, but with a different submit button */}
-                    <FormGroup>
-                      <Label htmlFor="name">Product Name *</Label>
-                      <Input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={productData.name}
-                        onChange={handleInputChange}
-                        placeholder="Sample Product"
-                        required
-                      />
-                      <FormHint>Add a name that is recommended to be unique.</FormHint>
-                    </FormGroup>
+                          {/* Product Gallery Section */}
+                          <ImageSection>
+                            <SectionTitle>
+                              🖼️ Product Gallery
+                            </SectionTitle>
+                            <GalleryContainer>
+                              <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0 0 1rem 0' }}>
+                                Add multiple images to showcase your product from different angles
+                              </p>
+                              <GalleryGrid>
+                                {(productData.gallery || []).map((image, index) => (
+                                  <GalleryItem key={index}>
+                                    <GalleryImage src={image} alt={`Gallery image ${index + 1}`} />
+                                    <GalleryRemoveButton
+                                      type="button"
+                                      onClick={() => {
+                                        const updatedGallery = [...(productData.gallery || [])];
+                                        updatedGallery.splice(index, 1);
+                                        setProductData({...productData, gallery: updatedGallery});
+                                      }}
+                                    >
+                                      <FiX />
+                                    </GalleryRemoveButton>
+                                  </GalleryItem>
+                                ))}
+                                <GalleryAddButton
+                                  onClick={() => document.getElementById('edit-gallery-input').click()}
+                                >
+                                  <FiPlus />
+                                  <span>Add Images</span>
+                                </GalleryAddButton>
+                              </GalleryGrid>
+                              <HiddenFileInput
+                                id="edit-gallery-input"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => {
+                                  const files = Array.from(e.target.files);
+                                  if (files.length > 0) {
+                                    const newGalleryImages = [];
+                                    let filesProcessed = 0;
+                                    
+                                    files.forEach(file => {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        newGalleryImages.push(reader.result);
+                                        filesProcessed++;
+                                        if (filesProcessed === files.length) {
+                                          setProductData({
+                                            ...productData,
+                                            gallery: [...(productData.gallery || []), ...newGalleryImages]
+                                          });
+                                        }
+                                      };
+                                      reader.readAsDataURL(file);
+                                    });
+                                  }
+                                }}
+                              />
+                            </GalleryContainer>
+                          </ImageSection>
+
+                          <FormGroup>
+                            <Label htmlFor="name">Product Name *</Label>
+                            <Input
+                              type="text"
+                              id="name"
+                              name="name"
+                              value={productData.name}
+                              onChange={handleInputChange}
+                              placeholder="Sample Product"
+                              required
+                            />
+                            <FormHint>Add a name that is recommended to be unique.</FormHint>
+                          </FormGroup>
 
                     <FormGroup>
                       <Label htmlFor="price">Price (PKR)</Label>
@@ -3800,10 +4097,66 @@ const AdminPage = () => {
                       />
                     </FormGroup>
 
-                    <SubmitButton type="submit" disabled={isLoading}>
-                      {isLoading ? 'Updating...' : 'Update Product'}
-                    </SubmitButton>
-                  </Form>
+                          <SubmitButton type="submit" disabled={isLoading}>
+                            {isLoading ? 'Updating...' : 'Update Product'}
+                          </SubmitButton>
+                        </Form>
+                      </ProductFormMain>
+                      
+                      {/* Sidebar with Product Preview */}
+                      <ProductFormSidebar>
+                        <SidebarSection>
+                          <SidebarTitle>Product Preview</SidebarTitle>
+                          <ThumbnailContainer>
+                            <ThumbnailImage onClick={() => document.getElementById('edit-main-image-input').click()}>
+                              {productData.image ? (
+                                <img src={productData.image} alt="Product thumbnail" />
+                              ) : (
+                                <ThumbnailPlaceholder>
+                                  <span>📷</span>
+                                  <span>Click to add main product image</span>
+                                </ThumbnailPlaceholder>
+                              )}
+                            </ThumbnailImage>
+                          </ThumbnailContainer>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Product Status</SidebarTitle>
+                          <StatusContainer>
+                            <StatusIndicator status={productData.status?.toLowerCase()} />
+                            <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                              {productData.status || 'Draft'}
+                            </span>
+                          </StatusContainer>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Product Details</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Label>Price</Label>
+                              <span style={{ fontWeight: '600', color: '#1a202c' }}>
+                                PKR {productData.price || '0'}
+                              </span>
+                            </DetailsItem>
+                            <DetailsItem>
+                              <Label>Category</Label>
+                              <span style={{ color: '#64748b' }}>
+                                {productData.category || 'Not selected'}
+                              </span>
+                            </DetailsItem>
+                            <DetailsItem>
+                              <Label>Gallery Images</Label>
+                              <span style={{ color: '#64748b' }}>
+                                {(productData.gallery || []).length} images
+                              </span>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                      </ProductFormSidebar>
+                    </ProductFormLayout>
+                  </ProductFormContainer>
                 </>
               )}
 

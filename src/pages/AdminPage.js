@@ -1233,21 +1233,54 @@ const RadioInput = styled.input`
 const SubmitButton = styled.button`
   background-color: #3498db;
   color: white;
+  padding: 0.75rem 1.5rem;
   border: none;
-  padding: 0.8rem 1.5rem;
   border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
   cursor: pointer;
-  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
   
   &:hover {
     background-color: #2980b9;
   }
   
   &:disabled {
-    background-color: #ccc;
+    background-color: #bdc3c7;
     cursor: not-allowed;
+  }
+`;
+
+
+const MobileAddProductButton = styled.button`
+  display: none;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #279EFF 0%, #0E21A0 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(39, 158, 255, 0.3);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 158, 255, 0.4);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
   }
 `;
 
@@ -2083,6 +2116,13 @@ const AdminPage = () => {
     navigate('/admin/login');
   };
 
+  // Helper function to handle tab clicks and close mobile menu
+  const handleTabClick = (tabName) => {
+    setActiveTab(tabName);
+    // Close mobile menu when tab is clicked
+    setIsMobileMenuOpen(false);
+  };
+
   // Generate chart data based on real orders only
   const chartData = useMemo(() => {
     const data = [];
@@ -2496,7 +2536,7 @@ const AdminPage = () => {
         <NavSection>
           <NavItem
             active={activeTab === 'dashboard'}
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => handleTabClick('dashboard')}
             collapsed={isSidebarCollapsed}
           >
             <FiHome />
@@ -2504,7 +2544,7 @@ const AdminPage = () => {
           </NavItem>
           <NavItem
             active={activeTab === 'orders'}
-            onClick={() => setActiveTab('orders')}
+            onClick={() => handleTabClick('orders')}
             collapsed={isSidebarCollapsed}
           >
             <FiShoppingBag />
@@ -2512,7 +2552,7 @@ const AdminPage = () => {
           </NavItem>
           <NavItem
             active={activeTab === 'add-product'}
-            onClick={() => setActiveTab('add-product')}
+            onClick={() => handleTabClick('add-product')}
             collapsed={isSidebarCollapsed}
           >
             <FiPackage />
@@ -2520,7 +2560,7 @@ const AdminPage = () => {
           </NavItem>
           <NavItem
             active={activeTab === 'manage-products'}
-            onClick={() => setActiveTab('manage-products')}
+            onClick={() => handleTabClick('manage-products')}
             collapsed={isSidebarCollapsed}
           >
             <FiBarChart2 />
@@ -2528,7 +2568,7 @@ const AdminPage = () => {
           </NavItem>
           <NavItem
             active={activeTab === 'eyewear-products'}
-            onClick={() => setActiveTab('eyewear-products')}
+            onClick={() => handleTabClick('eyewear-products')}
             collapsed={isSidebarCollapsed}
           >
             <FiTrendingUp />
@@ -2536,7 +2576,7 @@ const AdminPage = () => {
           </NavItem>
           <NavItem
             active={activeTab === 'lens-products'}
-            onClick={() => setActiveTab('lens-products')}
+            onClick={() => handleTabClick('lens-products')}
             collapsed={isSidebarCollapsed}
           >
             <FiSettings />
@@ -2544,7 +2584,7 @@ const AdminPage = () => {
           </NavItem>
           <NavItem
             active={activeTab === 'customers'}
-            onClick={() => setActiveTab('customers')}
+            onClick={() => handleTabClick('customers')}
             collapsed={isSidebarCollapsed}
           >
             <FiUsers />
@@ -2552,7 +2592,7 @@ const AdminPage = () => {
           </NavItem>
           <NavItem
             active={activeTab === 'reviews'}
-            onClick={() => setActiveTab('reviews')}
+            onClick={() => handleTabClick('reviews')}
             collapsed={isSidebarCollapsed}
           >
             <FiDollarSign />
@@ -3541,6 +3581,12 @@ const AdminPage = () => {
                       </div>
                     )}
                   </ProductList>
+                  
+                  {/* Mobile Add Product Button */}
+                  <MobileAddProductButton onClick={() => handleTabClick('add-product')}>
+                    <FiPlus />
+                    Add New Product
+                  </MobileAddProductButton>
                 </>
               )}
 

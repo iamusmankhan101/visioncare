@@ -42,11 +42,12 @@ const StatsContainer = styled.div`
 `;
 
 const StatCard = styled.div`
-  background: ${props => props.color || '#f8f9fa'};
-  padding: 1rem;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #279EFF 0%, #0E21A0 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
   
   @media (max-width: 768px) {
     padding: 0.75rem 0.5rem;
@@ -58,9 +59,10 @@ const StatCard = styled.div`
 `;
 
 const StatNumber = styled.div`
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: ${props => props.textColor || '#333'};
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
   
   @media (max-width: 768px) {
     font-size: 1.25rem;
@@ -72,8 +74,9 @@ const StatNumber = styled.div`
 `;
 
 const StatLabel = styled.div`
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 0.875rem;
+  color: #ffffff;
+  font-weight: 500;
   margin-top: 0.25rem;
   
   @media (max-width: 768px) {
@@ -1147,20 +1150,20 @@ const OrderManagement = () => {
       
       {/* Statistics */}
       <StatsContainer>
-        <StatCard color="#e3f2fd">
-          <StatNumber textColor="#1976d2">{stats.total || 0}</StatNumber>
+        <StatCard>
+          <StatNumber>{stats.total || 0}</StatNumber>
           <StatLabel>Total Orders</StatLabel>
         </StatCard>
-        <StatCard color="#fff3e0">
-          <StatNumber textColor="#f57c00">{stats.pending || 0}</StatNumber>
+        <StatCard>
+          <StatNumber>{stats.pending || 0}</StatNumber>
           <StatLabel>Pending</StatLabel>
         </StatCard>
-        <StatCard color="#e8f5e8">
-          <StatNumber textColor="#388e3c">{stats.delivered || 0}</StatNumber>
+        <StatCard>
+          <StatNumber>{stats.delivered || 0}</StatNumber>
           <StatLabel>Delivered</StatLabel>
         </StatCard>
-        <StatCard color="#f3e5f5">
-          <StatNumber textColor="#7b1fa2">{formatCurrency(stats.totalRevenue)}</StatNumber>
+        <StatCard>
+          <StatNumber>{formatCurrency(stats.totalRevenue)}</StatNumber>
           <StatLabel>Total Revenue</StatLabel>
         </StatCard>
       </StatsContainer>

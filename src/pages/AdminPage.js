@@ -3598,13 +3598,18 @@ const AdminPage = () => {
 
               {activeTab === 'edit-product' && (
                 <>
-                  <h2>Edit Product</h2>
+                  <ProductFormContainer>
+                    <ProductFormHeader>
+                      <h2>Edit Product</h2>
+                    </ProductFormHeader>
 
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
+                    {successMessage && (
+                      <SuccessMessage>{successMessage}</SuccessMessage>
+                    )}
 
-                  <Form onSubmit={handleUpdateSubmit}>
+                    <ProductFormLayout>
+                      <ProductFormMain>
+                        <Form onSubmit={handleUpdateSubmit}>
                     {/* Same form fields as Add Product, but with a different submit button */}
                     <FormGroup>
                       <Label htmlFor="name">Product Name *</Label>
@@ -3846,10 +3851,354 @@ const AdminPage = () => {
                       />
                     </FormGroup>
 
-                    <SubmitButton type="submit" disabled={isLoading}>
-                      {isLoading ? 'Updating...' : 'Update Product'}
-                    </SubmitButton>
-                  </Form>
+                          <DesktopSubmitButton type="submit" disabled={isLoading}>
+                            {isLoading ? 'Updating...' : 'Update Product'}
+                          </DesktopSubmitButton>
+                        </Form>
+                      </ProductFormMain>
+
+                      <ProductFormSidebar>
+                        <SidebarSection>
+                          <SidebarTitle>Thumbnail</SidebarTitle>
+                          <ThumbnailContainer>
+                            <ThumbnailImage onClick={handleUploadClick}>
+                              {(productData.image || previewUrl) ? (
+                                <img src={productData.image || previewUrl} alt="Product thumbnail" />
+                              ) : (
+                                <ThumbnailPlaceholder>
+                                  <span>📷</span>
+                                  <span>Click to upload thumbnail image</span>
+                                </ThumbnailPlaceholder>
+                              )}
+                            </ThumbnailImage>
+                            <FileInput
+                              type="file"
+                              ref={fileInputRef}
+                              accept="image/*"
+                              onChange={handleFileSelect}
+                            />
+                          </ThumbnailContainer>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Status</SidebarTitle>
+                          <StatusContainer>
+                            <StatusIndicator status="draft" />
+                            <Select
+                              value={productData.featured && productData.bestSeller ? 'both' : productData.featured ? 'featured' : productData.bestSeller ? 'bestSeller' : 'draft'}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProductData({
+                                  ...productData,
+                                  featured: value === 'featured' || value === 'both',
+                                  bestSeller: value === 'bestSeller' || value === 'both'
+                                });
+                              }}
+                            >
+                              <option value="draft">Draft</option>
+                              <option value="featured">Featured</option>
+                              <option value="bestSeller">Best Seller</option>
+                              <option value="both">Featured & Best Seller</option>
+                            </Select>
+                          </StatusContainer>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Product Details</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Label>Categories</Label>
+                              <Select
+                                name="category"
+                                value={productData.category}
+                                onChange={handleInputChange}
+                                required
+                              >
+                                {categories.map(category => (
+                                  <option key={category} value={category}>
+                                    {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+
+                            <DetailsItem>
+                              <Label>Material</Label>
+                              <Select
+                                name="material"
+                                value={productData.material}
+                                onChange={handleInputChange}
+                              >
+                                <option value="">Select Material</option>
+                                {materials.map(material => (
+                                  <option key={material} value={material}>
+                                    {material.charAt(0).toUpperCase() + material.slice(1)}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+
+                            <DetailsItem>
+                              <Label>Tags</Label>
+                              <TagsContainer>
+                                <TagInput placeholder="Sunglasses" />
+                              </TagsContainer>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Brand</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Input
+                                type="text"
+                                name="brand"
+                                value={productData.brand}
+                                onChange={handleInputChange}
+                                placeholder="Enter brand name"
+                              />
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Gender</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="gender"
+                                value={productData.gender}
+                                onChange={handleInputChange}
+                              >
+                                {genders.map(gender => (
+                                  <option key={gender} value={gender}>
+                                    {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Available Sizes</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="sizes"
+                                value={productData.sizes?.[0] || ''}
+                                onChange={(e) => {
+                                  const selectedSize = e.target.value;
+                                  if (selectedSize && !productData.sizes?.includes(selectedSize)) {
+                                    setProductData({
+                                      ...productData,
+                                      sizes: [...(productData.sizes || []), selectedSize]
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="">Select a size</option>
+                                {sizeOptions.map(size => (
+                                  <option key={size} value={size}>
+                                    {size}
+                                  </option>
+                                ))}
+                              </Select>
+                              {productData.sizes && productData.sizes.length > 0 && (
+                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {productData.sizes.map((size, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        background: '#3b82f6',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                      }}
+                                    >
+                                      {size}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProductData({
+                                            ...productData,
+                                            sizes: productData.sizes.filter(s => s !== size)
+                                          });
+                                        }}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'white',
+                                          cursor: 'pointer',
+                                          fontSize: '14px',
+                                          padding: '0',
+                                          lineHeight: '1'
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Features</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="features"
+                                value=""
+                                onChange={(e) => {
+                                  const selectedFeature = e.target.value;
+                                  if (selectedFeature && !productData.features?.includes(selectedFeature)) {
+                                    setProductData({
+                                      ...productData,
+                                      features: [...(productData.features || []), selectedFeature]
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="">Select a feature</option>
+                                {featureOptions.map(feature => (
+                                  <option key={feature} value={feature}>
+                                    {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                  </option>
+                                ))}
+                              </Select>
+                              {productData.features && productData.features.length > 0 && (
+                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {productData.features.map((feature, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        background: '#10b981',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                      }}
+                                    >
+                                      {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProductData({
+                                            ...productData,
+                                            features: productData.features.filter(f => f !== feature)
+                                          });
+                                        }}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'white',
+                                          cursor: 'pointer',
+                                          fontSize: '14px',
+                                          padding: '0',
+                                          lineHeight: '1'
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Product Gallery</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <MediaUploadArea onClick={() => document.getElementById('editGalleryUpload').click()}>
+                                <MediaUploadIcon>🖼️</MediaUploadIcon>
+                                <MediaUploadText>
+                                  {productData.gallery?.length || 0} images selected
+                                  <br />
+                                  Click to add gallery images
+                                </MediaUploadText>
+                                <FileInput
+                                  type="file"
+                                  id="editGalleryUpload"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={handleGalleryUpload}
+                                />
+                              </MediaUploadArea>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                                {productData.gallery?.map((img, index) => (
+                                  <div key={index} style={{ position: 'relative', width: '60px', height: '60px' }}>
+                                    <img
+                                      src={img}
+                                      alt={`Gallery ${index}`}
+                                      style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        borderRadius: '4px',
+                                        border: '1px solid #e2e8f0'
+                                      }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeGalleryImage(index)}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '-6px',
+                                        right: '-6px',
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '18px',
+                                        height: '18px',
+                                        cursor: 'pointer',
+                                        fontSize: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                      </ProductFormSidebar>
+                      
+                      <MobileSubmitButtonContainer>
+                        <MobileSubmitButton 
+                          type="button" 
+                          disabled={isLoading}
+                          onClick={() => {
+                            // Find the form and submit it
+                            const form = document.querySelector('form');
+                            if (form) {
+                              form.requestSubmit();
+                            }
+                          }}
+                        >
+                          {isLoading ? 'Updating...' : 'Update Product'}
+                        </MobileSubmitButton>
+                      </MobileSubmitButtonContainer>
+                    </ProductFormLayout>
+                  </ProductFormContainer>
                 </>
               )}
             </ContentArea>

@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync, deleteProductAsync, resetFilters } from '../redux/slices/productSlice';
+import { addProduct, updateProduct, deleteProduct, fetchProducts } from '../redux/slices/productSlice';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
@@ -25,30 +24,25 @@ const DashboardContainer = styled.div`
 `;
 
 const Sidebar = styled.div`
-  width: ${props => props.collapsed ? '90px' : '280px'};
+  width: 280px;
   background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   position: fixed;
   height: 100vh;
-  z-index: 1000;
-  transition: all 0.3s ease;
+  z-index: 100;
+  transition: transform 0.3s ease;
   
   @media (max-width: 768px) {
-    display: ${props => props.mobileOpen ? 'flex' : 'none'};
-    width: 280px;
-    left: ${props => props.mobileOpen ? '0' : '-280px'};
-    transform: translateX(${props => props.mobileOpen ? '0' : '-100%'});
+    transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-100%)'};
+    box-shadow: ${props => props.isOpen ? '0 0 20px rgba(0, 0, 0, 0.3)' : 'none'};
   }
 `;
 
 const SidebarHeader = styled.div`
-  padding: ${props => props.collapsed ? '1rem' : '1.5rem'};
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: ${props => props.collapsed ? 'center' : 'space-between'};
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
 `;
 
 const Logo = styled.div`
@@ -58,36 +52,7 @@ const Logo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  filter: invert(1);
-  overflow: hidden;
-  white-space: nowrap;
-`;
-
-const CollapseButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 0.5rem;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-  }
-  
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-  
-  @media (max-width: 768px) {
-    display: none;
-  }
+  filter:invert(1);
 `;
 
 const LogoImage = styled.img`
@@ -98,35 +63,21 @@ const LogoImage = styled.img`
 
 const NavSection = styled.div`
   padding: 1rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
 `;
 
 const NavItem = styled.div`
   display: flex;
   align-items: center;
-  gap: ${props => props.collapsed ? '0' : '0.75rem'};
-  padding: ${props => props.collapsed ? '0.75rem 0' : '0.75rem 1.5rem'};
-  color: #ffffff;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  color: ${props => props.active ? '#ffffff' : '#ffffff'};
   background: ${props => props.active ? 'rgba(255, 255, 255, 0.2)' : 'transparent'};
-  border-right: ${props => props.active && !props.collapsed ? '3px solid #ffffff' : 'none'};
+  border-right: ${props => props.active ? '3px solid #ffffff' : 'none'};
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: ${props => props.active ? '600' : '500'};
   border-radius: 8px;
-  margin: ${props => props.collapsed ? '0.25rem 0.5rem' : '0 0.5rem'};
-  justify-content: ${props => props.collapsed ? 'center' : 'flex-start'};
-  position: relative;
-  min-height: 42px;
-  width: ${props => props.collapsed ? '70px' : 'auto'};
-  
-  /* Debug background when collapsed */
-  ${props => props.collapsed && `
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  `}
+  margin: 0 0.5rem;
   
   &:hover {
     background: rgba(255, 255, 255, 0.15);
@@ -138,98 +89,11 @@ const NavItem = styled.div`
     transform: translateY(-1px);
   }
   
-  &:hover .nav-tooltip {
-    opacity: ${props => props.collapsed ? '1' : '0'};
-    visibility: ${props => props.collapsed ? 'visible' : 'hidden'};
-    transform: ${props => props.collapsed ? 'translateX(0)' : 'translateX(-10px)'};
-  }
-  
   svg {
-    width: 20px !important;
-    height: 20px !important;
-    color: #ffffff !important;
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-    min-width: 20px;
-    flex-shrink: 0;
-    opacity: 1 !important;
-    visibility: visible !important;
-    z-index: 1;
-    display: block !important;
+    width: 18px;
+    height: 18px;
+    color: #ffffff;
   }
-  
-  /* Fallback removed - no circular indicators */
-`;
-
-const NavText = styled.span`
-  opacity: ${props => props.collapsed ? '0' : '1'};
-  visibility: ${props => props.collapsed ? 'hidden' : 'visible'};
-  transition: all 0.3s ease;
-  white-space: nowrap;
-`;
-
-const NavTooltip = styled.div`
-  position: absolute;
-  left: 75px;
-  top: 50%;
-  transform: translateY(-50%) translateX(-10px);
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 1000;
-  pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 6px solid transparent;
-    border-right-color: rgba(0, 0, 0, 0.9);
-  }
-`;
-
-const IconWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: ${props => props.collapsed ? '50px' : '20px'};
-  height: 20px;
-  color: #ffffff !important;
-  font-size: 16px;
-  font-weight: 600;
-  background: transparent;
-  border-radius: 4px;
-  text-align: center;
-  filter: ${props => props.collapsed ? 'brightness(0) invert(1)' : 'none'};
-  position: ${props => props.collapsed ? 'absolute' : 'static'};
-  left: ${props => props.collapsed ? '0' : 'auto'};
-  right: ${props => props.collapsed ? '0' : 'auto'};
-  margin: ${props => props.collapsed ? 'auto' : '0'};
-  flex-shrink: 0;
-  
-  svg {
-    width: 18px !important;
-    height: 18px !important;
-    color: #ffffff !important;
-    fill: currentColor !important;
-    stroke: currentColor !important;
-  }
-`;
-
-const CustomIcon = styled.img`
-  width: 18px;
-  height: 18px;
-  filter: brightness(0) invert(1); /* Makes icons white */
-  object-fit: contain;
 `;
 
 const LogoutButton = styled.button`
@@ -271,10 +135,9 @@ const LogoutButton = styled.button`
 `;
 
 const MainContent = styled.div`
-  margin-left: ${props => props.collapsed ? '70px' : '280px'};
+  margin-left: 280px;
   flex: 1;
   background: #f8fafc;
-  transition: margin-left 0.3s ease;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
   position: relative;
@@ -347,17 +210,17 @@ const MobileMenuButton = styled.button`
 `;
 
 const MobileOverlay = styled.div`
-  display: ${props => props.isOpen ? 'block' : 'none'};
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 99;
   
-  @media (min-width: 769px) {
-    display: none;
+  @media (max-width: 768px) {
+    display: ${props => props.isOpen ? 'block' : 'none'};
   }
 `;
 
@@ -1640,6 +1503,34 @@ const ProductFormSidebar = styled.div`
   gap: 1.5rem;
 `;
 
+const MobileSubmitButtonContainer = styled.div`
+  display: none;
+  
+  @media (max-width: 1024px) {
+    display: block;
+    margin-top: 1.5rem;
+    padding: 0 1rem;
+  }
+`;
+
+const DesktopSubmitButton = styled(SubmitButton)`
+  @media (max-width: 1024px) {
+    display: none;
+  }
+`;
+
+const MobileSubmitButton = styled(SubmitButton)`
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+  
+  &:hover {
+    background: linear-gradient(135deg, #2AA8E8 0%, #2461DE 100%);
+  }
+`;
+
 const SidebarSection = styled.div`
   background: white;
   border: 1px solid #e2e8f0;
@@ -1715,7 +1606,7 @@ const StatusIndicator = styled.div`
   height: 8px;
   border-radius: 50%;
   background: ${props => {
-    switch(props.status) {
+    switch (props.status) {
       case 'published': return '#10b981';
       case 'featured': return '#3b82f6';
       case 'draft': return '#f59e0b';
@@ -1759,7 +1650,6 @@ const TagInput = styled.input`
 const AdminPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { items: products, status, error } = useSelector(state => state.products);
   const isProductsLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -1771,8 +1661,7 @@ const AdminPage = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [productData, setProductData] = useState({
     name: '',
     price: '',
@@ -2050,21 +1939,6 @@ const AdminPage = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [activeTab]);
 
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Computed collapsed state - mobile always expanded, desktop respects collapse state
-  const effectiveCollapsed = isMobile ? false : isSidebarCollapsed;
-
   // Prevent auto-scroll to bottom on page load
   useEffect(() => {
     // Set scroll restoration to manual to prevent browser auto-scroll
@@ -2183,21 +2057,8 @@ const AdminPage = () => {
     navigate('/admin/login');
   };
 
-  // Helper function to handle tab changes and auto-collapse sidebar
-  const handleTabChange = (tabName) => {
-    setActiveTab(tabName);
-    // Only auto-collapse sidebar on mobile devices
-    if (isMobile) {
-      setIsSidebarCollapsed(true); // Auto-collapse sidebar when switching tabs on mobile
-    }
-    setIsMobileMenuOpen(false); // Close mobile sidebar when switching tabs
-  };
-
-  // Generate chart data based on real orders
+  // Generate chart data based on date range
   const chartData = useMemo(() => {
-    console.log('📊 Chart: Generating chart data with', realOrders.length, 'orders');
-    console.log('📊 Chart: Sample order:', realOrders[0]);
-    
     const data = [];
     const startDate = new Date();
     startDate.setDate(startDate.getDate() + (chartDateOffset * 7));
@@ -2205,44 +2066,25 @@ const AdminPage = () => {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
-      const dateString = date.toISOString().split('T')[0];
 
-      // Filter real orders for this specific date
-      const dayOrders = realOrders.filter(order => {
-        // Handle both createdAt and created_at field names
-        const orderCreatedAt = order.createdAt || order.created_at;
-        if (!orderCreatedAt) return false;
-        const orderDate = new Date(orderCreatedAt).toISOString().split('T')[0];
-        return orderDate === dateString;
-      });
+      // Generate consistent data based on date to prevent flickering
+      const seed = date.getTime();
+      const baseOrders = Math.floor((Math.sin(seed / 86400000) * 5) + 10);
+      const baseRevenue = baseOrders * (1500 + (Math.cos(seed / 86400000) * 1000));
 
-      // Calculate real revenue for this day
-      const dayRevenue = dayOrders.reduce((total, order) => {
-        // Try to calculate from items first, then fall back to order total
-        const orderTotal = order.items?.reduce((sum, item) => {
-          const itemPrice = parseFloat(item.unit_price || item.price || 0);
-          const itemQuantity = parseInt(item.quantity || 1);
-          return sum + (itemPrice * itemQuantity);
-        }, 0) || parseFloat(order.total || 0);
-        return total + orderTotal;
-      }, 0);
-
-      const dayData = {
-        date: dateString,
-        orders: dayOrders.length,
-        revenue: Math.round(dayRevenue),
+      data.push({
+        date: date.toISOString().split('T')[0],
+        orders: Math.max(1, baseOrders),
+        revenue: Math.round(Math.max(500, baseRevenue)),
         shortLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      };
-      
-      console.log(`📊 Chart: ${dateString} - ${dayOrders.length} orders, Rs ${dayRevenue}`);
-      data.push(dayData);
+      });
     }
 
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
 
     return { orderData: data, maxRevenue, maxOrders };
-  }, [chartDateOffset, realOrders]);
+  }, [chartDateOffset]);
 
   // Available options for form selects
   const categories = ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
@@ -2280,7 +2122,6 @@ const AdminPage = () => {
   // File upload state
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null);
 
   // Handle file selection
   const handleFileSelect = (e) => {
@@ -2595,117 +2436,110 @@ const AdminPage = () => {
 
   return (
     <DashboardContainer>
-      <MobileOverlay isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
-      <Sidebar collapsed={isSidebarCollapsed} mobileOpen={isMobileMenuOpen}>
-        <SidebarHeader collapsed={effectiveCollapsed}>
-          <Logo style={{ display: effectiveCollapsed ? 'none' : 'flex' }}>
+      <MobileOverlay
+        isOpen={isMobileMenuOpen}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+      <Sidebar isOpen={isMobileMenuOpen}>
+        <SidebarHeader>
+          <Logo>
             <LogoImage src="/images/logo2.png" alt="Vision Care Logo" />
+
           </Logo>
-          <CollapseButton onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
-            {isSidebarCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
-          </CollapseButton>
         </SidebarHeader>
 
         <NavSection>
           <NavItem
             active={activeTab === 'dashboard'}
-            onClick={() => handleTabChange('dashboard')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('dashboard');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/dashboard.png" alt="Dashboard" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Dashboard</NavText>
-            <NavTooltip className="nav-tooltip">Dashboard</NavTooltip>
+            <FiHome />
+            Dashboard
           </NavItem>
           <NavItem
             active={activeTab === 'orders'}
-            onClick={() => handleTabChange('orders')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('orders');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/shopping-bag.png" alt="Orders" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Orders</NavText>
-            <NavTooltip className="nav-tooltip">Orders</NavTooltip>
+            <FiShoppingBag />
+            Orders
           </NavItem>
           <NavItem
             active={activeTab === 'add-product'}
-            onClick={() => handleTabChange('add-product')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('add-product');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/product.png" alt="Add Product" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Add Product</NavText>
-            <NavTooltip className="nav-tooltip">Add Product</NavTooltip>
+            <FiPackage />
+            Add Product
           </NavItem>
           <NavItem
             active={activeTab === 'manage-products'}
-            onClick={() => handleTabChange('manage-products')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('manage-products');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/product.png" alt="Manage Products" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Manage Products</NavText>
-            <NavTooltip className="nav-tooltip">Manage Products</NavTooltip>
+            <FiBarChart2 />
+            Manage Products
           </NavItem>
           <NavItem
             active={activeTab === 'eyewear-products'}
-            onClick={() => handleTabChange('eyewear-products')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('eyewear-products');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/glasses.png" alt="Eyewear Products" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Eyewear Products</NavText>
-            <NavTooltip className="nav-tooltip">Eyewear Products</NavTooltip>
+            <FiTrendingUp />
+            Eyewear Products
           </NavItem>
           <NavItem
             active={activeTab === 'lens-products'}
-            onClick={() => handleTabChange('lens-products')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('lens-products');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/lens.png" alt="Lens Products" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Lens Products</NavText>
-            <NavTooltip className="nav-tooltip">Lens Products</NavTooltip>
+            <FiSettings />
+            Lens Products
           </NavItem>
           <NavItem
             active={activeTab === 'customers'}
-            onClick={() => handleTabChange('customers')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('customers');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/customer.png" alt="Customers" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Customers</NavText>
-            <NavTooltip className="nav-tooltip">Customers</NavTooltip>
+            <FiUsers />
+            Customers
           </NavItem>
           <NavItem
             active={activeTab === 'reviews'}
-            onClick={() => handleTabChange('reviews')}
-            collapsed={effectiveCollapsed}
+            onClick={() => {
+              setActiveTab('reviews');
+              setIsMobileMenuOpen(false);
+            }}
           >
-            <IconWrapper collapsed={effectiveCollapsed}>
-              <CustomIcon src="/images/review.png" alt="Reviews" />
-            </IconWrapper>
-            <NavText collapsed={effectiveCollapsed}>Reviews</NavText>
-            <NavTooltip className="nav-tooltip">Reviews</NavTooltip>
+            <FiDollarSign />
+            Reviews
           </NavItem>
         </NavSection>
       </Sidebar>
 
-      <MainContent collapsed={isSidebarCollapsed}>
+      <MainContent>
 
         {activeTab === 'dashboard' && (
           <>
             <DashboardHeader>
               <HeaderLeft>
                 <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                  <FiMenu />
+                  {isMobileMenuOpen ? <FiX /> : <FiMenu />}
                 </MobileMenuButton>
                 <SearchContainer>
                   <SearchIcon />
@@ -2727,80 +2561,56 @@ const AdminPage = () => {
             </DashboardHeader>
 
             <WelcomeSection>
-              <WelcomeTitle>Welcome Back, {user?.name || 'Admin'}!</WelcomeTitle>
+              <WelcomeTitle>Welcome Back, Usman Khan!</WelcomeTitle>
               <WelcomeSubtitle>Here's what happening with your store today</WelcomeSubtitle>
             </WelcomeSection>
 
             <StatsGrid>
-              <StatCard style={{ 
-                background: 'linear-gradient(135deg, rgba(58, 190, 249, 0.7) 0%, rgba(53, 114, 239, 0.7) 100%)',
-                boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)',
-                border: '1px solid rgba(58, 190, 249, 0.7)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%)' }}>
                 <StatHeader>
-                  <StatTitle style={{ color: 'white' }}>Total Revenue</StatTitle>
+                  <StatTitle>Total Revenue</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: 'white', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
                   {formatPKR(orderStats.totalRevenue)}
                 </StatValue>
-                <StatChange positive style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                  ↗ {orderStats.totalRevenue > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>({orderStats.deliveredOrders} delivered)</span>
+                <StatChange positive>
+                  ↗ {orderStats.totalRevenue > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>({orderStats.deliveredOrders} delivered)</span>
                 </StatChange>
               </StatCard>
 
-              <StatCard style={{ 
-                background: 'linear-gradient(135deg, rgba(58, 190, 249, 0.7) 0%, rgba(53, 114, 239, 0.7) 100%)',
-                boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)',
-                border: '1px solid rgba(58, 190, 249, 0.7)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)' }}>
                 <StatHeader>
-                  <StatTitle style={{ color: 'white' }}>New Customers</StatTitle>
+                  <StatTitle>New Customers</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: 'white', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
                   {orderStats.totalOrders - orderStats.pendingOrders}
                 </StatValue>
-                <StatChange positive style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                  ↗ {orderStats.totalOrders > 0 ? (((orderStats.totalOrders - orderStats.pendingOrders) / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>({orderStats.totalOrders - orderStats.pendingOrders} completed)</span>
+                <StatChange positive>
+                  ↗ {orderStats.totalOrders > 0 ? (((orderStats.totalOrders - orderStats.pendingOrders) / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>({orderStats.totalOrders - orderStats.pendingOrders} completed)</span>
                 </StatChange>
               </StatCard>
 
-              <StatCard style={{ 
-                background: 'linear-gradient(135deg, rgba(58, 190, 249, 0.7) 0%, rgba(53, 114, 239, 0.7) 100%)',
-                boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)',
-                border: '1px solid rgba(58, 190, 249, 0.7)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #bae6fd 100%)' }}>
                 <StatHeader>
-                  <StatTitle style={{ color: 'white' }}>Total Orders</StatTitle>
+                  <StatTitle>Total Orders</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: 'white', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
                   {orderStats.totalOrders.toLocaleString()}
                 </StatValue>
-                <StatChange positive style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                  ↗ {orderStats.pendingOrders} <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>pending orders</span>
+                <StatChange positive>
+                  ↗ {orderStats.pendingOrders} <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>pending orders</span>
                 </StatChange>
               </StatCard>
 
-              <StatCard style={{ 
-                background: 'linear-gradient(135deg, rgba(58, 190, 249, 0.7) 0%, rgba(53, 114, 239, 0.7) 100%)',
-                boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)',
-                border: '1px solid rgba(58, 190, 249, 0.7)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}>
+              <StatCard style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)' }}>
                 <StatHeader>
-                  <StatTitle style={{ color: 'white' }}>Average Order Value</StatTitle>
+                  <StatTitle>Average Order Value</StatTitle>
                 </StatHeader>
-                <StatValue style={{ color: 'white', fontSize: '2rem', fontWeight: '700' }}>
+                <StatValue style={{ color: '#1f2937', fontSize: '2rem', fontWeight: '700' }}>
                   {formatPKR(Math.round(orderStats.totalRevenue / Math.max(orderStats.totalOrders, 1)))}
                 </StatValue>
-                <StatChange positive style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                  ↗ {orderStats.totalOrders > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>delivery rate</span>
+                <StatChange positive>
+                  ↗ {orderStats.totalOrders > 0 ? ((orderStats.deliveredOrders / Math.max(orderStats.totalOrders, 1)) * 100).toFixed(1) : '0'}% <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>delivery rate</span>
                 </StatChange>
               </StatCard>
 
@@ -3067,7 +2877,7 @@ const AdminPage = () => {
             <DashboardHeader>
               <HeaderLeft>
                 <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                  <FiMenu />
+                  {isMobileMenuOpen ? <FiX /> : <FiMenu />}
                 </MobileMenuButton>
                 <SearchContainer>
                   <SearchIcon />
@@ -3097,25 +2907,717 @@ const AdminPage = () => {
                         <SuccessMessage>{successMessage}</SuccessMessage>
                       )}
                     </ProductFormHeader>
-                    
+
                     <ProductFormLayout>
                       <ProductFormMain>
                         <TabContainer>
                           <TabButton active={true}>General</TabButton>
-                          
+
                         </TabContainer>
-                        
+
                         <Form onSubmit={handleSubmit}>
+                          <FormGroup>
+                            <Label htmlFor="name">Product Name</Label>
+                            <Input
+                              type="text"
+                              id="name"
+                              name="name"
+                              value={productData.name}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </FormGroup>
+
+                          <FormGroup>
+                            <Label htmlFor="price">Price (PKR)</Label>
+                            <Input
+                              type="number"
+                              id="price"
+                              name="price"
+                              min="0"
+                              step="0.01"
+                              value={productData.price}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </FormGroup>
+
+                          <FormGroup>
+                            <Label htmlFor="category">Category</Label>
+                            <Select
+                              id="category"
+                              name="category"
+                              value={productData.category}
+                              onChange={handleInputChange}
+                              required
+                            >
+                              {categories.map(category => (
+                                <option key={category} value={category}>
+                                  {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormGroup>
+
+                          <FormGroup>
+                            <Label htmlFor="material">Material</Label>
+                            <Select
+                              id="material"
+                              name="material"
+                              value={productData.material}
+                              onChange={handleInputChange}
+                            >
+                              <option value="">Select Material</option>
+                              {materials.map(material => (
+                                <option key={material} value={material}>
+                                  {material.charAt(0).toUpperCase() + material.slice(1)}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormGroup>
+
+                          <FormGroup>
+                            <Label htmlFor="shape">Shape</Label>
+                            <Select
+                              id="shape"
+                              name="shape"
+                              value={productData.shape}
+                              onChange={handleInputChange}
+                            >
+                              <option value="">Select Shape</option>
+                              {shapes.map(shape => (
+                                <option key={shape} value={shape}>
+                                  {shape.charAt(0).toUpperCase() + shape.slice(1)}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormGroup>
+
+                          <FormGroup>
+                            <Label htmlFor="rim">Rim Type</Label>
+                            <Select
+                              id="rim"
+                              name="rim"
+                              value={productData.rim}
+                              onChange={handleInputChange}
+                            >
+                              <option value="">Select Rim Type</option>
+                              {rimOptions.map(rim => (
+                                <option key={rim} value={rim}>
+                                  {rim}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormGroup>
+
+                          <FormGroup>
+                            <Label htmlFor="style">Style</Label>
+                            <Select
+                              id="style"
+                              name="style"
+                              value={productData.style}
+                              onChange={handleInputChange}
+                            >
+                              <option value="">Select Style</option>
+                              {styleOptions.map(style => (
+                                <option key={style} value={style}>
+                                  {style}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormGroup>
+
+                          <FormGroup>
+                            <Label>Available Colors</Label>
+                            <ColorRadioContainer>
+                              {colorOptions.map(colorOption => (
+                                <ColorRadioOption
+                                  key={colorOption.name}
+                                  selected={productData.colors.some(c => c.name === colorOption.name)}
+                                >
+                                  <RadioInput
+                                    type="checkbox"
+                                    checked={productData.colors.some(c => c.name === colorOption.name)}
+                                    onChange={() => handleColorToggle(colorOption)}
+                                  />
+                                  <ColorSwatch color={colorOption.hex} />
+                                  <ColorInfo>
+                                    <ColorName>{colorOption.name}</ColorName>
+                                    <ColorHex>{colorOption.hex}</ColorHex>
+                                  </ColorInfo>
+                                </ColorRadioOption>
+                              ))}
+                            </ColorRadioContainer>
+                          </FormGroup>
+
+
+
+                          <FormGroup>
+                            <Label htmlFor="productStatus">Product Status</Label>
+                            <Select
+                              id="productStatus"
+                              name="productStatus"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProductData({
+                                  ...productData,
+                                  featured: value === 'featured' || value === 'both',
+                                  bestSeller: value === 'bestSeller' || value === 'both'
+                                });
+                              }}
+                              value={
+                                productData.featured && productData.bestSeller
+                                  ? 'both'
+                                  : productData.featured
+                                    ? 'featured'
+                                    : productData.bestSeller
+                                      ? 'bestSeller'
+                                      : 'none'
+                              }
+                            >
+                              <option value="none">Regular Product</option>
+                              <option value="featured">Featured Product</option>
+                              <option value="bestSeller">Best Seller</option>
+                              <option value="both">Featured & Best Seller</option>
+                            </Select>
+                          </FormGroup>
+
+
+
+
+                          {/* Frame Color */}
+                          <FormGroup>
+                            <Label htmlFor="frameColor">Frame Color</Label>
+                            <Input
+                              type="text"
+                              id="frameColor"
+                              name="frameColor"
+                              value={productData.frameColor}
+                              onChange={handleInputChange}
+                            />
+                          </FormGroup>
+
+
+                          {/* Lens Types */}
+                          <FormGroup>
+                            <Label>Available Lens Types</Label>
+                            <CheckboxContainer>
+                              {lensTypeOptions.map(lensType => (
+                                <CheckboxLabel key={lensType}>
+                                  <input
+                                    type="checkbox"
+                                    checked={productData.lensTypes?.includes(lensType) || false}
+                                    onChange={() => handleLensTypeToggle(lensType)}
+                                  />
+                                  {lensType}
+                                </CheckboxLabel>
+                              ))}
+                            </CheckboxContainer>
+                          </FormGroup>
+
+                          {/* Discount */}
+                          <FormGroup>
+                            <Label>Discount</Label>
+                            <CheckboxLabel>
+                              <input
+                                type="checkbox"
+                                checked={(productData && productData.discount) ? productData.discount.hasDiscount : false}
+                                onChange={handleDiscountToggle}
+                              />
+                              Apply Discount
+                            </CheckboxLabel>
+
+                            {(productData && productData.discount && productData.discount.hasDiscount) && (
+                              <div style={{ marginTop: '10px' }}>
+                                <Label htmlFor="discountPercentage">Discount Percentage (%)</Label>
+                                <Input
+                                  type="number"
+                                  id="discountPercentage"
+                                  min="0"
+                                  max="100"
+                                  step="1"
+                                  value={(productData && productData.discount) ? productData.discount.discountPercentage : 0}
+                                  onChange={handleDiscountPercentageChange}
+                                />
+                              </div>
+                            )}
+                          </FormGroup>
+
+                          {/* Product Status */}
+                          <FormGroup>
+                            <Label htmlFor="status">Product Status</Label>
+                            <Select
+                              id="status"
+                              name="status"
+                              value={productData.status}
+                              onChange={handleInputChange}
+                            >
+                              {statusOptions.map(status => (
+                                <option key={status} value={status}>
+                                  {status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormGroup>
+
+                          {/* Product Description */}
+                          <FormGroup>
+                            <Label htmlFor="description">Product Description</Label>
+                            <TextArea
+                              id="description"
+                              name="description"
+                              value={productData.description}
+                              onChange={handleInputChange}
+                            />
+                          </FormGroup>
+
+                          <DesktopSubmitButton type="submit" disabled={isLoading}>
+                            {isLoading ? 'Adding Product...' : 'Add Product'}
+                          </DesktopSubmitButton>
+                        </Form>
+                      </ProductFormMain>
+
+                      <ProductFormSidebar>
+                        <SidebarSection>
+                          <SidebarTitle>Thumbnail</SidebarTitle>
+                          <ThumbnailContainer>
+                            <ThumbnailImage onClick={handleUploadClick}>
+                              {previewUrl ? (
+                                <img src={previewUrl} alt="Product thumbnail" />
+                              ) : (
+                                <ThumbnailPlaceholder>
+                                  <span>📷</span>
+                                  <span>Click to upload thumbnail image</span>
+                                </ThumbnailPlaceholder>
+                              )}
+                            </ThumbnailImage>
+                            <FileInput
+                              type="file"
+                              ref={fileInputRef}
+                              accept="image/*"
+                              onChange={handleFileSelect}
+                            />
+                          </ThumbnailContainer>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Status</SidebarTitle>
+                          <StatusContainer>
+                            <StatusIndicator status="draft" />
+                            <Select
+                              value={productData.featured && productData.bestSeller ? 'both' : productData.featured ? 'featured' : productData.bestSeller ? 'bestSeller' : 'draft'}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProductData({
+                                  ...productData,
+                                  featured: value === 'featured' || value === 'both',
+                                  bestSeller: value === 'bestSeller' || value === 'both'
+                                });
+                              }}
+                            >
+                              <option value="draft">Draft</option>
+                              <option value="featured">Featured</option>
+                              <option value="bestSeller">Best Seller</option>
+                              <option value="both">Featured & Best Seller</option>
+                            </Select>
+                          </StatusContainer>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Product Details</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Label>Categories</Label>
+                              <Select
+                                name="category"
+                                value={productData.category}
+                                onChange={handleInputChange}
+                                required
+                              >
+                                {categories.map(category => (
+                                  <option key={category} value={category}>
+                                    {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+
+                            <DetailsItem>
+                              <Label>Material</Label>
+                              <Select
+                                name="material"
+                                value={productData.material}
+                                onChange={handleInputChange}
+                              >
+                                <option value="">Select Material</option>
+                                {materials.map(material => (
+                                  <option key={material} value={material}>
+                                    {material.charAt(0).toUpperCase() + material.slice(1)}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+
+                            <DetailsItem>
+                              <Label>Tags</Label>
+                              <TagsContainer>
+                                <TagInput placeholder="Sunglasses" />
+                              </TagsContainer>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Brand</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Input
+                                type="text"
+                                name="brand"
+                                value={productData.brand}
+                                onChange={handleInputChange}
+                                placeholder="Enter brand name"
+                              />
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Gender</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="gender"
+                                value={productData.gender}
+                                onChange={handleInputChange}
+                              >
+                                {genders.map(gender => (
+                                  <option key={gender} value={gender}>
+                                    {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Available Sizes</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="sizes"
+                                value={productData.sizes?.[0] || ''}
+                                onChange={(e) => {
+                                  const selectedSize = e.target.value;
+                                  if (selectedSize && !productData.sizes?.includes(selectedSize)) {
+                                    setProductData({
+                                      ...productData,
+                                      sizes: [...(productData.sizes || []), selectedSize]
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="">Select a size</option>
+                                {sizeOptions.map(size => (
+                                  <option key={size} value={size}>
+                                    {size}
+                                  </option>
+                                ))}
+                              </Select>
+                              {productData.sizes && productData.sizes.length > 0 && (
+                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {productData.sizes.map((size, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        background: '#3b82f6',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                      }}
+                                    >
+                                      {size}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProductData({
+                                            ...productData,
+                                            sizes: productData.sizes.filter(s => s !== size)
+                                          });
+                                        }}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'white',
+                                          cursor: 'pointer',
+                                          fontSize: '14px',
+                                          padding: '0',
+                                          lineHeight: '1'
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Features</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="features"
+                                value=""
+                                onChange={(e) => {
+                                  const selectedFeature = e.target.value;
+                                  if (selectedFeature && !productData.features?.includes(selectedFeature)) {
+                                    setProductData({
+                                      ...productData,
+                                      features: [...(productData.features || []), selectedFeature]
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="">Select a feature</option>
+                                {featureOptions.map(feature => (
+                                  <option key={feature} value={feature}>
+                                    {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                  </option>
+                                ))}
+                              </Select>
+                              {productData.features && productData.features.length > 0 && (
+                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                  {productData.features.map((feature, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        background: '#10b981',
+                                        color: 'white',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                      }}
+                                    >
+                                      {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setProductData({
+                                            ...productData,
+                                            features: productData.features.filter(f => f !== feature)
+                                          });
+                                        }}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          color: 'white',
+                                          cursor: 'pointer',
+                                          fontSize: '14px',
+                                          padding: '0',
+                                          lineHeight: '1'
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Product Gallery</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <MediaUploadArea onClick={() => document.getElementById('galleryUpload').click()}>
+                                <MediaUploadIcon>🖼️</MediaUploadIcon>
+                                <MediaUploadText>
+                                  {productData.gallery?.length || 0} images selected
+                                  <br />
+                                  Click to add gallery images
+                                </MediaUploadText>
+                                <FileInput
+                                  type="file"
+                                  id="galleryUpload"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={handleGalleryUpload}
+                                />
+                              </MediaUploadArea>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                                {productData.gallery?.map((img, index) => (
+                                  <div key={index} style={{ position: 'relative', width: '60px', height: '60px' }}>
+                                    <img
+                                      src={img}
+                                      alt={`Gallery ${index}`}
+                                      style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        borderRadius: '4px',
+                                        border: '1px solid #e2e8f0'
+                                      }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeGalleryImage(index)}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '-6px',
+                                        right: '-6px',
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '18px',
+                                        height: '18px',
+                                        cursor: 'pointer',
+                                        fontSize: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+                      </ProductFormSidebar>
+                      
+                      <MobileSubmitButtonContainer>
+                        <MobileSubmitButton 
+                          type="button" 
+                          disabled={isLoading}
+                          onClick={() => {
+                            // Find the form and submit it
+                            const form = document.querySelector('form');
+                            if (form) {
+                              form.requestSubmit();
+                            }
+                          }}
+                        >
+                          {isLoading ? 'Adding Product...' : 'Add Product'}
+                        </MobileSubmitButton>
+                      </MobileSubmitButtonContainer>
+                    </ProductFormLayout>
+                  </ProductFormContainer>
+                </>
+              )}
+
+              {activeTab === 'manage-products' && (
+                <>
+                  <h2>Manage Products</h2>
+
+                  {successMessage && (
+                    <SuccessMessage>{successMessage}</SuccessMessage>
+                  )}
+
+                  <ProductList>
+                    {isProductsLoading ? (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        Loading products...
+                      </div>
+                    ) : products && products.length > 0 ? (
+                      products.map(product => (
+                        <ProductCard key={product.id}>
+                          <ProductImage>
+                            {product.image ? (
+                              <img src={product.image} alt={product.name} />
+                            ) : (
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                height: '100%',
+                                background: '#f8fafc',
+                                color: '#64748b'
+                              }}>
+                                No Image
+                              </div>
+                            )}
+                          </ProductImage>
+                          <ProductInfo>
+                            <ProductName>{product.name}</ProductName>
+                            <ProductPrice>PKR {product.price}</ProductPrice>
+                            <ProductCategory>{product.category}</ProductCategory>
+                            <ProductStatus status={product.status}>
+                              {product.featured && 'Featured '}
+                              {product.bestSeller && 'Best Seller'}
+                              {!product.featured && !product.bestSeller && 'Regular'}
+                            </ProductStatus>
+                          </ProductInfo>
+                          <ProductActions>
+                            <ActionButton
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setProductData(product);
+                                setActiveTab('edit-product');
+                              }}
+                            >
+                              Edit
+                            </ActionButton>
+                            <ActionButton
+                              danger
+                              onClick={() => handleDeleteProduct(product.id)}
+                            >
+                              Delete
+                            </ActionButton>
+                          </ProductActions>
+                        </ProductCard>
+                      ))
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        No products found. <a href="#" onClick={() => setActiveTab('add-product')}>Add your first product</a>
+                      </div>
+                    )}
+                  </ProductList>
+                </>
+              )}
+
+              {activeTab === 'orders' && (
+                <OrderManagement />
+              )}
+
+              {activeTab === 'edit-product' && (
+                <>
+                  <h2>Edit Product</h2>
+
+                  {successMessage && (
+                    <SuccessMessage>{successMessage}</SuccessMessage>
+                  )}
+
+                  <Form onSubmit={handleUpdateSubmit}>
+                    {/* Same form fields as Add Product, but with a different submit button */}
                     <FormGroup>
-                      <Label htmlFor="name">Product Name</Label>
+                      <Label htmlFor="name">Product Name *</Label>
                       <Input
                         type="text"
                         id="name"
                         name="name"
                         value={productData.name}
                         onChange={handleInputChange}
+                        placeholder="Sample Product"
                         required
                       />
+                      <FormHint>Add a name that is recommended to be unique.</FormHint>
                     </FormGroup>
 
                     <FormGroup>
@@ -3178,23 +3680,6 @@ const AdminPage = () => {
                         {shapes.map(shape => (
                           <option key={shape} value={shape}>
                             {shape.charAt(0).toUpperCase() + shape.slice(1)}
-                          </option>
-                        ))}
-                      </Select>
-                    </FormGroup>
-
-                    <FormGroup>
-                      <Label htmlFor="rim">Rim Type</Label>
-                      <Select
-                        id="rim"
-                        name="rim"
-                        value={productData.rim}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Select Rim Type</option>
-                        {rimOptions.map(rim => (
-                          <option key={rim} value={rim}>
-                            {rim}
                           </option>
                         ))}
                       </Select>
@@ -3275,6 +3760,18 @@ const AdminPage = () => {
 
 
 
+                    {/* Frame Color */}
+                    <FormGroup>
+                      <Label htmlFor="frameColor">Frame Color</Label>
+                      <Input
+                        type="text"
+                        id="frameColor"
+                        name="frameColor"
+                        value={productData.frameColor}
+                        onChange={handleInputChange}
+                      />
+                    </FormGroup>
+
 
                     {/* Lens Types */}
                     <FormGroup>
@@ -3348,833 +3845,11 @@ const AdminPage = () => {
                         onChange={handleInputChange}
                       />
                     </FormGroup>
-                        </Form>
-                      </ProductFormMain>
-                      
-                      <ProductFormSidebar>
-                        <SidebarSection>
-                          <SidebarTitle>Thumbnail</SidebarTitle>
-                          <ThumbnailContainer>
-                            <ThumbnailImage onClick={handleUploadClick}>
-                              {previewUrl ? (
-                                <img src={previewUrl} alt="Product thumbnail" />
-                              ) : (
-                                <ThumbnailPlaceholder>
-                                  <span>📷</span>
-                                  <span>Click to upload thumbnail image</span>
-                                </ThumbnailPlaceholder>
-                              )}
-                            </ThumbnailImage>
-                            <FileInput
-                              type="file"
-                              ref={fileInputRef}
-                              accept="image/*"
-                              onChange={handleFileSelect}
-                            />
-                          </ThumbnailContainer>
-                        </SidebarSection>
-                        
-                        <SidebarSection>
-                          <SidebarTitle>Product Details</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Label>Material</Label>
-                              <Select
-                                name="material"
-                                value={productData.material}
-                                onChange={handleInputChange}
-                              >
-                                <option value="">Select Material</option>
-                                {materials.map(material => (
-                                  <option key={material} value={material}>
-                                    {material.charAt(0).toUpperCase() + material.slice(1)}
-                                  </option>
-                                ))}
-                              </Select>
-                            </DetailsItem>
-                            
-                            <DetailsItem>
-                              <Label>Tags</Label>
-                              <TagsContainer>
-                                <TagInput placeholder="Sunglasses" />
-                              </TagsContainer>
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-                        
-                        <SidebarSection>
-                          <SidebarTitle>Brand</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Input
-                                type="text"
-                                name="brand"
-                                value={productData.brand}
-                                onChange={handleInputChange}
-                                placeholder="Enter brand name"
-                              />
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-                        
-                        <SidebarSection>
-                          <SidebarTitle>Gender</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Select
-                                name="gender"
-                                value={productData.gender}
-                                onChange={handleInputChange}
-                              >
-                                {genders.map(gender => (
-                                  <option key={gender} value={gender}>
-                                    {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                                  </option>
-                                ))}
-                              </Select>
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-                        
-                        <SidebarSection>
-                          <SidebarTitle>Available Sizes</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Select
-                                name="sizes"
-                                value={productData.sizes?.[0] || ''}
-                                onChange={(e) => {
-                                  const selectedSize = e.target.value;
-                                  if (selectedSize && !productData.sizes?.includes(selectedSize)) {
-                                    setProductData({
-                                      ...productData,
-                                      sizes: [...(productData.sizes || []), selectedSize]
-                                    });
-                                  }
-                                }}
-                              >
-                                <option value="">Select a size</option>
-                                {sizeOptions.map(size => (
-                                  <option key={size} value={size}>
-                                    {size}
-                                  </option>
-                                ))}
-                              </Select>
-                              {productData.sizes && productData.sizes.length > 0 && (
-                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                  {productData.sizes.map((size, index) => (
-                                    <span
-                                      key={index}
-                                      style={{
-                                        background: '#3b82f6',
-                                        color: 'white',
-                                        padding: '4px 8px',
-                                        borderRadius: '12px',
-                                        fontSize: '12px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px'
-                                      }}
-                                    >
-                                      {size}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setProductData({
-                                            ...productData,
-                                            sizes: productData.sizes.filter(s => s !== size)
-                                          });
-                                        }}
-                                        style={{
-                                          background: 'none',
-                                          border: 'none',
-                                          color: 'white',
-                                          cursor: 'pointer',
-                                          fontSize: '14px',
-                                          padding: '0',
-                                          lineHeight: '1'
-                                        }}
-                                      >
-                                        ×
-                                      </button>
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-                        
-                        <SidebarSection>
-                          <SidebarTitle>Features</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <Select
-                                name="features"
-                                value=""
-                                onChange={(e) => {
-                                  const selectedFeature = e.target.value;
-                                  if (selectedFeature && !productData.features?.includes(selectedFeature)) {
-                                    setProductData({
-                                      ...productData,
-                                      features: [...(productData.features || []), selectedFeature]
-                                    });
-                                  }
-                                }}
-                              >
-                                <option value="">Select a feature</option>
-                                {featureOptions.map(feature => (
-                                  <option key={feature} value={feature}>
-                                    {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                  </option>
-                                ))}
-                              </Select>
-                              {productData.features && productData.features.length > 0 && (
-                                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                  {productData.features.map((feature, index) => (
-                                    <span
-                                      key={index}
-                                      style={{
-                                        background: '#10b981',
-                                        color: 'white',
-                                        padding: '4px 8px',
-                                        borderRadius: '12px',
-                                        fontSize: '12px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px'
-                                      }}
-                                    >
-                                      {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setProductData({
-                                            ...productData,
-                                            features: productData.features.filter(f => f !== feature)
-                                          });
-                                        }}
-                                        style={{
-                                          background: 'none',
-                                          border: 'none',
-                                          color: 'white',
-                                          cursor: 'pointer',
-                                          fontSize: '14px',
-                                          padding: '0',
-                                          lineHeight: '1'
-                                        }}
-                                      >
-                                        ×
-                                      </button>
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-                        
-                        <SidebarSection>
-                          <SidebarTitle>Product Gallery</SidebarTitle>
-                          <DetailsList>
-                            <DetailsItem>
-                              <MediaUploadArea onClick={() => document.getElementById('galleryUpload').click()}>
-                                <MediaUploadIcon>🖼️</MediaUploadIcon>
-                                <MediaUploadText>
-                                  {productData.gallery?.length || 0} images selected
-                                  <br />
-                                  Click to add gallery images
-                                </MediaUploadText>
-                                <FileInput
-                                  type="file"
-                                  id="galleryUpload"
-                                  accept="image/*"
-                                  multiple
-                                  onChange={handleGalleryUpload}
-                                />
-                              </MediaUploadArea>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
-                                {productData.gallery?.map((img, index) => (
-                                  <div key={index} style={{ position: 'relative', width: '60px', height: '60px' }}>
-                                    <img 
-                                      src={img} 
-                                      alt={`Gallery ${index}`} 
-                                      style={{ 
-                                        width: '100%', 
-                                        height: '100%', 
-                                        objectFit: 'cover', 
-                                        borderRadius: '4px',
-                                        border: '1px solid #e2e8f0'
-                                      }} 
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeGalleryImage(index)}
-                                      style={{
-                                        position: 'absolute',
-                                        top: '-6px',
-                                        right: '-6px',
-                                        background: '#ef4444',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '18px',
-                                        height: '18px',
-                                        cursor: 'pointer',
-                                        fontSize: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                      }}
-                                    >
-                                      ×
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            </DetailsItem>
-                          </DetailsList>
-                        </SidebarSection>
-                      </ProductFormSidebar>
-                    </ProductFormLayout>
-                  </ProductFormContainer>
-                </>
-              )}
 
-              {activeTab === 'orders' && (
-                <>
-                  <OrderManagement />
-                </>
-              )}
-
-              {activeTab === 'eyewear-products' && (
-                <>
-                  <h2>Eyewear Products</h2>
-                  
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
-
-                  <ProductList>
-                    {isProductsLoading ? (
-                      <div style={{ textAlign: 'center', padding: '2rem' }}>
-                        Loading eyewear products...
-                      </div>
-                    ) : (() => {
-                      // Filter products to show only eyewear (exclude lens categories)
-                      const eyewearCategories = ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses'];
-                      const eyewearProducts = products?.filter(product => 
-                        eyewearCategories.includes(product.category)
-                      ) || [];
-                      
-                      return eyewearProducts.length > 0 ? (
-                        eyewearProducts.map(product => (
-                          <ProductCard key={product.id}>
-                            <ProductImage>
-                              {product.image ? (
-                                <img src={product.image} alt={product.name} />
-                              ) : (
-                                <div style={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  justifyContent: 'center',
-                                  height: '100%',
-                                  background: '#f8fafc',
-                                  color: '#64748b'
-                                }}>
-                                  👓
-                                </div>
-                              )}
-                            </ProductImage>
-                            <ProductInfo>
-                              <ProductName>{product.name}</ProductName>
-                              <ProductPrice>PKR {product.price}</ProductPrice>
-                              <ProductCategory>{product.category}</ProductCategory>
-                              <ProductStatus status={product.status}>
-                                {product.featured && 'Featured '}
-                                {product.bestSeller && 'Best Seller'}
-                                {!product.featured && !product.bestSeller && 'Regular'}
-                              </ProductStatus>
-                            </ProductInfo>
-                            <ProductActions>
-                              <ActionButton 
-                                onClick={() => {
-                                  setSelectedProduct(product);
-                                  setProductData(product);
-                                  setActiveTab('edit-product');
-                                }}
-                              >
-                                Edit
-                              </ActionButton>
-                              <ActionButton 
-                                danger
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                Delete
-                              </ActionButton>
-                            </ProductActions>
-                          </ProductCard>
-                        ))
-                      ) : (
-                        <div style={{ textAlign: 'center', padding: '2rem' }}>
-                          No eyewear products found. <a href="#" onClick={() => setActiveTab('add-product')}>Add your first eyewear product</a>
-                        </div>
-                      );
-                    })()}
-                  </ProductList>
-                </>
-              )}
-
-              {activeTab === 'lens-products' && (
-                <>
-                  <h2>Lens Products</h2>
-                  
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
-
-                  <ProductList>
-                    {isProductsLoading ? (
-                      <div style={{ textAlign: 'center', padding: '2rem' }}>
-                        Loading lens products...
-                      </div>
-                    ) : (() => {
-                      // Filter products to show only lens categories
-                      const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                      const lensProducts = products?.filter(product => 
-                        lensCategories.includes(product.category)
-                      ) || [];
-                      
-                      return lensProducts.length > 0 ? (
-                        lensProducts.map(product => (
-                          <ProductCard key={product.id}>
-                            <ProductImage>
-                              {product.image ? (
-                                <img src={product.image} alt={product.name} />
-                              ) : (
-                                <div style={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  justifyContent: 'center',
-                                  height: '100%',
-                                  background: '#f8fafc',
-                                  color: '#64748b'
-                                }}>
-                                  👁️
-                                </div>
-                              )}
-                            </ProductImage>
-                            <ProductInfo>
-                              <ProductName>{product.name}</ProductName>
-                              <ProductPrice>PKR {product.price}</ProductPrice>
-                              <ProductCategory>{product.category}</ProductCategory>
-                              <ProductStatus status={product.status}>
-                                {product.featured && 'Featured '}
-                                {product.bestSeller && 'Best Seller'}
-                                {!product.featured && !product.bestSeller && 'Regular'}
-                              </ProductStatus>
-                            </ProductInfo>
-                            <ProductActions>
-                              <ActionButton 
-                                onClick={() => {
-                                  setSelectedProduct(product);
-                                  setProductData(product);
-                                  setActiveTab('edit-product');
-                                }}
-                              >
-                                Edit
-                              </ActionButton>
-                              <ActionButton 
-                                danger
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                Delete
-                              </ActionButton>
-                            </ProductActions>
-                          </ProductCard>
-                        ))
-                      ) : (
-                        <div style={{ textAlign: 'center', padding: '2rem' }}>
-                          No lens products found. <a href="#" onClick={() => setActiveTab('add-product')}>Add your first lens product</a>
-                        </div>
-                      );
-                    })()}
-                  </ProductList>
-                </>
-              )}
-
-              {activeTab === 'customers' && (
-                <>
-                  <h2>Customer Management</h2>
-                  <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-                    <h3>Customer Management System</h3>
-                    <p>This feature is coming soon. You'll be able to:</p>
-                    <ul style={{ textAlign: 'left', maxWidth: '400px', margin: '0 auto' }}>
-                      <li>View all registered customers</li>
-                      <li>Manage customer accounts</li>
-                      <li>View customer order history</li>
-                      <li>Send notifications to customers</li>
-                      <li>Export customer data</li>
-                    </ul>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'reviews' && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '600', color: '#1a202c' }}>Product Reviews</h2>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                        Total: {reviews?.length || 0} reviews
-                      </span>
-                      <button
-                        onClick={() => fetchReviews()}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          background: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontSize: '0.875rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem'
-                        }}
-                      >
-                        🔄 Refresh
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {successMessage && (
-                    <SuccessMessage>{successMessage}</SuccessMessage>
-                  )}
-
-                  {/* Review Statistics Cards */}
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                    gap: '1rem', 
-                    marginBottom: '2rem' 
-                  }}>
-                    <div style={{
-                      background: 'linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%)',
-                      padding: '1.5rem',
-                      borderRadius: '12px',
-                      border: '1px solid #3ABEF9',
-                      boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)'
-                    }}>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: 'white', fontWeight: '500' }}>
-                        Pending Reviews
-                      </h3>
-                      <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: 'white' }}>
-                        {reviews?.filter(r => r.status === 'pending').length || 0}
-                      </p>
-                    </div>
-                    
-                    <div style={{
-                      background: 'linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%)',
-                      padding: '1.5rem',
-                      borderRadius: '12px',
-                      border: '1px solid #3ABEF9',
-                      boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)'
-                    }}>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: 'white', fontWeight: '500' }}>
-                        Approved Reviews
-                      </h3>
-                      <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: 'white' }}>
-                        {reviews?.filter(r => r.status === 'approved').length || 0}
-                      </p>
-                    </div>
-                    
-                    <div style={{
-                      background: 'linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%)',
-                      padding: '1.5rem',
-                      borderRadius: '12px',
-                      border: '1px solid #3ABEF9',
-                      boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)'
-                    }}>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: 'white', fontWeight: '500' }}>
-                        Rejected Reviews
-                      </h3>
-                      <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: 'white' }}>
-                        {reviews?.filter(r => r.status === 'rejected').length || 0}
-                      </p>
-                    </div>
-                    
-                    <div style={{
-                      background: 'linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%)',
-                      padding: '1.5rem',
-                      borderRadius: '12px',
-                      border: '1px solid #3ABEF9',
-                      boxShadow: '0 4px 12px rgba(58, 190, 249, 0.3)'
-                    }}>
-                      <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: 'white', fontWeight: '500' }}>
-                        Average Rating
-                      </h3>
-                      <p style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: 'white' }}>
-                        {reviews?.length > 0 
-                          ? (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length).toFixed(1)
-                          : '0.0'
-                        }
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Enhanced Filter Section */}
-                  <div style={{ 
-                    background: 'white',
-                    padding: '1.5rem',
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    marginBottom: '2rem',
-                    display: 'flex',
-                    gap: '1rem',
-                    alignItems: 'center',
-                    flexWrap: 'wrap'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <label style={{ fontSize: '0.875rem', fontWeight: '500', color: '#374151' }}>
-                        Filter by Status:
-                      </label>
-                      <select 
-                        value={reviewFilter} 
-                        onChange={(e) => setReviewFilter(e.target.value)}
-                        style={{ 
-                          padding: '0.5rem 1rem', 
-                          borderRadius: '6px', 
-                          border: '1px solid #d1d5db',
-                          fontSize: '0.875rem',
-                          background: 'white',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <option value="all">All Reviews ({reviews?.length || 0})</option>
-                        <option value="pending">Pending ({reviews?.filter(r => r.status === 'pending').length || 0})</option>
-                        <option value="approved">Approved ({reviews?.filter(r => r.status === 'approved').length || 0})</option>
-                        <option value="rejected">Rejected ({reviews?.filter(r => r.status === 'rejected').length || 0})</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {reviewsLoading ? (
-                    <div style={{ 
-                      textAlign: 'center', 
-                      padding: '3rem',
-                      background: 'white',
-                      borderRadius: '12px',
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
-                      <h3 style={{ margin: '0 0 0.5rem 0', color: '#374151' }}>Loading reviews...</h3>
-                      <p style={{ margin: 0, color: '#6b7280' }}>Please wait while we fetch the latest reviews</p>
-                    </div>
-                  ) : reviews && reviews.length > 0 ? (
-                    <div style={{ display: 'grid', gap: '1.5rem' }}>
-                      {reviews
-                        .filter(review => reviewFilter === 'all' || review.status === reviewFilter)
-                        .map(review => (
-                        <div key={review.id} style={{
-                          background: 'white',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '12px',
-                          padding: '2rem',
-                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                          transition: 'all 0.2s ease',
-                          position: 'relative'
-                        }}>
-                          {/* Review Header */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                                <div style={{
-                                  width: '48px',
-                                  height: '48px',
-                                  borderRadius: '50%',
-                                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  fontSize: '1.25rem',
-                                  fontWeight: '600'
-                                }}>
-                                  {review.customerName?.charAt(0).toUpperCase() || 'U'}
-                                </div>
-                                <div>
-                                  <h4 style={{ margin: '0 0 0.25rem 0', color: '#1a202c', fontSize: '1.125rem', fontWeight: '600' }}>
-                                    {review.customerName || 'Anonymous User'}
-                                  </h4>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      {[1, 2, 3, 4, 5].map(star => (
-                                        <span key={star} style={{
-                                          color: star <= (review.rating || 0) ? '#fbbf24' : '#d1d5db',
-                                          fontSize: '1.125rem'
-                                        }}>
-                                          ⭐
-                                        </span>
-                                      ))}
-                                    </div>
-                                    <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                                      ({review.rating || 0}/5)
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <p style={{ margin: '0', color: '#64748b', fontSize: '0.875rem' }}>
-                                <strong>Product:</strong> {review.productName || 'Unknown Product'}
-                              </p>
-                            </div>
-                            
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                              <span style={{
-                                padding: '0.5rem 1rem',
-                                borderRadius: '20px',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
-                                background: review.status === 'approved' ? '#dcfce7' : review.status === 'rejected' ? '#fecaca' : '#fef3c7',
-                                color: review.status === 'approved' ? '#166534' : review.status === 'rejected' ? '#dc2626' : '#d97706',
-                                border: `1px solid ${review.status === 'approved' ? '#10b981' : review.status === 'rejected' ? '#ef4444' : '#f59e0b'}`
-                              }}>
-                                {review.status?.charAt(0).toUpperCase() + review.status?.slice(1) || 'Pending'}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {/* Review Content */}
-                          <div style={{ 
-                            background: '#f8fafc', 
-                            padding: '1.5rem', 
-                            borderRadius: '8px', 
-                            marginBottom: '1.5rem',
-                            border: '1px solid #e2e8f0'
-                          }}>
-                            <p style={{ 
-                              margin: 0, 
-                              color: '#374151', 
-                              fontSize: '1rem', 
-                              lineHeight: '1.6',
-                              fontStyle: 'italic'
-                            }}>
-                              "{review.comment || 'No comment provided'}"
-                            </p>
-                          </div>
-                          
-                          {/* Review Footer */}
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            paddingTop: '1rem',
-                            borderTop: '1px solid #f1f5f9'
-                          }}>
-                            <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
-                              📅 {new Date(review.createdAt).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </div>
-                            
-                            {review.status === 'pending' && (
-                              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                <button
-                                  onClick={() => approveReview(review.id)}
-                                  style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.875rem',
-                                    fontWeight: '500',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    transition: 'all 0.2s ease'
-                                  }}
-                                  onMouseOver={(e) => e.target.style.transform = 'translateY(-1px)'}
-                                  onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
-                                >
-                                  ✅ Approve
-                                </button>
-                                <button
-                                  onClick={() => rejectReview(review.id)}
-                                  style={{
-                                    padding: '0.75rem 1.5rem',
-                                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.875rem',
-                                    fontWeight: '500',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    transition: 'all 0.2s ease'
-                                  }}
-                                  onMouseOver={(e) => e.target.style.transform = 'translateY(-1px)'}
-                                  onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
-                                >
-                                  ❌ Reject
-                                </button>
-                              </div>
-                            )}
-                            
-                            {review.status === 'approved' && (
-                              <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '0.5rem',
-                                color: '#10b981',
-                                fontSize: '0.875rem',
-                                fontWeight: '500'
-                              }}>
-                                ✅ Approved & Live
-                              </div>
-                            )}
-                            
-                            {review.status === 'rejected' && (
-                              <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '0.5rem',
-                                color: '#ef4444',
-                                fontSize: '0.875rem',
-                                fontWeight: '500'
-                              }}>
-                                ❌ Rejected
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ 
-                      textAlign: 'center', 
-                      padding: '3rem',
-                      background: 'white',
-                      borderRadius: '12px',
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
-                      <h3 style={{ margin: '0 0 0.5rem 0', color: '#374151' }}>No reviews found</h3>
-                      <p style={{ margin: 0, color: '#6b7280' }}>
-                        {reviewFilter === 'all' 
-                          ? 'No customer reviews have been submitted yet.' 
-                          : `No ${reviewFilter} reviews found. Try changing the filter.`
-                        }
-                      </p>
-                    </div>
-                  )}
+                    <SubmitButton type="submit" disabled={isLoading}>
+                      {isLoading ? 'Updating...' : 'Update Product'}
+                    </SubmitButton>
+                  </Form>
                 </>
               )}
             </ContentArea>

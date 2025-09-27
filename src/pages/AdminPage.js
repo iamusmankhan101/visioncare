@@ -25,7 +25,7 @@ const DashboardContainer = styled.div`
 `;
 
 const Sidebar = styled.div`
-  width: 280px;
+  width: ${props => props.collapsed ? '80px' : '280px'};
   background: linear-gradient(135deg, #279EFF 0%, #0E21A0 100%);
   border-right: 1px solid #e2e8f0;
   display: flex;
@@ -33,9 +33,10 @@ const Sidebar = styled.div`
   position: fixed;
   height: 100vh;
   z-index: 100;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   
   @media (max-width: 768px) {
+    width: 280px;
     transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-100%)'};
     box-shadow: ${props => props.isOpen ? '0 0 20px rgba(0, 0, 0, 0.3)' : 'none'};
   }
@@ -43,17 +44,47 @@ const Sidebar = styled.div`
 
 const SidebarHeader = styled.div`
   padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: ${props => props.collapsed ? 'center' : 'space-between'};
+  position: relative;
+`;
+
+const CollapseButton = styled.button`
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const Logo = styled.div`
   font-size: 1.25rem;
   font-weight: 700;
   color: #1a202c;
-  display: flex;
+  display: ${props => props.collapsed ? 'none' : 'flex'};
   align-items: center;
   gap: 0.5rem;
-  filter:invert(1);
+  filter: invert(1);
+  transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    display: flex;
+  }
 `;
 
 const LogoImage = styled.img`
@@ -70,7 +101,7 @@ const NavItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1.5rem;
+  padding: ${props => props.collapsed ? '0.75rem' : '0.75rem 1.5rem'};
   color: ${props => props.active ? '#ffffff' : '#ffffff'};
   background: ${props => props.active ? 'rgba(255, 255, 255, 0.2)' : 'transparent'};
   border-right: ${props => props.active ? '3px solid #ffffff' : 'none'};
@@ -79,6 +110,8 @@ const NavItem = styled.div`
   font-weight: ${props => props.active ? '600' : '500'};
   border-radius: 8px;
   margin: 0 0.5rem;
+  justify-content: ${props => props.collapsed ? 'center' : 'flex-start'};
+  position: relative;
   
   &:hover {
     background: rgba(255, 255, 255, 0.15);
@@ -94,6 +127,25 @@ const NavItem = styled.div`
     width: 18px;
     height: 18px;
     color: #ffffff;
+    flex-shrink: 0;
+  }
+  
+  span {
+    display: ${props => props.collapsed ? 'none' : 'block'};
+    transition: all 0.3s ease;
+    
+    @media (max-width: 768px) {
+      display: block;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 1.5rem;
+    justify-content: flex-start;
+    
+    span {
+      display: block;
+    }
   }
 `;
 
@@ -136,7 +188,7 @@ const LogoutButton = styled.button`
 `;
 
 const MainContent = styled.div`
-  margin-left: 280px;
+  margin-left: ${props => props.collapsed ? '80px' : '280px'};
   flex: 1;
   background: #f8fafc;
   min-height: 100vh;
@@ -1634,6 +1686,7 @@ const AdminPage = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productData, setProductData] = useState({
     name: '',
@@ -2430,75 +2483,85 @@ const AdminPage = () => {
         isOpen={isMobileMenuOpen}
         onClick={() => setIsMobileMenuOpen(false)}
       />
-      <Sidebar isOpen={isMobileMenuOpen}>
-        <SidebarHeader>
-          <Logo>
+      <Sidebar isOpen={isMobileMenuOpen} collapsed={isSidebarCollapsed}>
+        <SidebarHeader collapsed={isSidebarCollapsed}>
+          <Logo collapsed={isSidebarCollapsed}>
             <LogoImage src="/images/logo2.png" alt="Vision Care Logo" />
-
           </Logo>
+          <CollapseButton onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
+            {isSidebarCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+          </CollapseButton>
         </SidebarHeader>
 
         <NavSection>
           <NavItem
             active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
+            collapsed={isSidebarCollapsed}
           >
             <FiHome />
-            Dashboard
+            <span>Dashboard</span>
           </NavItem>
           <NavItem
             active={activeTab === 'orders'}
             onClick={() => setActiveTab('orders')}
+            collapsed={isSidebarCollapsed}
           >
             <FiShoppingBag />
-            Orders
+            <span>Orders</span>
           </NavItem>
           <NavItem
             active={activeTab === 'add-product'}
             onClick={() => setActiveTab('add-product')}
+            collapsed={isSidebarCollapsed}
           >
             <FiPackage />
-            Add Product
+            <span>Add Product</span>
           </NavItem>
           <NavItem
             active={activeTab === 'manage-products'}
             onClick={() => setActiveTab('manage-products')}
+            collapsed={isSidebarCollapsed}
           >
             <FiBarChart2 />
-            Manage Products
+            <span>Manage Products</span>
           </NavItem>
           <NavItem
             active={activeTab === 'eyewear-products'}
             onClick={() => setActiveTab('eyewear-products')}
+            collapsed={isSidebarCollapsed}
           >
             <FiTrendingUp />
-            Eyewear Products
+            <span>Eyewear Products</span>
           </NavItem>
           <NavItem
             active={activeTab === 'lens-products'}
             onClick={() => setActiveTab('lens-products')}
+            collapsed={isSidebarCollapsed}
           >
             <FiSettings />
-            Lens Products
+            <span>Lens Products</span>
           </NavItem>
           <NavItem
             active={activeTab === 'customers'}
             onClick={() => setActiveTab('customers')}
+            collapsed={isSidebarCollapsed}
           >
             <FiUsers />
-            Customers
+            <span>Customers</span>
           </NavItem>
           <NavItem
             active={activeTab === 'reviews'}
             onClick={() => setActiveTab('reviews')}
+            collapsed={isSidebarCollapsed}
           >
             <FiDollarSign />
-            Reviews
+            <span>Reviews</span>
           </NavItem>
         </NavSection>
       </Sidebar>
 
-      <MainContent>
+      <MainContent collapsed={isSidebarCollapsed}>
 
         {activeTab === 'dashboard' && (
           <>

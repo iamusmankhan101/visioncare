@@ -1,14 +1,26 @@
 import sampleProducts from '../utils/addSampleProducts';
 
-// Backend API configuration with mobile-friendly fallback
+// Backend API configuration with deployment support
 const getApiBaseUrl = () => {
   // Check if we have a custom API URL from environment
   if (process.env.REACT_APP_PRODUCTS_API_URL) {
     return process.env.REACT_APP_PRODUCTS_API_URL;
   }
   
-  // Check if we're on mobile and try to use the computer's IP address
   const hostname = window.location.hostname;
+  
+  // Check if this is a deployed environment (not localhost or IP)
+  const isDeployedEnvironment = !hostname.includes('localhost') && 
+                               !hostname.includes('127.0.0.1') && 
+                               !hostname.match(/^\d+\.\d+\.\d+\.\d+$/); // Not an IP address
+  
+  if (isDeployedEnvironment) {
+    console.log(`🌐 Deployed environment detected: ${hostname}`);
+    console.log(`📦 Using localStorage mode for deployed website`);
+    // For deployed environments without backend, we'll rely on localStorage
+    // Return null to force localStorage usage
+    return null;
+  }
   
   // If accessing via IP address (mobile accessing desktop), use the same IP for API
   if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
@@ -16,7 +28,7 @@ const getApiBaseUrl = () => {
     return `http://${hostname}:5004/api`;
   }
   
-  // Default to localhost for desktop
+  // Default to localhost for desktop development
   return 'http://localhost:5004/api';
 };
 
@@ -104,6 +116,12 @@ const saveProductsBackup = (products) => {
 const productApi = {
   // Test API connection
   testConnection: async () => {
+    // If no API URL (deployed environment), return false to indicate localStorage mode
+    if (!API_BASE_URL) {
+      console.log('🌐 Deployed environment: No backend API configured');
+      return false;
+    }
+
     try {
       console.log('🔍 Testing API connection...');
       const response = await fetch(`${API_BASE_URL}/health`);
@@ -122,6 +140,14 @@ const productApi = {
 
   // Get all products
   getAllProducts: async () => {
+    // If no API URL (deployed environment), use localStorage directly
+    if (!API_BASE_URL) {
+      console.log('🌐 Deployed environment: Using localStorage products');
+      const products = getStoredProducts();
+      console.log(`📦 Loaded ${products.length} products from localStorage`);
+      return products;
+    }
+
     try {
       console.log('🔍 Attempting to fetch products from backend API...');
       console.log(`🔗 API URL: ${API_BASE_URL}`);

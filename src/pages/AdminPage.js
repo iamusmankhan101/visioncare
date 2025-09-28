@@ -3928,12 +3928,27 @@ const AdminPage = () => {
                       }}
                       onClick={() => {
                         if (dataSource === 'localStorage') {
-                          alert(`📱 Mobile Connection Issue Detected!\n\nYour mobile device is using offline data. To see live products:\n\n1. Find your computer's IP address\n2. Access admin panel via: http://[YOUR-IP]:3000/admin\n3. Make sure product server is running on port 5004\n\nCurrent URL: ${window.location.href}\nAPI URL: ${window.location.hostname}:5004`);
+                          const hostname = window.location.hostname;
+                          const isDeployed = !hostname.includes('localhost') && 
+                                           !hostname.includes('127.0.0.1') && 
+                                           !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
+                          
+                          if (isDeployed) {
+                            alert(`🌐 Deployed Website Mode\n\nYou're using a deployed version of the website. This is normal!\n\n✅ Products are loaded from built-in data\n✅ All features work normally\n✅ No backend server needed\n\nTo use live backend data:\n• Deploy your backend API separately\n• Set REACT_APP_PRODUCTS_API_URL environment variable\n\nCurrent URL: ${window.location.href}`);
+                          } else {
+                            alert(`📱 Mobile Connection Issue Detected!\n\nYour mobile device is using offline data. To see live products:\n\n1. Find your computer's IP address\n2. Access admin panel via: http://[YOUR-IP]:3000/admin\n3. Make sure product server is running on port 5004\n\nCurrent URL: ${window.location.href}\nAPI URL: ${window.location.hostname}:5004`);
+                          }
                         }
                       }}
                       title={dataSource === 'localStorage' ? 'Click for troubleshooting help' : 'Connected to live backend'}
                       >
-                        {dataSource === 'api' ? '🌐 Live Data' : '📦 Offline Mode (Click for help)'}
+                        {dataSource === 'api' ? '🌐 Live Data' : (() => {
+                          const hostname = window.location.hostname;
+                          const isDeployed = !hostname.includes('localhost') && 
+                                           !hostname.includes('127.0.0.1') && 
+                                           !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
+                          return isDeployed ? '🌐 Deployed Mode (Click for info)' : '📦 Offline Mode (Click for help)';
+                        })()}
                       </div>
                     )}
                   </div>

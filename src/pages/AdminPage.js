@@ -2028,10 +2028,16 @@ const AdminPage = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [productData, setProductData] = useState({
+  
+  // Default product state - used for initialization and reset
+  const defaultProductData = {
     name: '',
     price: '',
     category: '',
+    material: '',
+    shape: '',
+    style: '',
+    frameColor: '',
     description: '',
     image: '',
     gallery: [],
@@ -2039,11 +2045,19 @@ const AdminPage = () => {
     bestSeller: false,
     colors: [],
     sizes: [],
+    features: [],
+    lensTypes: [],
+    status: 'In Stock',
+    rim: '',
+    brand: '',
+    gender: 'Unisex',
     discount: {
       hasDiscount: false,
       discountPercentage: 0
     }
-  });
+  };
+  
+  const [productData, setProductData] = useState(defaultProductData);
   const fileInputRef = useRef(null);
 
 
@@ -2686,30 +2700,7 @@ const AdminPage = () => {
       // Reset form
       setTimeout(() => {
         setSuccessMessage('');
-        setProductData({
-          name: '',
-          price: '',
-          category: '',
-          material: '',
-          shape: '',
-          rim: '',
-          featured: false,
-          bestSeller: false,
-          // Reset new fields
-          colors: [],
-          brand: '',
-          gender: 'Unisex',
-          frameColor: '',
-          sizes: [],
-          lensTypes: [],
-          discount: {
-            hasDiscount: false,
-            discountPercentage: 0
-          },
-          status: 'In Stock',
-          description: '',
-          style: ''
-        });
+        setProductData(defaultProductData);
       }, 2000);
     } catch (error) {
       console.error('Failed to add product:', error);
@@ -2722,15 +2713,30 @@ const AdminPage = () => {
   // Handle edit product - MOVED INSIDE COMPONENT
   const handleEditProduct = (product) => {
     setProductData({
-      ...product,
-      price: product.price.toString(), // Convert price to string for form input
-      status: product.status || 'In Stock', // Ensure status has a default value
-      featured: product.featured || false, // Ensure featured has a default value
-      bestSeller: product.bestSeller || false, // Ensure bestSeller has a default value
-      colors: product.colors || [],
-      lensTypes: product.lensTypes || [],
-      discount: product.discount || { hasDiscount: false, discountPercentage: 0 },
-      gallery: product.gallery || []
+      ...defaultProductData, // Start with default values
+      ...product, // Override with product data
+      price: product.price ? product.price.toString() : '', // Convert price to string for form input
+      // Ensure all fields have proper defaults
+      name: product.name || '',
+      category: product.category || '',
+      material: product.material || '',
+      shape: product.shape || '',
+      style: product.style || '',
+      frameColor: product.frameColor || '',
+      description: product.description || '',
+      image: product.image || '',
+      status: product.status || 'In Stock',
+      rim: product.rim || '',
+      brand: product.brand || '',
+      gender: product.gender || 'Unisex',
+      featured: Boolean(product.featured),
+      bestSeller: Boolean(product.bestSeller),
+      colors: Array.isArray(product.colors) ? product.colors : [],
+      sizes: Array.isArray(product.sizes) ? product.sizes : [],
+      features: Array.isArray(product.features) ? product.features : [],
+      lensTypes: Array.isArray(product.lensTypes) ? product.lensTypes : [],
+      gallery: Array.isArray(product.gallery) ? product.gallery : [],
+      discount: product.discount || { hasDiscount: false, discountPercentage: 0 }
     });
     setActiveTab('edit-product');
   };
@@ -4326,76 +4332,232 @@ const AdminPage = () => {
 
               {activeTab === 'eyewear-products' && (
                 <>
-                  <h2>Eyewear Products</h2>
+                  <ContentHeader>
+                    <h2>Eyewear Products</h2>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => setActiveTab('add-product')}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#3ABEF9',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        + Add Product
+                      </button>
+                    </div>
+                  </ContentHeader>
                   
                   {successMessage && (
                     <SuccessMessage>{successMessage}</SuccessMessage>
                   )}
 
+                  {/* Product Statistics */}
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                    gap: '1rem', 
+                    marginBottom: '2rem' 
+                  }}>
+                    <StatCard>
+                      <StatValue>
+                        {products ? products.filter(p => 
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category)
+                        ).length : 0}
+                      </StatValue>
+                      <StatLabel>Total Eyewear</StatLabel>
+                    </StatCard>
+                    <StatCard>
+                      <StatValue>
+                        {products ? products.filter(p => 
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category) && p.featured
+                        ).length : 0}
+                      </StatValue>
+                      <StatLabel>Featured</StatLabel>
+                    </StatCard>
+                    <StatCard>
+                      <StatValue>
+                        {products ? products.filter(p => 
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category) && p.bestSeller
+                        ).length : 0}
+                      </StatValue>
+                      <StatLabel>Best Sellers</StatLabel>
+                    </StatCard>
+                    <StatCard>
+                      <StatValue>
+                        {products ? products.filter(p => 
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category) && p.status === 'In Stock'
+                        ).length : 0}
+                      </StatValue>
+                      <StatLabel>In Stock</StatLabel>
+                    </StatCard>
+                  </div>
+
                   <ProductList>
                     {isProductsLoading ? (
                       <div style={{ textAlign: 'center', padding: '2rem' }}>
-                        Loading eyewear products...
+                        <div style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Loading eyewear products...</div>
+                        <div style={{ color: '#64748b' }}>Please wait while we fetch your products</div>
                       </div>
                     ) : products && products.length > 0 ? (
-                      products
-                        .filter(product => 
-                          product.category === 'Sunglasses' ||
-                          product.category === 'Eyeglasses' || 
-                          product.category === 'Reading Glasses' || 
-                          product.category === 'Computer Glasses' ||
-                          product.category === 'Sports Glasses'
-                        )
-                        .map(product => (
-                          <ProductCard key={product.id}>
-                            <ProductImage>
-                              {product.image ? (
-                                <img src={product.image} alt={product.name} />
-                              ) : (
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  height: '100%',
-                                  background: '#f8fafc',
-                                  color: '#64748b'
-                                }}>
-                                  No Image
+                      (() => {
+                        const eyewearProducts = products.filter(product => 
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(product.category)
+                        );
+                        
+                        return eyewearProducts.length > 0 ? (
+                          eyewearProducts.map(product => (
+                            <ProductCard key={product.id}>
+                              <ProductImage>
+                                {product.image ? (
+                                  <img src={product.image} alt={product.name} />
+                                ) : (
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%',
+                                    background: '#f8fafc',
+                                    color: '#64748b',
+                                    flexDirection: 'column',
+                                    gap: '0.5rem'
+                                  }}>
+                                    <div style={{ fontSize: '2rem' }}>👓</div>
+                                    <div style={{ fontSize: '0.75rem' }}>No Image</div>
+                                  </div>
+                                )}
+                              </ProductImage>
+                              <ProductInfo>
+                                <ProductName>{product.name}</ProductName>
+                                <ProductPrice>PKR {product.price}</ProductPrice>
+                                <ProductCategory>{product.category}</ProductCategory>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                                  {product.featured && (
+                                    <span style={{ 
+                                      background: '#3b82f6', 
+                                      color: 'white', 
+                                      padding: '0.25rem 0.5rem', 
+                                      borderRadius: '4px', 
+                                      fontSize: '0.75rem' 
+                                    }}>
+                                      Featured
+                                    </span>
+                                  )}
+                                  {product.bestSeller && (
+                                    <span style={{ 
+                                      background: '#10b981', 
+                                      color: 'white', 
+                                      padding: '0.25rem 0.5rem', 
+                                      borderRadius: '4px', 
+                                      fontSize: '0.75rem' 
+                                    }}>
+                                      Best Seller
+                                    </span>
+                                  )}
+                                  <span style={{ 
+                                    background: product.status === 'In Stock' ? '#10b981' : '#ef4444', 
+                                    color: 'white', 
+                                    padding: '0.25rem 0.5rem', 
+                                    borderRadius: '4px', 
+                                    fontSize: '0.75rem' 
+                                  }}>
+                                    {product.status || 'In Stock'}
+                                  </span>
                                 </div>
-                              )}
-                            </ProductImage>
-                            <ProductInfo>
-                              <ProductName>{product.name}</ProductName>
-                              <ProductPrice>PKR {product.price}</ProductPrice>
-                              <ProductCategory>{product.category}</ProductCategory>
-                              <ProductStatus status={product.status}>
-                                {product.featured && 'Featured '}
-                                {product.bestSeller && 'Best Seller'}
-                                {!product.featured && !product.bestSeller && 'Regular'}
-                              </ProductStatus>
-                            </ProductInfo>
-                            <ProductActions>
-                              <ActionButton
-                                onClick={() => {
-                                  setSelectedProduct(product);
-                                  setProductData(product);
-                                  setActiveTab('edit-product');
-                                }}
-                              >
-                                Edit
-                              </ActionButton>
-                              <ActionButton
-                                danger
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                Delete
-                              </ActionButton>
-                            </ProductActions>
-                          </ProductCard>
-                        ))
+                              </ProductInfo>
+                              <ProductActions>
+                                <ActionButton
+                                  onClick={() => handleEditProduct(product)}
+                                >
+                                  <FiEdit style={{ marginRight: '0.5rem' }} />
+                                  Edit
+                                </ActionButton>
+                                <ActionButton
+                                  danger
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                >
+                                  <FiTrash2 style={{ marginRight: '0.5rem' }} />
+                                  Delete
+                                </ActionButton>
+                              </ProductActions>
+                            </ProductCard>
+                          ))
+                        ) : (
+                          <div style={{ 
+                            textAlign: 'center', 
+                            padding: '3rem',
+                            background: '#f8fafc',
+                            borderRadius: '12px',
+                            border: '2px dashed #e2e8f0'
+                          }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👓</div>
+                            <h3 style={{ margin: '0 0 1rem 0', color: '#1a202c' }}>No Eyewear Products Found</h3>
+                            <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
+                              You haven't added any eyewear products yet. Start by adding your first product!
+                            </p>
+                            <button 
+                              onClick={() => setActiveTab('add-product')}
+                              style={{
+                                padding: '0.75rem 1.5rem',
+                                background: '#3ABEF9',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontSize: '1rem',
+                                fontWeight: '600'
+                              }}
+                            >
+                              Add Your First Eyewear Product
+                            </button>
+                          </div>
+                        );
+                      })()
                     ) : (
-                      <div style={{ textAlign: 'center', padding: '2rem' }}>
-                        No eyewear products found. <a href="#" onClick={() => setActiveTab('add-product')}>Add your first eyewear product</a>
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '3rem',
+                        background: '#f8fafc',
+                        borderRadius: '12px',
+                        border: '2px dashed #e2e8f0'
+                      }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+                        <h3 style={{ margin: '0 0 1rem 0', color: '#1a202c' }}>No Products Found</h3>
+                        <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
+                          No products have been loaded. This could be due to a connection issue or empty database.
+                        </p>
+                        <button 
+                          onClick={() => window.location.reload()}
+                          style={{
+                            padding: '0.75rem 1.5rem',
+                            background: '#64748b',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                            marginRight: '1rem'
+                          }}
+                        >
+                          Refresh Page
+                        </button>
+                        <button 
+                          onClick={() => setActiveTab('add-product')}
+                          style={{
+                            padding: '0.75rem 1.5rem',
+                            background: '#3ABEF9',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '1rem'
+                          }}
+                        >
+                          Add Product
+                        </button>
                       </div>
                     )}
                   </ProductList>

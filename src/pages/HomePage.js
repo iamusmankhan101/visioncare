@@ -8,6 +8,7 @@ import { FiShoppingBag, FiHeart, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import { generateUniqueSlug } from '../utils/slugUtils';
 import styled from 'styled-components';
+import ApiDebug from '../components/debug/ApiDebug';
 
 const HeroSection = styled.section`
   height: 500px;
@@ -799,6 +800,7 @@ const HomePage = () => {
   const [testimonialSlide, setTestimonialSlide] = useState(0);
   const [selectedColors, setSelectedColors] = useState({});
   const [wishlistModal, setWishlistModal] = useState({ isOpen: false, type: '', product: null });
+  const [showApiDebug, setShowApiDebug] = useState(false); // Debug panel (set to true to enable)
 
   // Testimonial data
   const testimonials = [
@@ -937,9 +939,12 @@ const HomePage = () => {
 
   // Fetch products when component mounts
   useEffect(() => {
-    console.log('HomePage useEffect - loading:', loading, 'products length:', products?.length);
+    console.log('📦 HomePage useEffect - loading:', loading, 'products length:', products?.length);
+    console.log('📦 Products data:', products);
+    console.log('📦 Environment API URL:', process.env.REACT_APP_PRODUCTS_API_URL);
+    
     if (loading === 'idle' && (!products || products.length === 0)) {
-      console.log('Dispatching fetchProducts...');
+      console.log('📦 Dispatching fetchProducts...');
       dispatch(fetchProducts());
     }
   }, [dispatch, loading, products]);
@@ -1169,6 +1174,7 @@ const HomePage = () => {
     
     content = (
       <div className="home-page" style={{ overflowX: 'hidden' }}>
+      {showApiDebug && <ApiDebug onClose={() => setShowApiDebug(false)} />}
       <HeroSection>
         <HeroContent>
           <HeroTitle>Premium & Stylish Eyewear</HeroTitle>
@@ -1315,6 +1321,80 @@ const HomePage = () => {
         </ButtonContainer2>
       </FeaturedSection>
       
+      {/* All Products Section */}
+      <FeaturedSection>
+        <SectionTitle>All Products</SectionTitle>
+        <ProductGrid>
+          {products ? products.slice(0, 8).map(product => {
+            const selectedColorIndex = selectedColors[product.id] || 0;
+            const selectedColor = product.colors && product.colors[selectedColorIndex];
+            
+            const displayProduct = {
+              id: product.id,
+              name: product.name,
+              price: formatPrice(product.price),
+              brand: product.brand || 'Eyewear',
+              category: product.category,
+              image: selectedColor?.image || product.image || '/images/default-glasses.jpg',
+              colors: product.colors,
+              discount: product.discount
+            };
+            
+            return (
+              <ProductCard key={product.id}>
+                {product.discount && <DiscountBadge>{typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}</DiscountBadge>}
+                <CategoryBadge>{product.category}</CategoryBadge>
+               
+                <WishlistButton 
+                  isInWishlist={isInWishlist(product.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleWishlistToggle(product);
+                  }}
+                >
+                  <FiHeart fill={isInWishlist(product.id) ? '#ff4757' : 'none'} />
+                </WishlistButton>
+                
+                <Link to={`/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <ProductImage image={displayProduct.image} />
+                  <ProductContent>
+                    <ProductTitle>{displayProduct.name}</ProductTitle>
+                    <ProductBrand>{displayProduct.brand}</ProductBrand>
+                    <ProductPrice>{displayProduct.price}</ProductPrice>
+                    <ColorOptions>
+                      {product.colors && product.colors.map((color, index) => (
+                        <ColorSwatchContainer key={index}>
+                          <ColorSwatch 
+                            color={color.hex}
+                            selected={selectedColorIndex === index}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleColorSelect(product.id, index);
+                            }}
+                          />
+                        </ColorSwatchContainer>
+                      ))}
+                    </ColorOptions>
+                  </ProductContent>
+                </Link>
+                
+                <CartButton onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAddToCart(displayProduct);
+                }}>
+                  <FiShoppingBag />
+                </CartButton>
+              </ProductCard>
+            );
+          }) : []}
+        </ProductGrid>
+        <ButtonContainer2>
+          <SectionShopButton to="/products">Shop All Products</SectionShopButton>
+        </ButtonContainer2>
+      </FeaturedSection>
       
       {/* Style Picker Section */}
       <StylePickerSection>

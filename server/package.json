@@ -12,11 +12,13 @@
     "dev:whatsapp": "nodemon whatsappServer.js",
     "admin": "node adminServer.js",
     "dev:admin": "nodemon adminServer.js",
+    "products": "node productServer.js",
+    "dev:products": "nodemon productServer.js",
     "push": "node pushNotificationServer.js",
     "dev:push": "nodemon pushNotificationServer.js",
     "push-server": "node pushServer.js",
     "dev:push-server": "nodemon pushServer.js",
-    "all": "concurrently \"npm run dev:notifications\" \"npm run dev:whatsapp\" \"npm run dev:admin\" \"npm run dev:push\"",
+    "all": "concurrently \"npm run dev:notifications\" \"npm run dev:whatsapp\" \"npm run dev:admin\" \"npm run dev:products\" \"npm run dev:push\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

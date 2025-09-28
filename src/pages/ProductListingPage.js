@@ -869,12 +869,21 @@ const ProductListingPage = () => {
 
   // Debug logging
   useEffect(() => {
-    console.log('ProductListingPage Debug:', {
+    console.log('🔍 ProductListingPage Debug:', {
       itemsCount: items.length,
       filteredItemsCount: filteredItems.length,
       filters,
-      sortOption
+      sortOption,
+      activeFilters: Object.keys(filters).filter(key => 
+        filters[key] !== null && 
+        filters[key] !== '' && 
+        (Array.isArray(filters[key]) ? filters[key].length > 0 : true)
+      )
     });
+    
+    // Log individual products
+    console.log('📦 All items:', items.map(p => ({ id: p.id, name: p.name, category: p.category })));
+    console.log('📦 Filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category })));
   }, [items, filteredItems, filters, sortOption]);
 
   // Get category, search, featured, best-sellers, and style from URL query params
@@ -1460,7 +1469,23 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
-                  {(filteredItems.length > 0 ? filteredItems : items).filter(product => {
+                  {(() => {
+                    // Check if any meaningful filters are applied
+                    const hasActiveFilters = Object.keys(filters).some(key => {
+                      const value = filters[key];
+                      if (key === 'priceRange') {
+                        return value.min > 0 || value.max < 1000;
+                      }
+                      return value !== null && value !== '' && 
+                             (Array.isArray(value) ? value.length > 0 : true);
+                    });
+                    
+                    // Use all items if no filters are active, otherwise use filtered items
+                    const productsToShow = hasActiveFilters ? filteredItems : items;
+                    console.log('🎯 Products to show:', productsToShow.length, 'hasActiveFilters:', hasActiveFilters);
+                    
+                    return productsToShow;
+                  })().filter(product => {
                     const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
                     const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
                     const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];

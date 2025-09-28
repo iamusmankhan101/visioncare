@@ -1,7 +1,26 @@
 import sampleProducts from '../utils/addSampleProducts';
 
-// Backend API configuration
-const API_BASE_URL = process.env.REACT_APP_PRODUCTS_API_URL || 'http://localhost:5004/api';
+// Backend API configuration with mobile-friendly fallback
+const getApiBaseUrl = () => {
+  // Check if we have a custom API URL from environment
+  if (process.env.REACT_APP_PRODUCTS_API_URL) {
+    return process.env.REACT_APP_PRODUCTS_API_URL;
+  }
+  
+  // Check if we're on mobile and try to use the computer's IP address
+  const hostname = window.location.hostname;
+  
+  // If accessing via IP address (mobile accessing desktop), use the same IP for API
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    console.log(`📱 Mobile detected: Using ${hostname} for API requests`);
+    return `http://${hostname}:5004/api`;
+  }
+  
+  // Default to localhost for desktop
+  return 'http://localhost:5004/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to handle API requests
 const apiRequest = async (endpoint, options = {}) => {
@@ -18,6 +37,8 @@ const apiRequest = async (endpoint, options = {}) => {
   try {
     console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
     console.log(`🔧 API Base URL: ${API_BASE_URL}`);
+    console.log(`📱 User Agent: ${navigator.userAgent}`);
+    console.log(`🌍 Current URL: ${window.location.href}`);
     
     const response = await fetch(url, config);
     
@@ -25,22 +46,26 @@ const apiRequest = async (endpoint, options = {}) => {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
       console.error(`❌ API Error Response:`, errorMessage);
+      console.error(`❌ Response Status: ${response.status} ${response.statusText}`);
       throw new Error(errorMessage);
     }
     
     const data = await response.json();
     console.log(`✅ API Response: ${config.method || 'GET'} ${url} - Success`);
+    console.log(`📊 Data Count: ${Array.isArray(data) ? data.length : 'N/A'} items`);
     return data;
   } catch (error) {
     console.error(`❌ API Error: ${config.method || 'GET'} ${url}`);
     console.error(`❌ Error Details:`, error.message);
     console.error(`❌ Error Type:`, error.name);
+    console.error(`❌ Error Stack:`, error.stack);
     
     // Check if it's a network error
     if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
       console.error(`❌ Network Error: Cannot connect to backend server`);
       console.error(`❌ Make sure the product server is running on ${API_BASE_URL}`);
       console.error(`❌ Start server with: cd server && npm run dev:products`);
+      console.error(`❌ Check if mobile device can access localhost:5004`);
     }
     
     throw error;
@@ -77,17 +102,42 @@ const saveProductsBackup = (products) => {
 };
 
 const productApi = {
+  // Test API connection
+  testConnection: async () => {
+    try {
+      console.log('🔍 Testing API connection...');
+      const response = await fetch(`${API_BASE_URL}/health`);
+      if (response.ok) {
+        console.log('✅ API connection successful');
+        return true;
+      } else {
+        console.warn('⚠️ API responded but with error status:', response.status);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ API connection failed:', error.message);
+      return false;
+    }
+  },
+
   // Get all products
   getAllProducts: async () => {
     try {
+      console.log('🔍 Attempting to fetch products from backend API...');
+      console.log(`🔗 API URL: ${API_BASE_URL}`);
       const products = await apiRequest('/products');
+      console.log(`✅ Successfully fetched ${products.length} products from backend`);
       // Save as backup for offline use
       saveProductsBackup(products);
       return products;
     } catch (error) {
-      console.warn('Backend API failed, using localStorage backup:', error.message);
+      console.warn('❌ Backend API failed, using localStorage backup:', error.message);
+      console.warn('📱 This might be a mobile network connectivity issue');
+      console.warn('💡 Try accessing the admin panel via your computer\'s IP address instead of localhost');
       // Fallback to localStorage backup
-      return getStoredProducts();
+      const backupProducts = getStoredProducts();
+      console.log(`📦 Using ${backupProducts.length} products from localStorage backup`);
+      return backupProducts;
     }
   },
 

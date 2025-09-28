@@ -2295,7 +2295,29 @@ const AdminPage = () => {
 
   // Fetch products when component mounts
   useEffect(() => {
-    dispatch(fetchProducts());
+    const loadProducts = async () => {
+      try {
+        // Test API connection first
+        const { testConnection } = await import('../api/productApi');
+        const isConnected = await testConnection();
+        
+        if (isConnected) {
+          setDataSource('api');
+          console.log('🌐 Using backend API for products');
+        } else {
+          setDataSource('localStorage');
+          console.log('📦 Using localStorage backup for products');
+        }
+        
+        dispatch(fetchProducts());
+      } catch (error) {
+        console.error('Error testing API connection:', error);
+        setDataSource('localStorage');
+        dispatch(fetchProducts());
+      }
+    };
+
+    loadProducts();
     loadOrderStats();
     loadRealOrders();
 
@@ -2400,6 +2422,7 @@ const AdminPage = () => {
     deliveredOrders: 0
   });
   const [realOrders, setRealOrders] = useState([]);
+  const [dataSource, setDataSource] = useState('unknown'); // 'api', 'localStorage', 'unknown'
 
   const [chartDateOffset, setChartDateOffset] = useState(0); // 0 = today, -1 = yesterday, etc.
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, content: '' });
@@ -3889,7 +3912,31 @@ const AdminPage = () => {
 
               {activeTab === 'manage-products' && (
                 <>
-                  <h2>Manage Products</h2>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h2>Manage Products</h2>
+                    {dataSource !== 'unknown' && (
+                      <div style={{
+                        padding: '0.5rem 1rem',
+                        borderRadius: '8px',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        background: dataSource === 'api' ? '#dcfce7' : '#fef3c7',
+                        color: dataSource === 'api' ? '#166534' : '#92400e',
+                        border: `1px solid ${dataSource === 'api' ? '#bbf7d0' : '#fde68a'}`,
+                        cursor: dataSource === 'localStorage' ? 'pointer' : 'default',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onClick={() => {
+                        if (dataSource === 'localStorage') {
+                          alert(`📱 Mobile Connection Issue Detected!\n\nYour mobile device is using offline data. To see live products:\n\n1. Find your computer's IP address\n2. Access admin panel via: http://[YOUR-IP]:3000/admin\n3. Make sure product server is running on port 5004\n\nCurrent URL: ${window.location.href}\nAPI URL: ${window.location.hostname}:5004`);
+                        }
+                      }}
+                      title={dataSource === 'localStorage' ? 'Click for troubleshooting help' : 'Connected to live backend'}
+                      >
+                        {dataSource === 'api' ? '🌐 Live Data' : '📦 Offline Mode (Click for help)'}
+                      </div>
+                    )}
+                  </div>
 
                   {successMessage && (
                     <SuccessMessage>{successMessage}</SuccessMessage>

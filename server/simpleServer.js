@@ -19,7 +19,7 @@ webpush.setVapidDetails(
 // Store subscriptions in memory (use database in production)
 const subscriptions = new Set();
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   console.log(`📡 Request: ${req.method} ${req.url}`);
 
   // Set CORS headers

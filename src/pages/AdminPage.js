@@ -2603,6 +2603,8 @@ const AdminPage = () => {
       ...product,
       price: product.price.toString(), // Convert price to string for form input
       status: product.status || 'In Stock', // Ensure status has a default value
+      featured: product.featured || false, // Ensure featured has a default value
+      bestSeller: product.bestSeller || false, // Ensure bestSeller has a default value
       colors: product.colors || [],
       lensTypes: product.lensTypes || [],
       discount: product.discount || { hasDiscount: false, discountPercentage: 0 },
@@ -4095,6 +4097,34 @@ const AdminPage = () => {
                             {status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                           </option>
                         ))}
+                      </Select>
+                    </FormGroup>
+
+                    {/* Product Special Status */}
+                    <FormGroup>
+                      <Label htmlFor="specialStatus">Status</Label>
+                      <Select
+                        id="specialStatus"
+                        name="specialStatus"
+                        value={
+                          productData.featured && productData.bestSeller ? 'both' :
+                          productData.featured ? 'featured' :
+                          productData.bestSeller ? 'bestSeller' :
+                          'none'
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setProductData({
+                            ...productData,
+                            featured: value === 'featured' || value === 'both',
+                            bestSeller: value === 'bestSeller' || value === 'both'
+                          });
+                        }}
+                      >
+                        <option value="none">Regular Product</option>
+                        <option value="featured">Featured Product</option>
+                        <option value="bestSeller">Best Seller</option>
+                        <option value="both">Featured & Best Seller</option>
                       </Select>
                     </FormGroup>
 

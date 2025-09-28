@@ -1582,6 +1582,10 @@ const ProductFormMain = styled.div`
     padding: 1.5rem;
   }
   
+  @media (max-width: 1024px) {
+    order: 0; /* Ensure main form content appears first on tablet/mobile */
+  }
+  
   @media (max-width: 768px) {
     border-radius: 8px;
     
@@ -1908,7 +1912,7 @@ const ProductFormSidebar = styled.div`
   gap: 1.5rem;
   
   @media (max-width: 1024px) {
-    order: -1; /* Move sidebar above main content on tablet/mobile */
+    order: 1; /* Keep sidebar after main content on tablet/mobile */
   }
   
   @media (max-width: 768px) {

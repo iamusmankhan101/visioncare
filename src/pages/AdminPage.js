@@ -1400,6 +1400,36 @@ const ProductPrice = styled.p`
   color: #3b82f6;
 `;
 
+const AdminPriceContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem 0;
+  flex-wrap: wrap;
+`;
+
+const AdminDiscountedPrice = styled.span`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e74c3c;
+`;
+
+const AdminOriginalPrice = styled.span`
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #999;
+  text-decoration: line-through;
+`;
+
+const AdminDiscountPercentage = styled.span`
+  background: #e74c3c;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+`;
+
 const ProductCategory = styled.p`
   margin: 0 0 0.5rem 0;
   font-size: 0.875rem;
@@ -2015,6 +2045,23 @@ const AdminPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Helper function to calculate discounted price
+  const calculateDiscountedPrice = (product) => {
+    if (!product.discount || !product.discount.hasDiscount) {
+      return null;
+    }
+    
+    const originalPrice = parseFloat(product.price);
+    const discountPercentage = product.discount.discountPercentage || 0;
+    const discountedPrice = originalPrice - (originalPrice * discountPercentage / 100);
+    
+    return {
+      original: originalPrice,
+      discounted: discountedPrice,
+      percentage: discountPercentage
+    };
+  };
   const { items: products, status, error } = useSelector(state => state.products);
   const isProductsLoading = status === 'loading';
   const [activeTab, setActiveTab] = useState('dashboard');

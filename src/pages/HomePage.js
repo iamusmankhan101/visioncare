@@ -131,12 +131,45 @@ const CategoryTitle = styled.h3`
   }
 `;
 
-
 // ProductPrice styling
 const ProductPrice = styled.p`
   font-weight: 600;
   color: #333;
   margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-family: 'Montserrat', sans-serif;
+`;
+
+const PriceContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+`;
+
+const DiscountedPrice = styled.span`
+  font-weight: 600;
+  color: #e74c3c;
+  font-size: 1.2rem;
+  font-family: 'Montserrat', sans-serif;
+`;
+
+const OriginalPrice = styled.span`
+  font-weight: 400;
+  color: #999;
+  font-size: 1rem;
+  text-decoration: line-through;
+  font-family: 'Montserrat', sans-serif;
+`;
+
+const DiscountPercentage = styled.span`
+  background: #e74c3c;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
   font-family: 'Montserrat', sans-serif;
 `;
 
@@ -452,13 +485,13 @@ const DiscountBadge = styled.span`
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: #48b2ee;
+  background-color: #e74c3c;
   color: white;
   padding: 4px 8px;
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 4px;
-  z-index: 1;
+  z-index: 2;
 `;
 
 
@@ -523,7 +556,7 @@ const WishlistButton = styled.button`
 // Add CategoryBadge component
 const CategoryBadge = styled.span`
   position: absolute;
-  top: 10px;
+  top: ${props => props.hasDiscount ? '45px' : '10px'};
   left: 10px;
   background-color: #48b2ee;
   color: white;
@@ -532,13 +565,10 @@ const CategoryBadge = styled.span`
   font-size: 0.75rem;
   font-weight: 600;
   z-index: 1;
-  margin-left:10px;
   
   @media (max-width: 768px) {
-    top: 8px;
+    top: ${props => props.hasDiscount ? '40px' : '8px'};
     left: 8px;
-    right: auto;
-    margin-left: 0;
     padding: 3px 6px;
     font-size: 0.6rem;
   }
@@ -801,6 +831,23 @@ const HomePage = () => {
   const [selectedColors, setSelectedColors] = useState({});
   const [wishlistModal, setWishlistModal] = useState({ isOpen: false, type: '', product: null });
   const [showApiDebug, setShowApiDebug] = useState(false); // Debug panel (set to true to enable)
+
+  // Helper function to calculate discounted price
+  const calculateDiscountedPrice = (product) => {
+    if (!product.discount || !product.discount.hasDiscount) {
+      return null;
+    }
+    
+    const originalPrice = parseFloat(product.price);
+    const discountPercentage = product.discount.discountPercentage || 0;
+    const discountedPrice = originalPrice - (originalPrice * discountPercentage / 100);
+    
+    return {
+      original: originalPrice,
+      discounted: discountedPrice,
+      percentage: discountPercentage
+    };
+  };
 
   // Testimonial data
   const testimonials = [
@@ -1219,9 +1266,15 @@ const HomePage = () => {
         <ProductGrid>
           {(displayBestSellingProducts || []).slice(0, 8).map(product => (
             <ProductCard key={product.id}>
-              {product.discount && <DiscountBadge>{typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}</DiscountBadge>}
-              <CategoryBadge>{product.category}</CategoryBadge>
-              
+              {product.discount && product.discount.hasDiscount && (
+                <DiscountBadge>
+                  {typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}
+                </DiscountBadge>
+              )}
+              <CategoryBadge hasDiscount={product.discount && product.discount.hasDiscount}>
+                {product.category}
+              </CategoryBadge>
+             
               <WishlistButton 
                 isInWishlist={isInWishlist(product.id)}
                 onClick={(e) => {
@@ -1238,7 +1291,21 @@ const HomePage = () => {
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
                   <ProductBrand>{product.brand}</ProductBrand>
-                  <ProductPrice>{product.price}</ProductPrice>
+                  {(() => {
+                    const discountInfo = calculateDiscountedPrice(product);
+                    
+                    if (discountInfo) {
+                      return (
+                        <PriceContainer>
+                          <DiscountedPrice>{formatPrice(discountInfo.discounted)}</DiscountedPrice>
+                          <OriginalPrice>{formatPrice(discountInfo.original)}</OriginalPrice>
+                          <DiscountPercentage>{discountInfo.percentage}% OFF</DiscountPercentage>
+                        </PriceContainer>
+                      );
+                    } else {
+                      return <ProductPrice>{product.price}</ProductPrice>;
+                    }
+                  })()}
                   <ColorOptions>
                     {product.colors && product.colors.map((color, index) => (
                       <ColorSwatchContainer key={index}>
@@ -1273,8 +1340,14 @@ const HomePage = () => {
         <ProductGrid>
           {displayFeaturedProducts.slice(0, 8).map(product => (
             <ProductCard key={product.id}>
-              {product.discount && <DiscountBadge>{typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}</DiscountBadge>}
-              <CategoryBadge>{product.category}</CategoryBadge>
+              {product.discount && product.discount.hasDiscount && (
+                <DiscountBadge>
+                  {typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}
+                </DiscountBadge>
+              )}
+              <CategoryBadge hasDiscount={product.discount && product.discount.hasDiscount}>
+                {product.category}
+              </CategoryBadge>
              
               <WishlistButton 
                 isInWishlist={isInWishlist(product.id)}
@@ -1292,7 +1365,21 @@ const HomePage = () => {
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
                   <ProductBrand>{product.brand}</ProductBrand>
-                  <ProductPrice>{product.price}</ProductPrice>
+                  {(() => {
+                    const discountInfo = calculateDiscountedPrice(product);
+                    
+                    if (discountInfo) {
+                      return (
+                        <PriceContainer>
+                          <DiscountedPrice>{formatPrice(discountInfo.discounted)}</DiscountedPrice>
+                          <OriginalPrice>{formatPrice(discountInfo.original)}</OriginalPrice>
+                          <DiscountPercentage>{discountInfo.percentage}% OFF</DiscountPercentage>
+                        </PriceContainer>
+                      );
+                    } else {
+                      return <ProductPrice>{product.price}</ProductPrice>;
+                    }
+                  })()}
                   <ColorOptions>
                     {product.colors && product.colors.map((color, index) => (
                       <ColorSwatchContainer key={index}>
@@ -1342,8 +1429,14 @@ const HomePage = () => {
             
             return (
               <ProductCard key={product.id}>
-                {product.discount && <DiscountBadge>{typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}</DiscountBadge>}
-                <CategoryBadge>{product.category}</CategoryBadge>
+                {product.discount && product.discount.hasDiscount && (
+                  <DiscountBadge>
+                    {typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}
+                  </DiscountBadge>
+                )}
+                <CategoryBadge hasDiscount={product.discount && product.discount.hasDiscount}>
+                  {product.category}
+                </CategoryBadge>
                
                 <WishlistButton 
                   isInWishlist={isInWishlist(product.id)}
@@ -1361,7 +1454,21 @@ const HomePage = () => {
                   <ProductContent>
                     <ProductTitle>{displayProduct.name}</ProductTitle>
                     <ProductBrand>{displayProduct.brand}</ProductBrand>
-                    <ProductPrice>{displayProduct.price}</ProductPrice>
+                    {(() => {
+                      const discountInfo = calculateDiscountedPrice(product);
+                      
+                      if (discountInfo) {
+                        return (
+                          <PriceContainer>
+                            <DiscountedPrice>{formatPrice(discountInfo.discounted)}</DiscountedPrice>
+                            <OriginalPrice>{formatPrice(discountInfo.original)}</OriginalPrice>
+                            <DiscountPercentage>{discountInfo.percentage}% OFF</DiscountPercentage>
+                          </PriceContainer>
+                        );
+                      } else {
+                        return <ProductPrice>{displayProduct.price}</ProductPrice>;
+                      }
+                    })()}
                     <ColorOptions>
                       {product.colors && product.colors.map((color, index) => (
                         <ColorSwatchContainer key={index}>

@@ -27,6 +27,7 @@ const initializeDatabase = () => {
           name TEXT NOT NULL,
           price REAL NOT NULL,
           category TEXT,
+          brand TEXT,
           material TEXT,
           shape TEXT,
           style TEXT,
@@ -138,21 +139,21 @@ app.post('/api/products', (req, res) => {
   const productData = serializeProduct(req.body);
   
   const {
-    name, price, category, material, shape, style, frameColor,
+    name, price, category, brand, material, shape, style, frameColor,
     description, image, gallery, colors, features, lensTypes,
     sizes, discount, status, featured, bestSeller
   } = productData;
   
   const sql = `
     INSERT INTO products (
-      name, price, category, material, shape, style, frameColor,
+      name, price, category, brand, material, shape, style, frameColor,
       description, image, gallery, colors, features, lensTypes,
       sizes, discount, status, featured, bestSeller
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   
   const params = [
-    name, price, category, material, shape, style, frameColor,
+    name, price, category, brand, material, shape, style, frameColor,
     description, image, gallery, colors, features, lensTypes,
     sizes, discount, status || 'In Stock', featured ? 1 : 0, bestSeller ? 1 : 0
   ];

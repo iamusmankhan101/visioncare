@@ -232,28 +232,28 @@ const DiscountBadge = styled.div`
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: #48b2ee;
+  background-color: #e74c3c;
   color: white;
   padding: 4px 8px;
   font-size: 0.7rem;
   border-radius: 4px;
   font-weight: 600;
-  z-index: 2;
+  z-index: 3;
 `;
 const ListingCategoryBadge = styled.span`
   position: absolute;
-  top: 15px;
-  left: 15px;
+  top: ${props => props.hasDiscount ? '45px' : '10px'};
+  left: 10px;
   background: #48b2ee;
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.7rem;
   font-weight: 600;
-  z-index: 3;
+  z-index: 2;
   
   @media (max-width: 768px) {
-    top: 8px;
+    top: ${props => props.hasDiscount ? '40px' : '8px'};
     left: 8px;
     font-size: 0.65rem;
   }
@@ -404,18 +404,44 @@ const ProductBrand = styled.p`
     font-size: 9px;
   }
 `;
-
 const ProductPrice = styled.p`
   font-weight: 600;
   color: #333;
   margin-bottom: 0.25rem;
+  font-size: 1.1rem;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-    margin-bottom: 0.25rem;
-  }
+`;
+
+const PriceContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+`;
+
+const DiscountedPrice = styled.span`
+  font-weight: 600;
+  color: #e74c3c;
+  font-size: 1.1rem;
+  font-family: 'Montserrat', sans-serif;
+`;
+
+const OriginalPrice = styled.span`
+  font-weight: 400;
+  color: #999;
+  font-size: 0.9rem;
+  text-decoration: line-through;
+  font-family: 'Montserrat', sans-serif;
+`;
+
+const DiscountPercentage = styled.span`
+  background: #e74c3c;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
 `;
 
 const ColorOptions = styled.div`
@@ -775,6 +801,23 @@ const ProductListingPage = () => {
   const { items, filteredItems, filters, sortOption } = useSelector(state => state.products);
   const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
+
+  // Helper function to calculate discounted price
+  const calculateDiscountedPrice = (product) => {
+    if (!product.discount || !product.discount.hasDiscount) {
+      return null;
+    }
+    
+    const originalPrice = parseFloat(product.price);
+    const discountPercentage = product.discount.discountPercentage || 0;
+    const discountedPrice = originalPrice - (originalPrice * discountPercentage / 100);
+    
+    return {
+      original: originalPrice,
+      discounted: discountedPrice,
+      percentage: discountPercentage
+    };
+  };
   
   const [minPrice, setMinPrice] = useState(filters.priceRange.min);
   const [maxPrice, setMaxPrice] = useState(filters.priceRange.max);
@@ -1498,8 +1541,14 @@ const ProductListingPage = () => {
                     return true;
                   }).map(product => (
                     <ProductCard key={product.id}>
-                                  {product.discount && <DiscountBadge>{typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}</DiscountBadge>}
-                                  <ListingCategoryBadge>{product.category}</ListingCategoryBadge>
+                                  {product.discount && product.discount.hasDiscount && (
+                                    <DiscountBadge>
+                                      {typeof product.discount === 'string' ? product.discount : `${product.discount.discountPercentage}% OFF`}
+                                    </DiscountBadge>
+                                  )}
+                                  <ListingCategoryBadge hasDiscount={product.discount && product.discount.hasDiscount}>
+                                    {product.category}
+                                  </ListingCategoryBadge>
                                  
                                   <WishlistButton 
                                     isInWishlist={isInWishlist(product.id)}
@@ -1518,8 +1567,22 @@ const ProductListingPage = () => {
                                     </ProductImage>
                                     <ProductContent>
                                       <ProductTitle>{product.name}</ProductTitle>
-                                      <ProductBrand>{product.brand}</ProductBrand>
-                                      <ProductPrice>{formatPrice(product.price)}</ProductPrice>
+                                      <ProductBrand>{product.brand || 'Eyewear'}</ProductBrand>
+                                      {(() => {
+                                        const discountInfo = calculateDiscountedPrice(product);
+                                        
+                                        if (discountInfo) {
+                                          return (
+                                            <PriceContainer>
+                                              <DiscountedPrice>{formatPrice(discountInfo.discounted)}</DiscountedPrice>
+                                              <OriginalPrice>{formatPrice(discountInfo.original)}</OriginalPrice>
+                                              <DiscountPercentage>{discountInfo.percentage}% OFF</DiscountPercentage>
+                                            </PriceContainer>
+                                          );
+                                        } else {
+                                          return <ProductPrice>{formatPrice(product.price)}</ProductPrice>;
+                                        }
+                                      })()}
                                       <ColorOptions>
                                         {product.colors && product.colors.map((color, index) => (
                                           <ColorSwatch key={index} color={color.hex || color.name} />

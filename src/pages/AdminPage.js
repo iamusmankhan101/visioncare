@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync } from '../redux/slices/productSlice';
+import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync } from '../redux/slices/productSlice';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
@@ -1114,10 +1114,13 @@ const Input = styled.input`
 `;
 
 const Select = styled.select`
+  width: 100%;
   padding: 0.8rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  background: white;
+  appearance: auto;
   
   &:focus {
     outline: none;
@@ -2598,7 +2601,12 @@ const AdminPage = () => {
   const handleEditProduct = (product) => {
     setProductData({
       ...product,
-      price: product.price.toString() // Convert price to string for form input
+      price: product.price.toString(), // Convert price to string for form input
+      status: product.status || 'In Stock', // Ensure status has a default value
+      colors: product.colors || [],
+      lensTypes: product.lensTypes || [],
+      discount: product.discount || { hasDiscount: false, discountPercentage: 0 },
+      gallery: product.gallery || []
     });
     setActiveTab('edit-product');
   };
@@ -2619,8 +2627,9 @@ const AdminPage = () => {
   };
 
   // Handle update product submission - MOVED INSIDE COMPONENT
-  const handleUpdateSubmit = (e) => {
+  const handleUpdateSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       // Ensure price is a number
@@ -2629,11 +2638,11 @@ const AdminPage = () => {
         price: parseFloat(productData.price)
       };
 
-      // Dispatch action to update product
-      dispatch(updateProduct({
+      // Dispatch async action to update product in API and Redux store
+      await dispatch(updateProductAsync({
         id: updatedProduct.id,
-        ...updatedProduct
-      }));
+        productData: updatedProduct
+      })).unwrap();
 
       // Show success message
       setSuccessMessage('Product updated successfully!');
@@ -2651,6 +2660,8 @@ const AdminPage = () => {
       console.error('Failed to update product:', error);
       const errorMessage = error?.message || error?.error || error || 'Unknown error occurred';
       setSuccessMessage('Error updating product: ' + errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -4076,7 +4087,7 @@ const AdminPage = () => {
                       <Select
                         id="status"
                         name="status"
-                        value={productData.status}
+                        value={productData.status || 'In Stock'}
                         onChange={handleInputChange}
                       >
                         {statusOptions.map(status => (

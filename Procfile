@@ -1,1 +1,1 @@
-web: cd src/pages && node server.js
+web: node server/simpleServer.js

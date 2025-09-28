@@ -1088,11 +1088,21 @@ const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const Label = styled.label`
   font-weight: 500;
   font-size: 0.9rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    font-weight: 600;
+  }
 `;
 
 const Input = styled.input`
@@ -1126,6 +1136,12 @@ const Select = styled.select`
     outline: none;
     border-color: #3498db;
   }
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
 `;
 
 const TextArea = styled.textarea`
@@ -1134,6 +1150,13 @@ const TextArea = styled.textarea`
   border-radius: 4px;
   font-size: 1rem;
   min-height: 100px;
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+    min-height: 80px;
+  }
   resize: vertical;
   
   &:focus {
@@ -1166,6 +1189,10 @@ const CheckboxContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+  }
 `;
 
 const CheckboxLabel = styled.label`
@@ -1174,12 +1201,23 @@ const CheckboxLabel = styled.label`
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    padding: 8px;
+    min-height: 44px; /* Touch target size */
+  }
 `;
 
 const ColorRadioContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
   margin-top: 0.5rem;
 `;
 
@@ -1251,6 +1289,15 @@ const SubmitButton = styled.button`
   &:disabled {
     background-color: #bdc3c7;
     cursor: not-allowed;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+    margin-top: 1rem;
+    min-height: 44px; /* Touch target size */
   }
 `;
 
@@ -1488,6 +1535,11 @@ const ProductFormLayout = styled.div`
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
 `;
 
 const ProductFormMain = styled.div`
@@ -1498,6 +1550,14 @@ const ProductFormMain = styled.div`
   
   form {
     padding: 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    
+    form {
+      padding: 1rem;
+    }
   }
 `;
 
@@ -1589,6 +1649,11 @@ const GalleryGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.75rem;
+  }
   margin-top: 1rem;
 `;
 
@@ -1654,6 +1719,11 @@ const GalleryAddButton = styled.div`
     transform: translateY(-2px);
   }
   
+  @media (max-width: 768px) {
+    min-height: 100px;
+    font-size: 0.75rem;
+  }
+  
   svg {
     font-size: 1.5rem;
     color: #64748b;
@@ -1673,6 +1743,12 @@ const ImageSection = styled.div`
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   border: 1px solid #e2e8f0;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
 `;
 
 const SectionTitle = styled.h3`
@@ -1683,6 +1759,11 @@ const SectionTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin: 0 0 0.75rem 0;
+  }
 `;
 
 const MainImageContainer = styled.div`
@@ -1690,6 +1771,12 @@ const MainImageContainer = styled.div`
   gap: 1rem;
   align-items: flex-start;
   margin-bottom: 1.5rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const MainImagePreview = styled.div`
@@ -1715,6 +1802,11 @@ const MainImagePreview = styled.div`
     text-align: center;
     font-size: 0.875rem;
   }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 150px;
+  }
 `;
 
 const ImageActions = styled.div`
@@ -1722,6 +1814,12 @@ const ImageActions = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 `;
 
 const ImageActionButton = styled.button`
@@ -1749,6 +1847,13 @@ const ImageActionButton = styled.button`
     cursor: not-allowed;
     transform: none;
   }
+  
+  @media (max-width: 768px) {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 44px; /* Touch target size */
+  }
 `;
 
 const HiddenFileInput = styled.input`
@@ -1771,6 +1876,14 @@ const ProductFormSidebar = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  
+  @media (max-width: 1024px) {
+    order: -1; /* Move sidebar above main content on tablet/mobile */
+  }
+  
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
 `;
 
 const SidebarSection = styled.div`
@@ -1778,6 +1891,11 @@ const SidebarSection = styled.div`
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
+  
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    padding: 1rem;
+  }
 `;
 
 const SidebarTitle = styled.h3`
@@ -1815,6 +1933,10 @@ const ThumbnailImage = styled.div`
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  
+  @media (max-width: 768px) {
+    height: 150px;
   }
 `;
 

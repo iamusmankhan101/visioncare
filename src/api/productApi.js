@@ -2,12 +2,19 @@ import sampleProducts from '../utils/addSampleProducts';
 
 // Backend API configuration with deployment support
 const getApiBaseUrl = () => {
+  const hostname = window.location.hostname;
+  
+  // Debug environment variables
+  console.log('🔍 Environment Variables Check:');
+  console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
+  console.log('REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
+  console.log('Current hostname:', hostname);
+  
   // Check if we have a custom API URL from environment
   if (process.env.REACT_APP_PRODUCTS_API_URL) {
+    console.log(`🌐 Using environment API URL: ${process.env.REACT_APP_PRODUCTS_API_URL}`);
     return process.env.REACT_APP_PRODUCTS_API_URL;
   }
-  
-  const hostname = window.location.hostname;
   
   // Check if this is a deployed environment (not localhost or IP)
   const isDeployedEnvironment = !hostname.includes('localhost') && 
@@ -16,7 +23,7 @@ const getApiBaseUrl = () => {
   
   if (isDeployedEnvironment) {
     console.log(`🌐 Deployed environment detected: ${hostname}`);
-    console.log(`📦 Using localStorage mode for deployed website`);
+    console.log(`📦 No environment API URL found - using localStorage mode`);
     // For deployed environments without backend, we'll rely on localStorage
     // Return null to force localStorage usage
     return null;

@@ -155,7 +155,9 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.items = action.payload;
+        // Handle API response structure: { success: true, products: [...], count: N }
+        const products = action.payload.products || action.payload || [];
+        state.items = Array.isArray(products) ? products : [];
         state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
       })
       .addCase(fetchProducts.rejected, (state, action) => {
@@ -225,6 +227,11 @@ export default productSlice.reducer;
 
 // Helper function to apply filters and sorting
 const applyFilters = (items, filters, sortOption) => {
+  // Ensure items is an array
+  if (!Array.isArray(items)) {
+    console.warn('applyFilters received non-array items:', items);
+    return [];
+  }
   let result = [...items];
   
   // First, exclude lens categories from general product listings

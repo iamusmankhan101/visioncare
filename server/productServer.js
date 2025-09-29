@@ -8,7 +8,20 @@ const app = express();
 const PORT = process.env.PORT || 5004;
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001', 
+    'https://web-production-5f625.up.railway.app', // Your Railway backend URL
+    'https://your-netlify-site.netlify.app', // Replace with your actual Netlify URL when you get it
+    /\.netlify\.app$/, // Allow any Netlify subdomain
+    /\.railway\.app$/ // Allow Railway domains
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 

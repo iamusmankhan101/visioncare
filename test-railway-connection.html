@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Railway Backend Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚂 Railway Backend Connection Test</h1>
+        <p><strong>Backend URL:</strong> <code>https://web-production-5f625.up.railway.app</code></p>
+        
+        <div>
+            <button class="test-button" onclick="testHealth()">Test Health Endpoint</button>
+            <button class="test-button" onclick="testProducts()">Test Products API</button>
+            <button class="test-button" onclick="testCORS()">Test CORS</button>
+        </div>
+        
+        <div id="results"></div>
+        
+        <h2>📋 Troubleshooting Steps</h2>
+        <div class="info">
+            <h3>If tests fail:</h3>
+            <ol>
+                <li><strong>Check Railway Deployment:</strong>
+                    <ul>
+                        <li>Go to Railway dashboard</li>
+                        <li>Check if deployment is successful</li>
+                        <li>Check logs for errors</li>
+                    </ul>
+                </li>
+                <li><strong>Verify Server Configuration:</strong>
+                    <ul>
+                        <li>Root Directory: <code>server</code></li>
+                        <li>Start Command: <code>npm run products</code></li>
+                        <li>Port: Auto-detected from <code>process.env.PORT</code></li>
+                    </ul>
+                </li>
+                <li><strong>Check Dependencies:</strong>
+                    <ul>
+                        <li>Make sure <code>server/package.json</code> has all dependencies</li>
+                        <li>SQLite3 should be included</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://web-production-5f625.up.railway.app';
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testHealth() {
+            clearResults();
+            addResult('🔍 Testing health endpoint...', 'info');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                if (response.ok) {
+                    const data = await response.text();
+                    addResult(`✅ Health check successful!<br>Response: ${data}`, 'success');
+                } else {
+                    addResult(`❌ Health check failed!<br>Status: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Health check error!<br>Error: ${error.message}`, 'error');
+                addResult(`💡 This might mean:<br>
+                    • Railway deployment is still in progress<br>
+                    • Server failed to start<br>
+                    • Network connectivity issue`, 'info');
+            }
+        }
+        
+        async function testProducts() {
+            clearResults();
+            addResult('🔍 Testing products API...', 'info');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/products`);
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ Products API successful!<br>Found ${data.length} products`, 'success');
+                } else {
+                    addResult(`❌ Products API failed!<br>Status: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Products API error!<br>Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCORS() {
+            clearResults();
+            addResult('🔍 Testing CORS configuration...', 'info');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    addResult('✅ CORS is working correctly!', 'success');
+                } else {
+                    addResult(`❌ CORS test failed!<br>Status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    addResult(`❌ CORS error detected!<br>
+                        Make sure your Railway backend includes this domain in CORS configuration`, 'error');
+                } else {
+                    addResult(`❌ CORS test error!<br>Error: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // Auto-run health check on page load
+        window.onload = function() {
+            setTimeout(testHealth, 1000);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "eyewearr-api",
+  "version": "1.0.0",
+  "description": "Vercel serverless API for Eyewearr products",
+  "main": "products.js",
+  "dependencies": {
+    "sqlite3": "^5.1.6"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

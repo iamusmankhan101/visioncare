@@ -67,5 +67,8 @@
     "react"
   ],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": "22.x"
+  }
 }

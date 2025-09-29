@@ -1,13 +1,18 @@
 # 🌐 Netlify Environment Variables
 # Copy these exact values into your Netlify dashboard
 
-# === BACKEND API URLS (DISABLED - Using built-in data) ===
+# === BACKEND API URLS (CURRENTLY DISABLED - Railway not responding) ===
+# The Railway backend https://web-production-5f625.up.railway.app is not working
+# Temporarily using built-in data until new backend is deployed
 # REACT_APP_API_URL=https://web-production-5f625.up.railway.app/api/products
 # REACT_APP_API_BASE_URL=https://web-production-5f625.up.railway.app
 # REACT_APP_PRODUCTS_API_URL=https://web-production-5f625.up.railway.app/api
 # 
-# Note: Backend URLs are commented out to use built-in product data
-# This ensures stable deployment without requiring a live backend server
+# Instructions:
+# 1. Deploy backend to Railway
+# 2. Replace YOUR_RAILWAY_URL with your actual Railway URL
+# 3. Add these variables to Netlify dashboard
+# 4. Redeploy your frontend
 
 # === BUILD CONFIGURATION ===
 CI=false

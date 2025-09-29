@@ -12,10 +12,10 @@
   NPM_VERSION = "9"
   CI = "false"
   DISABLE_ESLINT_PLUGIN = "true"
-  # Backend API URLs removed - using built-in data for stable deployment
-  # REACT_APP_API_URL = "https://web-production-5f625.up.railway.app/api/products"
-  # REACT_APP_API_BASE_URL = "https://web-production-5f625.up.railway.app"
-  # REACT_APP_PRODUCTS_API_URL = "https://web-production-5f625.up.railway.app/api"
+  # Backend API URLs - will be set after Railway deployment
+  # REACT_APP_API_URL = "https://YOUR_RAILWAY_URL.up.railway.app/api/products"
+  # REACT_APP_API_BASE_URL = "https://YOUR_RAILWAY_URL.up.railway.app"
+  # REACT_APP_PRODUCTS_API_URL = "https://YOUR_RAILWAY_URL.up.railway.app/api"
 
 [[headers]]
   for = "/*"

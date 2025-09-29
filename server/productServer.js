@@ -13,7 +13,7 @@ const corsOptions = {
     'http://localhost:3000',
     'http://localhost:3001', 
     'https://web-production-5f625.up.railway.app', // Your Railway backend URL
-    'https://your-netlify-site.netlify.app', // Replace with your actual Netlify URL when you get it
+    'https://eyewearr-store.netlify.app', // Your actual Netlify URL
     /\.netlify\.app$/, // Allow any Netlify subdomain
     /\.railway\.app$/ // Allow Railway domains
   ],

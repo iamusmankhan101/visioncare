@@ -43,6 +43,12 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to handle API requests
 const apiRequest = async (endpoint, options = {}) => {
+  // If no API_BASE_URL, throw error immediately to trigger localStorage fallback
+  if (!API_BASE_URL) {
+    console.log(`📦 No API URL available - using localStorage fallback`);
+    throw new Error('No API URL configured - using localStorage');
+  }
+  
   const url = `${API_BASE_URL}${endpoint}`;
   
   const config = {

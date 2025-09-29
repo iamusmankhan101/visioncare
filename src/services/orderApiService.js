@@ -1,7 +1,33 @@
 // Order API service for backend database integration
 import { sendOrderWhatsAppNotification } from './whatsappService';
 
-const API_BASE_URL = 'http://localhost:5005/api';
+// Use environment variable or fallback to null for localStorage mode
+const getOrderApiUrl = () => {
+  // Check for order-specific API URL or use products API URL
+  const orderApiUrl = process.env.REACT_APP_ORDER_API_URL || process.env.REACT_APP_PRODUCTS_API_URL;
+  
+  if (orderApiUrl) {
+    console.log('🌐 OrderAPI: Using environment API URL:', orderApiUrl);
+    return orderApiUrl;
+  }
+  
+  const hostname = window.location.hostname;
+  
+  // For deployed environments without API URL, use localStorage
+  const isDeployedEnvironment = !hostname.includes('localhost') && 
+                               !hostname.includes('127.0.0.1') && 
+                               !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
+  
+  if (isDeployedEnvironment) {
+    console.log('📦 OrderAPI: Deployed environment - using localStorage mode');
+    return null;
+  }
+  
+  // Local development fallback
+  return 'http://localhost:5005/api';
+};
+
+const API_BASE_URL = getOrderApiUrl();
 
 // Helper function to generate order number
 const generateOrderNumber = () => {
@@ -20,6 +46,20 @@ export const saveOrder = async (orderData) => {
     
     const orderNumber = generateOrderNumber();
     console.log('🔢 OrderAPI: Generated order number:', orderNumber);
+    
+    // If no API URL, use localStorage fallback
+    if (!API_BASE_URL) {
+      console.log('📦 OrderAPI: No API URL - using localStorage fallback');
+      const orderWithNumber = { ...orderData, orderNumber, id: orderNumber };
+      
+      // Save to localStorage for fallback
+      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      existingOrders.push(orderWithNumber);
+      localStorage.setItem('orders', JSON.stringify(existingOrders));
+      
+      console.log('✅ OrderAPI: Order saved to localStorage:', orderNumber);
+      return { success: true, orderNumber, order: orderWithNumber };
+    }
     
     // Prepare order data for backend
     const backendOrderData = {
@@ -160,6 +200,14 @@ const sendPushNotification = async (orderData) => {
 // Get all orders from backend
 export const getAllOrders = async (filters = {}) => {
   try {
+    // If no API URL, use localStorage fallback
+    if (!API_BASE_URL) {
+      console.log('📦 OrderAPI: No API URL - fetching from localStorage');
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      console.log('📦 OrderAPI: Found', orders.length, 'orders in localStorage');
+      return { orders, total: orders.length };
+    }
+    
     const params = new URLSearchParams();
     
     if (filters.page) params.append('page', filters.page);

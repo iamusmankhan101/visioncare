@@ -1,31 +1,16 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/products.js",
-      "use": "@vercel/node"
+      "source": "/api/health",
+      "destination": "/api/health"
     },
     {
-      "src": "package.json",
-      "use": "@vercel/static-build"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/products.js"
+      "source": "/api/products",
+      "destination": "/api/products"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/api/products/(.*)",
+      "destination": "/api/products"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "api/products.js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }

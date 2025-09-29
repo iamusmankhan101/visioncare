@@ -1,6 +1,4 @@
 // Vercel Serverless Function for Products API
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
 
 // Sample products data
 const sampleProducts = [

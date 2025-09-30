@@ -1,4 +1,5 @@
-// Vercel Serverless Function for Products API with Persistent Storage
+// Vercel Serverless Function for Products API with PERMANENT Storage
+import permanentStorage from './permanentStorage.js';
 
 // Sample products data
 const sampleProducts = [
@@ -136,27 +137,7 @@ const sampleProducts = [
   }
 ];
 
-// Persistent storage simulation using global object and initialization
-// In production, you would use Vercel KV, Upstash Redis, or external database
-global.productsDB = global.productsDB || {
-  products: [...sampleProducts.map((p, index) => ({ ...p, id: index + 1 }))],
-  nextId: sampleProducts.length + 1
-};
-
-// Helper functions for data persistence
-const getProducts = () => {
-  return global.productsDB.products;
-};
-
-const saveProducts = (products) => {
-  global.productsDB.products = products;
-};
-
-const getNextId = () => {
-  return global.productsDB.nextId++;
-};
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -171,18 +152,26 @@ export default function handler(req, res) {
   const urlPath = url.split('?')[0];
 
   try {
-    // Health check
+    // Initialize permanent storage with sample data if needed
+    await permanentStorage.initializeWithSampleData(sampleProducts);
+
+    // Health check with permanent storage information
     if (urlPath === '/api/health') {
+      const stats = await permanentStorage.getStats();
+      const healthCheck = await permanentStorage.healthCheck();
+      
       return res.status(200).json({
         status: 'OK',
-        message: 'Product API Server is running on Vercel',
-        timestamp: new Date().toISOString()
+        message: 'Product API Server is running on Vercel with PERMANENT Storage',
+        timestamp: new Date().toISOString(),
+        storage: healthCheck,
+        ...stats
       });
     }
 
-    // Get all products
+    // Get all products from permanent storage
     if (method === 'GET' && urlPath === '/api/products') {
-      const products = getProducts();
+      const products = await permanentStorage.getProducts();
       const formattedProducts = products.map(product => ({
         ...product,
         id: product.id,
@@ -195,126 +184,120 @@ export default function handler(req, res) {
         bestSeller: Boolean(product.bestSeller)
       }));
 
+      console.log(`📊 Returning ${formattedProducts.length} products from permanent storage`);
+
       return res.status(200).json({
         success: true,
         products: formattedProducts,
-        count: formattedProducts.length
+        count: formattedProducts.length,
+        storage: 'permanent'
       });
     }
 
-    // Get single product
+    // Get single product from permanent storage
     if (method === 'GET' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
-      const products = getProducts();
-      const product = products.find(p => p.id === id);
       
-      if (!product) {
-        return res.status(404).json({ success: false, message: 'Product not found' });
+      try {
+        const product = await permanentStorage.getProduct(id);
+        const formattedProduct = {
+          ...product,
+          colors: typeof product.colors === 'string' ? JSON.parse(product.colors) : product.colors,
+          features: typeof product.features === 'string' ? JSON.parse(product.features) : product.features,
+          sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes,
+          lensTypes: typeof product.lensTypes === 'string' ? JSON.parse(product.lensTypes) : product.lensTypes,
+          discount: typeof product.discount === 'string' ? JSON.parse(product.discount) : product.discount,
+          featured: Boolean(product.featured),
+          bestSeller: Boolean(product.bestSeller)
+        };
+
+        return res.status(200).json({
+          success: true,
+          product: formattedProduct,
+          storage: 'permanent'
+        });
+      } catch (error) {
+        return res.status(404).json({ 
+          success: false, 
+          message: error.message 
+        });
       }
-
-      const formattedProduct = {
-        ...product,
-        colors: typeof product.colors === 'string' ? JSON.parse(product.colors) : product.colors,
-        features: typeof product.features === 'string' ? JSON.parse(product.features) : product.features,
-        sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes,
-        lensTypes: typeof product.lensTypes === 'string' ? JSON.parse(product.lensTypes) : product.lensTypes,
-        discount: typeof product.discount === 'string' ? JSON.parse(product.discount) : product.discount,
-        featured: Boolean(product.featured),
-        bestSeller: Boolean(product.bestSeller)
-      };
-
-      return res.status(200).json({
-        success: true,
-        product: formattedProduct
-      });
     }
 
-    // Add new product
+    // Add new product to permanent storage
     if (method === 'POST' && urlPath === '/api/products') {
-      const products = getProducts();
-      const newProduct = {
+      const productData = {
         ...req.body,
-        id: getNextId(),
         colors: JSON.stringify(req.body.colors || []),
         features: JSON.stringify(req.body.features || []),
         sizes: JSON.stringify(req.body.sizes || []),
         lensTypes: JSON.stringify(req.body.lensTypes || []),
         discount: JSON.stringify(req.body.discount || { hasDiscount: false, discountPercentage: 0 }),
         featured: req.body.featured ? 1 : 0,
-        bestSeller: req.body.bestSeller ? 1 : 0,
-        createdAt: new Date().toISOString()
+        bestSeller: req.body.bestSeller ? 1 : 0
       };
 
-      products.push(newProduct);
-      saveProducts(products);
-
-      console.log(`✅ Product added: ${newProduct.name} (ID: ${newProduct.id})`);
-      console.log(`📊 Total products: ${products.length}`);
+      const newProduct = await permanentStorage.addProduct(productData);
 
       return res.status(201).json({
         success: true,
-        message: 'Product added successfully',
-        product: newProduct
+        message: 'Product added successfully to PERMANENT storage',
+        product: newProduct,
+        storage: 'permanent'
       });
     }
 
-    // Update product
+    // Update product in permanent storage
     if (method === 'PUT' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
-      const products = getProducts();
-      const productIndex = products.findIndex(p => p.id === id);
       
-      if (productIndex === -1) {
-        return res.status(404).json({ success: false, message: 'Product not found' });
+      try {
+        const productData = {
+          ...req.body,
+          colors: JSON.stringify(req.body.colors || []),
+          features: JSON.stringify(req.body.features || []),
+          sizes: JSON.stringify(req.body.sizes || []),
+          lensTypes: JSON.stringify(req.body.lensTypes || []),
+          discount: JSON.stringify(req.body.discount || { hasDiscount: false, discountPercentage: 0 }),
+          featured: req.body.featured ? 1 : 0,
+          bestSeller: req.body.bestSeller ? 1 : 0
+        };
+
+        const updatedProduct = await permanentStorage.updateProduct(id, productData);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Product updated successfully in PERMANENT storage',
+          product: updatedProduct,
+          storage: 'permanent'
+        });
+      } catch (error) {
+        return res.status(404).json({ 
+          success: false, 
+          message: error.message 
+        });
       }
-
-      const updatedProduct = {
-        ...products[productIndex],
-        ...req.body,
-        id: id,
-        colors: JSON.stringify(req.body.colors || products[productIndex].colors),
-        features: JSON.stringify(req.body.features || products[productIndex].features),
-        sizes: JSON.stringify(req.body.sizes || products[productIndex].sizes),
-        lensTypes: JSON.stringify(req.body.lensTypes || products[productIndex].lensTypes),
-        discount: JSON.stringify(req.body.discount || products[productIndex].discount),
-        featured: req.body.featured ? 1 : 0,
-        bestSeller: req.body.bestSeller ? 1 : 0,
-        updatedAt: new Date().toISOString()
-      };
-
-      products[productIndex] = updatedProduct;
-      saveProducts(products);
-
-      console.log(`✅ Product updated: ${updatedProduct.name} (ID: ${id})`);
-
-      return res.status(200).json({
-        success: true,
-        message: 'Product updated successfully',
-        product: updatedProduct
-      });
     }
 
-    // Delete product
+    // Delete product from permanent storage
     if (method === 'DELETE' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
-      const products = getProducts();
-      const productIndex = products.findIndex(p => p.id === id);
       
-      if (productIndex === -1) {
-        return res.status(404).json({ success: false, message: 'Product not found' });
+      try {
+        const deletedProduct = await permanentStorage.deleteProduct(id);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Product deleted successfully from PERMANENT storage',
+          product: deletedProduct,
+          storage: 'permanent'
+        });
+      } catch (error) {
+        return res.status(404).json({ 
+          success: false, 
+          message: error.message 
+        });
       }
-
-      const deletedProduct = products[productIndex];
-      products.splice(productIndex, 1);
-      saveProducts(products);
-
-      console.log(`✅ Product deleted: ${deletedProduct.name} (ID: ${id})`);
-      console.log(`📊 Remaining products: ${products.length}`);
-
-      return res.status(200).json({
-        success: true,
-        message: 'Product deleted successfully'
-      });
     }
 
     // Route not found

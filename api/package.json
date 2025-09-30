@@ -1,9 +1,11 @@
 {
   "name": "eyewearr-api",
   "version": "1.0.0",
-  "description": "Vercel serverless API for Eyewearr products",
+  "description": "Vercel serverless API for Eyewearr products with permanent persistence",
+  "type": "module",
   "main": "products.js",
   "dependencies": {
+    "@vercel/kv": "^1.0.1",
     "sqlite3": "^5.1.6"
   },
   "engines": {

@@ -1,12 +1,18 @@
-# 🌐 Netlify Environment Variables
-# Copy these exact values into your Netlify dashboard
+# 🌐 Environment Variables for PERMANENT Storage
+# Copy these exact values into your deployment dashboard
 
 # === VERCEL DEPLOYMENT URLS ===
-# Using your actual Vercel deployment URL
+# Using your actual Vercel deployment URL with PERMANENT storage
 REACT_APP_API_URL=https://vision-care-hmn4.vercel.app/api/products
 REACT_APP_API_BASE_URL=https://vision-care-hmn4.vercel.app
 REACT_APP_PRODUCTS_API_URL=https://vision-care-hmn4.vercel.app/api
 REACT_APP_ORDER_API_URL=https://vision-care-hmn4.vercel.app/api
+
+# === VERCEL KV (PERMANENT STORAGE) ===
+# These are automatically added when you enable Vercel KV
+# KV_REST_API_URL=https://your-kv-url.upstash.io
+# KV_REST_API_TOKEN=your-secret-token
+# KV_REST_API_READ_ONLY_TOKEN=your-readonly-token
 # 
 # Instructions:
 # 1. Deploy backend to Railway

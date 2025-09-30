@@ -352,31 +352,31 @@ const FeaturedSection = styled.section`
 
 const ProductGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
   
   @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
   
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    padding: 0 1rem;
-  }
-  
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
     gap: 1rem;
     padding: 0 1rem;
   }
+  
+  @media (max-width: 360px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0 0.5rem;
+  }
 `;
 
-// Update the ProductCard styling (around line 230)
+// Update the ProductCard styling for 2-column layout
 const ProductCard = styled.div`
   border-radius: 12px;
   overflow: hidden;
@@ -386,16 +386,28 @@ const ProductCard = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 15px;
+  padding: 20px;
+  min-height: 400px;
   
   &:hover {
     transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 15px;
+    min-height: 320px;
+  }
+  
+  @media (max-width: 360px) {
+    padding: 12px;
+    min-height: 300px;
   }
 `;
 
-// Update the ProductImage styling
+// Update the ProductImage styling for 2-column layout
 const ProductImage = styled.div`
-  height: 200px;
+  height: 250px;
   background-color: #f5f5f5;
   background-image: ${props => props.image ? `url(${props.image})` : 'none'};
   background-size: contain;
@@ -404,6 +416,14 @@ const ProductImage = styled.div`
   margin-bottom: 15px;
   border-radius: 8px;
   position: relative;
+  
+  @media (max-width: 768px) {
+    height: 180px;
+  }
+  
+  @media (max-width: 360px) {
+    height: 200px;
+  }
 `;
 
 // Update the ProductContent styling

@@ -1,4 +1,4 @@
-// Vercel Serverless Function for Products API
+// Vercel Serverless Function for Products API with Persistent Storage
 
 // Sample products data
 const sampleProducts = [
@@ -136,9 +136,25 @@ const sampleProducts = [
   }
 ];
 
-// In-memory database for Vercel (since SQLite files don't persist)
-let products = [...sampleProducts];
-let nextId = products.length + 1;
+// Persistent storage simulation using global object and initialization
+// In production, you would use Vercel KV, Upstash Redis, or external database
+global.productsDB = global.productsDB || {
+  products: [...sampleProducts.map((p, index) => ({ ...p, id: index + 1 }))],
+  nextId: sampleProducts.length + 1
+};
+
+// Helper functions for data persistence
+const getProducts = () => {
+  return global.productsDB.products;
+};
+
+const saveProducts = (products) => {
+  global.productsDB.products = products;
+};
+
+const getNextId = () => {
+  return global.productsDB.nextId++;
+};
 
 export default function handler(req, res) {
   // Enable CORS
@@ -166,9 +182,10 @@ export default function handler(req, res) {
 
     // Get all products
     if (method === 'GET' && urlPath === '/api/products') {
+      const products = getProducts();
       const formattedProducts = products.map(product => ({
         ...product,
-        id: product.id || nextId++,
+        id: product.id,
         colors: typeof product.colors === 'string' ? JSON.parse(product.colors) : product.colors,
         features: typeof product.features === 'string' ? JSON.parse(product.features) : product.features,
         sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes,
@@ -188,6 +205,7 @@ export default function handler(req, res) {
     // Get single product
     if (method === 'GET' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
+      const products = getProducts();
       const product = products.find(p => p.id === id);
       
       if (!product) {
@@ -213,19 +231,25 @@ export default function handler(req, res) {
 
     // Add new product
     if (method === 'POST' && urlPath === '/api/products') {
+      const products = getProducts();
       const newProduct = {
         ...req.body,
-        id: nextId++,
+        id: getNextId(),
         colors: JSON.stringify(req.body.colors || []),
         features: JSON.stringify(req.body.features || []),
         sizes: JSON.stringify(req.body.sizes || []),
         lensTypes: JSON.stringify(req.body.lensTypes || []),
         discount: JSON.stringify(req.body.discount || { hasDiscount: false, discountPercentage: 0 }),
         featured: req.body.featured ? 1 : 0,
-        bestSeller: req.body.bestSeller ? 1 : 0
+        bestSeller: req.body.bestSeller ? 1 : 0,
+        createdAt: new Date().toISOString()
       };
 
       products.push(newProduct);
+      saveProducts(products);
+
+      console.log(`✅ Product added: ${newProduct.name} (ID: ${newProduct.id})`);
+      console.log(`📊 Total products: ${products.length}`);
 
       return res.status(201).json({
         success: true,
@@ -237,6 +261,7 @@ export default function handler(req, res) {
     // Update product
     if (method === 'PUT' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
+      const products = getProducts();
       const productIndex = products.findIndex(p => p.id === id);
       
       if (productIndex === -1) {
@@ -253,10 +278,14 @@ export default function handler(req, res) {
         lensTypes: JSON.stringify(req.body.lensTypes || products[productIndex].lensTypes),
         discount: JSON.stringify(req.body.discount || products[productIndex].discount),
         featured: req.body.featured ? 1 : 0,
-        bestSeller: req.body.bestSeller ? 1 : 0
+        bestSeller: req.body.bestSeller ? 1 : 0,
+        updatedAt: new Date().toISOString()
       };
 
       products[productIndex] = updatedProduct;
+      saveProducts(products);
+
+      console.log(`✅ Product updated: ${updatedProduct.name} (ID: ${id})`);
 
       return res.status(200).json({
         success: true,
@@ -268,13 +297,19 @@ export default function handler(req, res) {
     // Delete product
     if (method === 'DELETE' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
+      const products = getProducts();
       const productIndex = products.findIndex(p => p.id === id);
       
       if (productIndex === -1) {
         return res.status(404).json({ success: false, message: 'Product not found' });
       }
 
+      const deletedProduct = products[productIndex];
       products.splice(productIndex, 1);
+      saveProducts(products);
+
+      console.log(`✅ Product deleted: ${deletedProduct.name} (ID: ${id})`);
+      console.log(`📊 Remaining products: ${products.length}`);
 
       return res.status(200).json({
         success: true,

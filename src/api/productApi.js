@@ -1,6 +1,6 @@
 import sampleProducts from '../utils/addSampleProducts';
 
-// Backend API configuration with deployment support
+// Backend API configuration with Vercel deployment support
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
@@ -23,10 +23,9 @@ const getApiBaseUrl = () => {
   
   if (isDeployedEnvironment) {
     console.log(`🌐 Deployed environment detected: ${hostname}`);
-    console.log(`📦 No environment API URL found - using localStorage mode`);
-    // For deployed environments without backend, we'll rely on localStorage
-    // Return null to force localStorage usage
-    return null;
+    console.log(`🚀 Using Vercel API endpoints`);
+    // For deployed environments, use the same domain's API endpoints
+    return `https://${hostname}/api`;
   }
   
   // If accessing via IP address (mobile accessing desktop), use the same IP for API
@@ -43,12 +42,6 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to handle API requests
 const apiRequest = async (endpoint, options = {}) => {
-  // If no API_BASE_URL, throw error immediately to trigger localStorage fallback
-  if (!API_BASE_URL) {
-    console.log(`📦 No API URL available - using localStorage fallback`);
-    throw new Error('No API URL configured - using localStorage');
-  }
-  
   const url = `${API_BASE_URL}${endpoint}`;
   
   const config = {
@@ -69,9 +62,15 @@ const apiRequest = async (endpoint, options = {}) => {
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+      const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
       console.error(`❌ API Error Response:`, errorMessage);
       console.error(`❌ Response Status: ${response.status} ${response.statusText}`);
+      
+      // Handle specific HTTP errors
+      if (response.status === 413) {
+        throw new Error('Request payload too large. Please reduce image sizes or file count.');
+      }
+      
       throw new Error(errorMessage);
     }
     
@@ -89,21 +88,22 @@ const apiRequest = async (endpoint, options = {}) => {
       console.log(`📊 Data Count: ${data.length} items`);
       return data; // Already an array
     } else {
-      console.log(`📊 Data Count: N/A items`);
+      console.log(`📊 Response Data:`, data);
       return data; // Return as-is for other responses
     }
   } catch (error) {
     console.error(`❌ API Error: ${config.method || 'GET'} ${url}`);
     console.error(`❌ Error Details:`, error.message);
     console.error(`❌ Error Type:`, error.name);
-    console.error(`❌ Error Stack:`, error.stack);
     
     // Check if it's a network error
     if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
       console.error(`❌ Network Error: Cannot connect to backend server`);
-      console.error(`❌ Make sure the product server is running on ${API_BASE_URL}`);
-      console.error(`❌ Start server with: cd server && npm run dev:products`);
-      console.error(`❌ Check if mobile device can access localhost:5004`);
+      console.error(`❌ Make sure the API server is accessible at ${API_BASE_URL}`);
+      if (API_BASE_URL.includes('localhost')) {
+        console.error(`❌ Start server with: cd server && npm run dev:products`);
+        console.error(`❌ Check if mobile device can access localhost:5004`);
+      }
     }
     
     throw error;
@@ -142,17 +142,12 @@ const saveProductsBackup = (products) => {
 const productApi = {
   // Test API connection
   testConnection: async () => {
-    // If no API URL (deployed environment), return false to indicate localStorage mode
-    if (!API_BASE_URL) {
-      console.log('🌐 Deployed environment: No backend API configured');
-      return false;
-    }
-
     try {
       console.log('🔍 Testing API connection...');
       const response = await fetch(`${API_BASE_URL}/health`);
       if (response.ok) {
-        console.log('✅ API connection successful');
+        const data = await response.json();
+        console.log('✅ API connection successful:', data.message);
         return true;
       } else {
         console.warn('⚠️ API responded but with error status:', response.status);
@@ -166,26 +161,22 @@ const productApi = {
 
   // Get all products
   getAllProducts: async () => {
-    // If no API URL (deployed environment), use localStorage directly
-    if (!API_BASE_URL) {
-      console.log('🌐 Deployed environment: Using localStorage products');
-      const products = getStoredProducts();
-      console.log(`📦 Loaded ${products.length} products from localStorage`);
-      return products;
-    }
-
     try {
-      console.log('🔍 Attempting to fetch products from backend API...');
+      console.log('🔍 Attempting to fetch products from API...');
       console.log(`🔗 API URL: ${API_BASE_URL}`);
       const products = await apiRequest('/products');
-      console.log(`✅ Successfully fetched ${products.length} products from backend`);
+      console.log(`✅ Successfully fetched ${products.length} products from API`);
       // Save as backup for offline use
       saveProductsBackup(products);
       return products;
     } catch (error) {
-      console.warn('❌ Backend API failed, using localStorage backup:', error.message);
-      console.warn('📱 This might be a mobile network connectivity issue');
-      console.warn('💡 Try accessing the admin panel via your computer\'s IP address instead of localhost');
+      console.warn('❌ API failed, using localStorage backup:', error.message);
+      if (API_BASE_URL.includes('localhost')) {
+        console.warn('📱 This might be a mobile network connectivity issue');
+        console.warn('💡 Try accessing the admin panel via your computer\'s IP address instead of localhost');
+      } else {
+        console.warn('🌐 Deployed API error - check Vercel function logs');
+      }
       // Fallback to localStorage backup
       const backupProducts = getStoredProducts();
       console.log(`📦 Using ${backupProducts.length} products from localStorage backup`);

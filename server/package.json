@@ -17,6 +17,8 @@
     "upstash": "node upstashProductServer.js",
     "dev:upstash": "nodemon upstashProductServer.js",
     "test:upstash": "node testUpstash.js",
+    "test:persistence": "node testPersistence.js",
+    "test:admin": "node testAdminConnection.js",
     "push": "node pushNotificationServer.js",
     "dev:push": "nodemon pushNotificationServer.js",
     "push-server": "node pushServer.js",

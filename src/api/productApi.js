@@ -34,7 +34,8 @@ const getApiBaseUrl = () => {
     return `http://${hostname}:5004/api`;
   }
   
-  // Default to localhost for desktop development
+  // Default to localhost for desktop development (Upstash server)
+  console.log('🚀 Using Upstash server: http://localhost:5004/api');
   return 'http://localhost:5004/api';
 };
 
@@ -162,18 +163,40 @@ const productApi = {
   // Get all products
   getAllProducts: async () => {
     try {
-      console.log('🔍 Attempting to fetch products from API...');
-      console.log(`🔗 API URL: ${API_BASE_URL}`);
-      const products = await apiRequest('/products');
-      console.log(`✅ Successfully fetched ${products.length} products from API`);
-      // Save as backup for offline use
-      saveProductsBackup(products);
-      return products;
+      console.log('🔍 Attempting to fetch products from Upstash API...');
+      console.log(`🔗 API URL: ${API_BASE_URL}/products`);
+      console.log('🚀 Expected: Products from Upstash Redis database');
+      
+      const response = await apiRequest('/products');
+      
+      // Check if response has the expected structure
+      if (response && response.data) {
+        const products = response.data;
+        console.log(`✅ Successfully fetched ${products.length} products from Upstash`);
+        console.log('📊 Products:', products.map(p => `${p.name} ($${p.price})`).join(', '));
+        
+        // Save as backup for offline use
+        saveProductsBackup(products);
+        return products;
+      } else if (Array.isArray(response)) {
+        // Handle direct array response
+        console.log(`✅ Successfully fetched ${response.length} products from Upstash`);
+        console.log('📊 Products:', response.map(p => `${p.name} ($${p.price})`).join(', '));
+        
+        saveProductsBackup(response);
+        return response;
+      } else {
+        console.warn('⚠️ Unexpected API response format:', response);
+        throw new Error('Invalid API response format');
+      }
     } catch (error) {
-      console.warn('❌ API failed, using localStorage backup:', error.message);
+      console.error('❌ Upstash API failed, using localStorage backup:', error.message);
+      console.error('🔍 Full error:', error);
+      
       if (API_BASE_URL.includes('localhost')) {
-        console.warn('📱 This might be a mobile network connectivity issue');
-        console.warn('💡 Try accessing the admin panel via your computer\'s IP address instead of localhost');
+        console.warn('🚨 UPSTASH SERVER NOT RESPONDING!');
+        console.warn('💡 Make sure your Upstash server is running: npm run dev:upstash');
+        console.warn('🔗 Test manually: http://localhost:5004/api/products');
       } else {
         console.warn('🌐 Deployed API error - check Vercel function logs');
       }

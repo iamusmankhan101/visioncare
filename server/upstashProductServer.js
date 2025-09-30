@@ -64,46 +64,58 @@ db.serialize(() => {
 // Hybrid storage service (Upstash + SQLite fallback)
 class HybridProductService {
   async saveProduct(product) {
-    // Try Upstash first
+    // Try Upstash first - this is the primary storage
     const upstashResult = await upstashService.saveProduct(product);
     
-    // Always save to SQLite as backup
-    return new Promise((resolve, reject) => {
-      const stmt = db.prepare(`
-        INSERT OR REPLACE INTO products 
-        (id, name, price, originalPrice, image, gallery, category, brand, material, shape, color, size, status, description, features, specifications, updatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `);
-      
-      stmt.run([
-        product.id,
-        product.name,
-        product.price,
-        product.originalPrice || null,
-        product.image || null,
-        JSON.stringify(product.gallery || []),
-        product.category || null,
-        product.brand || null,
-        product.material || null,
-        product.shape || null,
-        product.color || null,
-        product.size || null,
-        product.status || 'active',
-        product.description || null,
-        JSON.stringify(product.features || []),
-        JSON.stringify(product.specifications || {}),
-      ], function(err) {
-        if (err) {
-          console.error('SQLite save error:', err);
-          reject(err);
-        } else {
-          console.log(`✅ Product ${product.id} saved to both Upstash and SQLite`);
-          resolve(product);
-        }
+    if (!upstashResult) {
+      throw new Error('Failed to save product to Upstash');
+    }
+    
+    // Try to save to SQLite as backup, but don't fail if it doesn't work
+    try {
+      await new Promise((resolve, reject) => {
+        const stmt = db.prepare(`
+          INSERT OR REPLACE INTO products 
+          (id, name, price, originalPrice, image, gallery, category, brand, material, shape, color, size, status, description, features, specifications, updatedAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `);
+        
+        stmt.run([
+          product.id,
+          product.name,
+          product.price,
+          product.originalPrice || null,
+          product.image || null,
+          JSON.stringify(product.gallery || []),
+          product.category || null,
+          product.brand || null,
+          product.material || null,
+          product.shape || null,
+          product.color || null,
+          product.size || null,
+          product.status || 'active',
+          product.description || null,
+          JSON.stringify(product.features || []),
+          JSON.stringify(product.specifications || {}),
+        ], function(err) {
+          if (err) {
+            console.warn('⚠️ SQLite backup failed (non-critical):', err.message);
+            resolve(product); // Don't fail, just warn
+          } else {
+            console.log(`✅ Product ${product.id} saved to both Upstash and SQLite`);
+            resolve(product);
+          }
+        });
+        
+        stmt.finalize();
       });
-      
-      stmt.finalize();
-    });
+    } catch (sqliteError) {
+      console.warn('⚠️ SQLite backup failed (non-critical):', sqliteError.message);
+    }
+    
+    // Always return the Upstash result since that's our primary storage
+    console.log(`✅ Product ${product.id} saved successfully to Upstash`);
+    return upstashResult;
   }
 
   async getProduct(productId) {

@@ -2780,14 +2780,10 @@ const AdminPage = () => {
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    console.log('🔥 FORM SUBMITTED! handleSubmit called');
-    console.log('📝 Event:', e);
-    console.log('📋 Current productData:', productData);
-    
     e.preventDefault();
     setIsLoading(true);
     
-    console.log('✅ Form prevented default, loading set to true');
+    console.log('🚀 Adding product:', productData.name);
 
     try {
       // Format the product data
@@ -2798,16 +2794,10 @@ const AdminPage = () => {
       };
 
       // Dispatch async action to add product to API and Redux store
-      console.log('🚀 AdminPage: About to dispatch createProductAsync');
-      console.log('📦 AdminPage: Product data:', formattedProduct);
-      
       const result = await dispatch(createProductAsync(formattedProduct)).unwrap();
-      
-      console.log('✅ AdminPage: createProductAsync completed');
-      console.log('📊 AdminPage: Result:', result);
+      console.log('✅ Product created:', result.name);
 
       // Refresh the product list to show the new product
-      console.log('🔄 AdminPage: Refreshing product list...');
       dispatch(fetchProducts());
 
       // Show success message
@@ -3408,20 +3398,7 @@ const AdminPage = () => {
                       )}
                     </ProductFormHeader>
 
-                    <Form onSubmit={handleSubmit} onClick={() => console.log('📝 FORM CLICKED!')}>
-                      <div style={{position: 'fixed', top: '10px', right: '10px', background: 'red', color: 'white', padding: '10px', zIndex: 9999}}>
-                        DEBUG: Form is rendered
-                        <button 
-                          type="button" 
-                          onClick={() => {
-                            console.log('🧪 DEBUG BUTTON CLICKED!');
-                            alert('Debug button works!');
-                          }}
-                          style={{marginLeft: '10px', background: 'yellow', color: 'black'}}
-                        >
-                          Test
-                        </button>
-                      </div>
+                    <Form onSubmit={handleSubmit}>
                       <ProductFormLayout>
                         <ProductFormMain>
                           <TabContainer>
@@ -3960,7 +3937,6 @@ const AdminPage = () => {
                           <SubmitButton 
                             type="submit" 
                             disabled={isLoading}
-                            onClick={() => console.log('🖱️ SUBMIT BUTTON CLICKED!')}
                           >
                             {isLoading ? 'Adding Product...' : 'Add Product'}
                           </SubmitButton>

@@ -10,15 +10,9 @@ const getApiBaseUrl = () => {
   console.log('REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
   console.log('Current hostname:', hostname);
   
-  // Check if we have a custom API URL from environment
-  if (process.env.REACT_APP_PRODUCTS_API_URL) {
-    console.log(`🌐 Using environment API URL: ${process.env.REACT_APP_PRODUCTS_API_URL}`);
-    return process.env.REACT_APP_PRODUCTS_API_URL;
-  }
-  
-  // Always use the same deployed Upstash API for consistency
-  console.log('🚀 Using deployed Upstash API: https://eyewearr-x0ovrybvt-iamusmankhan10s-projects.vercel.app/api');
-  return 'https://eyewearr-x0ovrybvt-iamusmankhan10s-projects.vercel.app/api';
+  // Force use of the working Upstash API deployment
+  console.log('🚀 Using working Upstash API: https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api');
+  return 'https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

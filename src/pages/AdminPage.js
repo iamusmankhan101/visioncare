@@ -3408,7 +3408,20 @@ const AdminPage = () => {
                       )}
                     </ProductFormHeader>
 
-                    <Form onSubmit={handleSubmit}>
+                    <Form onSubmit={handleSubmit} onClick={() => console.log('📝 FORM CLICKED!')}>
+                      <div style={{position: 'fixed', top: '10px', right: '10px', background: 'red', color: 'white', padding: '10px', zIndex: 9999}}>
+                        DEBUG: Form is rendered
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            console.log('🧪 DEBUG BUTTON CLICKED!');
+                            alert('Debug button works!');
+                          }}
+                          style={{marginLeft: '10px', background: 'yellow', color: 'black'}}
+                        >
+                          Test
+                        </button>
+                      </div>
                       <ProductFormLayout>
                         <ProductFormMain>
                           <TabContainer>

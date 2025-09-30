@@ -1,68 +1,13 @@
 {
   "version": 2,
-  "name": "eyewearr-upstash-api",
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "upstashProductServer.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/health",
-      "dest": "api/health.js"
-    },
-    {
-      "src": "/api/products",
-      "dest": "api/products.js"
-    },
-    {
-      "src": "/api/products/(.*)",
-      "dest": "api/products.js"
-    },
-    {
-      "src": "/api/orders",
-      "dest": "api/orders.js"
-    },
-    {
-      "src": "/api/orders/(.*)",
-      "dest": "api/orders.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "upstashProductServer.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "upstashProductServer.js"
-    }
-  ],
   "env": {
     "NODE_ENV": "production",
-    "UPSTASH_REDIS_REST_URL": "@upstash_redis_rest_url",
-    "UPSTASH_REDIS_REST_TOKEN": "@upstash_redis_rest_token",
-    "KV_URL": "@kv_url",
-    "KV_REST_API_URL": "@kv_rest_api_url",
-    "KV_REST_API_TOKEN": "@kv_rest_api_token",
-    "KV_REST_API_READ_ONLY_TOKEN": "@kv_rest_api_read_only_token",
-    "REDIS_URL": "@redis_url"
-  },
-  "functions": {
-    "api/health.js": {
-      "maxDuration": 10
-    },
-    "api/products.js": {
-      "maxDuration": 30
-    },
-    "api/orders.js": {
-      "maxDuration": 30
-    },
-    "upstashProductServer.js": {
-      "maxDuration": 30
-    }
+    "UPSTASH_REDIS_REST_URL": "https://optimal-sailfish-15823.upstash.io",
+    "UPSTASH_REDIS_REST_TOKEN": "AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM",
+    "KV_URL": "rediss://default:AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM@optimal-sailfish-15823.upstash.io:6379",
+    "KV_REST_API_URL": "https://optimal-sailfish-15823.upstash.io",
+    "KV_REST_API_TOKEN": "AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM",
+    "KV_REST_API_READ_ONLY_TOKEN": "Aj3PAAIgcDK-zZ9e5hCGZwDDEEOmFAp0uKCE6Pe3hUOouS1ZTmqcnQ",
+    "REDIS_URL": "rediss://default:AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM@optimal-sailfish-15823.upstash.io:6379"
   }
 }

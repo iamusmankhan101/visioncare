@@ -16,27 +16,9 @@ const getApiBaseUrl = () => {
     return process.env.REACT_APP_PRODUCTS_API_URL;
   }
   
-  // Check if this is a deployed environment (not localhost or IP)
-  const isDeployedEnvironment = !hostname.includes('localhost') && 
-                               !hostname.includes('127.0.0.1') && 
-                               !hostname.match(/^\d+\.\d+\.\d+\.\d+$/); // Not an IP address
-  
-  if (isDeployedEnvironment) {
-    console.log(`🌐 Deployed environment detected: ${hostname}`);
-    console.log(`🚀 Using Vercel API endpoints`);
-    // For deployed environments, use the same domain's API endpoints
-    return `https://${hostname}/api`;
-  }
-  
-  // If accessing via IP address (mobile accessing desktop), use the same IP for API
-  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    console.log(`📱 Mobile detected: Using ${hostname} for API requests`);
-    return `http://${hostname}:5004/api`;
-  }
-  
-  // Default to localhost for desktop development (Upstash server)
-  console.log('🚀 Using Upstash server: http://localhost:5004/api');
-  return 'http://localhost:5004/api';
+  // Always use the deployed Upstash API
+  console.log('🚀 Using deployed Upstash API: https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api');
+  return 'https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -251,7 +233,22 @@ const productApi = {
     } catch (error) {
       console.error('❌ ProductAPI: Error creating product:', error);
       console.error('❌ ProductAPI: Full error details:', error.message);
-      throw new Error(`Failed to create product: ${error.message}`);
+      
+      // FALLBACK TO LOCALSTORAGE - This might be the issue!
+      console.warn('🔄 ProductAPI: Falling back to localStorage');
+      const fallbackProduct = {
+        id: `local_${Date.now()}`,
+        ...productData,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Save to localStorage
+      const existingProducts = getStoredProducts();
+      existingProducts.push(fallbackProduct);
+      saveProductsBackup(existingProducts);
+      
+      console.log('📦 ProductAPI: Product saved to localStorage as fallback');
+      return fallbackProduct;
     }
   },
 

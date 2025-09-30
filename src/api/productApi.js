@@ -10,9 +10,9 @@ const getApiBaseUrl = () => {
   console.log('REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
   console.log('Current hostname:', hostname);
   
-  // Force use of the working Upstash API deployment
-  console.log('🚀 Using working Upstash API: https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api');
-  return 'https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api';
+  // Force use of the latest Upstash API deployment with CORS fix
+  console.log('🚀 Using latest Upstash API with CORS: https://eyewearr-21hgzfnxp-iamusmankhan10s-projects.vercel.app/api');
+  return 'https://eyewearr-21hgzfnxp-iamusmankhan10s-projects.vercel.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

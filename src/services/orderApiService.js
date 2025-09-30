@@ -28,9 +28,9 @@ const getOrderApiUrl = () => {
                                !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
   
   if (isDeployedEnvironment) {
-    console.log('🌐 OrderAPI: Deployed environment detected - using working Upstash API');
-    // Use the working Upstash API deployment
-    return 'https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api';
+    console.log('🌐 OrderAPI: Deployed environment detected - using latest Upstash API with CORS');
+    // Use the latest Upstash API deployment with CORS fix
+    return 'https://eyewearr-21hgzfnxp-iamusmankhan10s-projects.vercel.app/api';
   }
   
   // If accessing via IP address (mobile accessing desktop), use the same IP for API

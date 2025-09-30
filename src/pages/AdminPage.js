@@ -2780,8 +2780,14 @@ const AdminPage = () => {
 
   // Handle form submission
   const handleSubmit = async (e) => {
+    console.log('🔥 FORM SUBMITTED! handleSubmit called');
+    console.log('📝 Event:', e);
+    console.log('📋 Current productData:', productData);
+    
     e.preventDefault();
     setIsLoading(true);
+    
+    console.log('✅ Form prevented default, loading set to true');
 
     try {
       // Format the product data
@@ -2792,7 +2798,17 @@ const AdminPage = () => {
       };
 
       // Dispatch async action to add product to API and Redux store
-      await dispatch(createProductAsync(formattedProduct)).unwrap();
+      console.log('🚀 AdminPage: About to dispatch createProductAsync');
+      console.log('📦 AdminPage: Product data:', formattedProduct);
+      
+      const result = await dispatch(createProductAsync(formattedProduct)).unwrap();
+      
+      console.log('✅ AdminPage: createProductAsync completed');
+      console.log('📊 AdminPage: Result:', result);
+
+      // Refresh the product list to show the new product
+      console.log('🔄 AdminPage: Refreshing product list...');
+      dispatch(fetchProducts());
 
       // Show success message
       setSuccessMessage('Product added successfully!');
@@ -3928,7 +3944,11 @@ const AdminPage = () => {
                               </div>
                             </DetailsItem>
                           </DetailsList>
-                          <SubmitButton type="submit" disabled={isLoading}>
+                          <SubmitButton 
+                            type="submit" 
+                            disabled={isLoading}
+                            onClick={() => console.log('🖱️ SUBMIT BUTTON CLICKED!')}
+                          >
                             {isLoading ? 'Adding Product...' : 'Add Product'}
                           </SubmitButton>
                           

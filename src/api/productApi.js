@@ -227,22 +227,30 @@ const productApi = {
   // Create a new product
   createProduct: async (productData) => {
     try {
+      console.log('🚀 ProductAPI: Creating product...', productData.name);
+      console.log('🔗 API URL:', `${API_BASE_URL}/products`);
+      console.log('📦 Product Data:', productData);
+      
       const newProduct = await apiRequest('/products', {
         method: 'POST',
         body: JSON.stringify(productData),
       });
       
+      console.log('✅ ProductAPI: Product created successfully!', newProduct);
+      
       // Update localStorage backup
       try {
         const products = await productApi.getAllProducts();
         saveProductsBackup(products);
+        console.log('✅ ProductAPI: Backup updated');
       } catch (backupError) {
         console.warn('Failed to update backup after creating product:', backupError.message);
       }
       
       return newProduct;
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error('❌ ProductAPI: Error creating product:', error);
+      console.error('❌ ProductAPI: Full error details:', error.message);
       throw new Error(`Failed to create product: ${error.message}`);
     }
   },

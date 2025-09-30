@@ -33,3 +33,5 @@ build.zip
 
 # OS files
 Thumbs.db
+
+.vercel

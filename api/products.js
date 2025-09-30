@@ -1,5 +1,7 @@
-// Vercel Serverless Function for Products API with PERMANENT Storage
+// Vercel Serverless Function for Products API with Smart Storage
+// Falls back to enhanced memory storage if KV is not available
 import permanentStorage from './permanentStorage.js';
+import storage from './storage.js';
 
 // Sample products data
 const sampleProducts = [

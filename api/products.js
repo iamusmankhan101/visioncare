@@ -1,316 +1,237 @@
-// Vercel Serverless Function for Products API with Working Storage
-import storage from './storage.js';
+// Vercel Serverless Function for Products API with Upstash Redis
+const { Redis } = require('@upstash/redis');
 
-// Sample products data
-const sampleProducts = [
-  {
-    name: "Classic Aviator Sunglasses",
-    price: 2500,
-    category: "Sunglasses",
-    material: "Metal",
-    shape: "Aviator",
-    rim: "Full Rim",
-    style: "Classic",
-    colors: JSON.stringify([{ name: "Gold", hex: "#FFD700" }]),
-    features: JSON.stringify(["uv-protection", "polarized"]),
-    image: "/images/sunglasses.webp",
-    featured: 1,
-    bestSeller: 0,
-    brand: "EyeWear Pro",
-    gender: "Unisex",
-    frameColor: "Gold",
-    sizes: JSON.stringify(["Medium", "Large"]),
-    lensTypes: JSON.stringify(["Non-Prescription"]),
-    discount: JSON.stringify({ hasDiscount: false, discountPercentage: 0 }),
-    status: "In Stock",
-    description: "Classic aviator sunglasses with premium gold frame and UV protection."
-  },
-  {
-    name: "Eco-Friendly Bamboo Frames",
-    price: 3200,
-    category: "Eyeglasses",
-    material: "Wood",
-    shape: "Rectangle",
-    rim: "Full Rim",
-    style: "Eco Friendly",
-    colors: JSON.stringify([{ name: "Brown", hex: "#8B4513" }]),
-    features: JSON.stringify(["lightweight", "eco-friendly", "hypoallergenic"]),
-    image: "/images/eyeglasses.webp",
-    featured: 0,
-    bestSeller: 1,
-    brand: "Green Vision",
-    gender: "Unisex",
-    frameColor: "Natural Brown",
-    sizes: JSON.stringify(["Small", "Medium"]),
-    lensTypes: JSON.stringify(["Prescription", "Blue-Light"]),
-    discount: JSON.stringify({ hasDiscount: true, discountPercentage: 15 }),
-    status: "In Stock",
-    description: "Sustainable bamboo frames perfect for environmentally conscious customers."
-  },
-  {
-    name: "Bold Statement Glasses",
-    price: 2800,
-    category: "Eyeglasses",
-    material: "Acetate",
-    shape: "Cat Eye",
-    rim: "Full Rim",
-    style: "Bold",
-    colors: JSON.stringify([{ name: "Black", hex: "#000000" }]),
-    features: JSON.stringify(["bold-design", "lightweight", "durable"]),
-    image: "/images/eyeglasses.webp",
-    featured: 1,
-    bestSeller: 0,
-    brand: "Bold Vision",
-    gender: "Women",
-    frameColor: "Matte Black",
-    sizes: JSON.stringify(["Medium"]),
-    lensTypes: JSON.stringify(["Prescription", "Non-Prescription"]),
-    discount: JSON.stringify({ hasDiscount: false, discountPercentage: 0 }),
-    status: "In Stock",
-    description: "Make a bold statement with these striking cat-eye frames."
-  },
-  {
-    name: "Retro Round Glasses",
-    price: 2200,
-    category: "Eyeglasses",
-    material: "Metal",
-    shape: "Round",
-    rim: "Full Rim",
-    style: "Retro",
-    colors: JSON.stringify([{ name: "Copper", hex: "#B87333" }]),
-    features: JSON.stringify(["vintage-style", "lightweight", "adjustable-nose-pads"]),
-    image: "/images/eyeglasses.webp",
-    featured: 0,
-    bestSeller: 1,
-    brand: "Vintage Look",
-    gender: "Unisex",
-    frameColor: "Antique Copper",
-    sizes: JSON.stringify(["Small", "Medium"]),
-    lensTypes: JSON.stringify(["Prescription", "Reading"]),
-    discount: JSON.stringify({ hasDiscount: false, discountPercentage: 0 }),
-    status: "In Stock",
-    description: "Classic round frames with a vintage copper finish."
-  },
-  {
-    name: "Street Style Urban Frames",
-    price: 2600,
-    category: "Sunglasses",
-    material: "Plastic",
-    shape: "Square",
-    rim: "Full Rim",
-    style: "Street Style",
-    colors: JSON.stringify([{ name: "Black", hex: "#000000" }]),
-    features: JSON.stringify(["urban-design", "impact-resistant", "uv-protection"]),
-    image: "/images/sunglasses.webp",
-    featured: 0,
-    bestSeller: 0,
-    brand: "Urban Edge",
-    gender: "Men",
-    frameColor: "Matte Black",
-    sizes: JSON.stringify(["Medium", "Large"]),
-    lensTypes: JSON.stringify(["Non-Prescription"]),
-    discount: JSON.stringify({ hasDiscount: true, discountPercentage: 10 }),
-    status: "In Stock",
-    description: "Urban street style frames perfect for the modern trendsetter."
-  },
-  {
-    name: "Artsy Designer Frames",
-    price: 3500,
-    category: "Eyeglasses",
-    material: "Acetate",
-    shape: "Geometric",
-    rim: "Full Rim",
-    style: "Artsy",
-    colors: JSON.stringify([{ name: "Tortoise", hex: "#D2691E" }]),
-    features: JSON.stringify(["designer-style", "unique-design", "lightweight"]),
-    image: "/images/eyeglasses.webp",
-    featured: 1,
-    bestSeller: 0,
-    brand: "Art Vision",
-    gender: "Women",
-    frameColor: "Tortoise Shell",
-    sizes: JSON.stringify(["Medium"]),
-    lensTypes: JSON.stringify(["Prescription", "Progressive"]),
-    discount: JSON.stringify({ hasDiscount: false, discountPercentage: 0 }),
-    status: "In Stock",
-    description: "Unique geometric frames for the artistic and creative individual."
-  }
-];
+// Initialize Redis
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).json({});
   }
 
-  const { method, url } = req;
-  const urlPath = url.split('?')[0];
+  // Add CORS headers
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
 
   try {
-    // Initialize storage with sample data if needed
-    storage.initializeWithSampleData(sampleProducts);
-
-    // Health check with storage information
-    if (urlPath === '/api/health') {
-      const stats = storage.getStats();
-      
-      return res.status(200).json({
-        status: 'OK',
-        message: 'Product API Server is running on Vercel with Enhanced Storage',
-        timestamp: new Date().toISOString(),
-        storage: { status: 'enhanced-memory', canRead: true, canWrite: true },
-        storageType: 'Enhanced Memory (Extended Persistence)',
-        ...stats
-      });
-    }
-
-    // Get all products from storage
-    if (method === 'GET' && urlPath === '/api/products') {
-      const products = storage.getProducts(sampleProducts);
-      const formattedProducts = products.map(product => ({
-        ...product,
-        id: product.id,
-        colors: typeof product.colors === 'string' ? JSON.parse(product.colors) : product.colors,
-        features: typeof product.features === 'string' ? JSON.parse(product.features) : product.features,
-        sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes,
-        lensTypes: typeof product.lensTypes === 'string' ? JSON.parse(product.lensTypes) : product.lensTypes,
-        discount: typeof product.discount === 'string' ? JSON.parse(product.discount) : product.discount,
-        featured: Boolean(product.featured),
-        bestSeller: Boolean(product.bestSeller)
-      }));
-
-      console.log(`📊 Returning ${formattedProducts.length} products from enhanced storage`);
-
-      return res.status(200).json({
-        success: true,
-        products: formattedProducts,
-        count: formattedProducts.length,
-        storage: 'enhanced'
-      });
-    }
-
-    // Get single product from permanent storage
-    if (method === 'GET' && urlPath.startsWith('/api/products/')) {
-      const id = parseInt(urlPath.split('/')[3]);
-      
-      try {
-        const product = storage.getProduct(id);
-        const formattedProduct = {
-          ...product,
-          colors: typeof product.colors === 'string' ? JSON.parse(product.colors) : product.colors,
-          features: typeof product.features === 'string' ? JSON.parse(product.features) : product.features,
-          sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes,
-          lensTypes: typeof product.lensTypes === 'string' ? JSON.parse(product.lensTypes) : product.lensTypes,
-          discount: typeof product.discount === 'string' ? JSON.parse(product.discount) : product.discount,
-          featured: Boolean(product.featured),
-          bestSeller: Boolean(product.bestSeller)
-        };
-
-        return res.status(200).json({
-          success: true,
-          product: formattedProduct,
-          storage: 'permanent'
-        });
-      } catch (error) {
-        return res.status(404).json({ 
+    switch (req.method) {
+      case 'GET':
+        return await handleGet(req, res);
+      case 'POST':
+        return await handlePost(req, res);
+      case 'PUT':
+        return await handlePut(req, res);
+      case 'DELETE':
+        return await handleDelete(req, res);
+      default:
+        return res.status(405).json({ 
           success: false, 
-          message: error.message 
+          error: 'Method not allowed' 
         });
-      }
     }
-
-    // Add new product to permanent storage
-    if (method === 'POST' && urlPath === '/api/products') {
-      const productData = {
-        ...req.body,
-        colors: JSON.stringify(req.body.colors || []),
-        features: JSON.stringify(req.body.features || []),
-        sizes: JSON.stringify(req.body.sizes || []),
-        lensTypes: JSON.stringify(req.body.lensTypes || []),
-        discount: JSON.stringify(req.body.discount || { hasDiscount: false, discountPercentage: 0 }),
-        featured: req.body.featured ? 1 : 0,
-        bestSeller: req.body.bestSeller ? 1 : 0
-      };
-
-      const newProduct = storage.addProduct(productData);
-
-      return res.status(201).json({
-        success: true,
-        message: 'Product added successfully to ENHANCED storage',
-        product: newProduct,
-        storage: 'enhanced'
-      });
-    }
-
-    // Update product in enhanced storage
-    if (method === 'PUT' && urlPath.startsWith('/api/products/')) {
-      const id = parseInt(urlPath.split('/')[3]);
-      
-      try {
-        const productData = {
-          ...req.body,
-          colors: JSON.stringify(req.body.colors || []),
-          features: JSON.stringify(req.body.features || []),
-          sizes: JSON.stringify(req.body.sizes || []),
-          lensTypes: JSON.stringify(req.body.lensTypes || []),
-          discount: JSON.stringify(req.body.discount || { hasDiscount: false, discountPercentage: 0 }),
-          featured: req.body.featured ? 1 : 0,
-          bestSeller: req.body.bestSeller ? 1 : 0
-        };
-
-        const updatedProduct = storage.updateProduct(id, productData);
-
-        return res.status(200).json({
-          success: true,
-          message: 'Product updated successfully in ENHANCED storage',
-          product: updatedProduct,
-          storage: 'enhanced'
-        });
-      } catch (error) {
-        return res.status(404).json({ 
-          success: false, 
-          message: error.message 
-        });
-      }
-    }
-    // Delete product from enhanced storage
-    if (method === 'DELETE' && urlPath.startsWith('/api/products/')) {
-      const id = parseInt(urlPath.split('/')[3]);
-      
-      try {
-        const deletedProduct = storage.deleteProduct(id);
-
-        return res.status(200).json({
-          success: true,
-          message: 'Product deleted successfully from ENHANCED storage',
-          product: deletedProduct,
-          storage: 'enhanced'
-        });
-      } catch (error) {
-        return res.status(404).json({ 
-          success: false, 
-          message: error.message 
-        });
-      }
-    }
-
-    // Route not found
-    return res.status(404).json({
-      success: false,
-      message: 'API endpoint not found'
-    });
-
   } catch (error) {
     console.error('API Error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      error: 'Internal server error',
+      message: error.message
     });
+  }
+}
+
+// GET - Fetch all products
+async function handleGet(req, res) {
+  try {
+    // Check for specific product ID in query
+    const { id, search, category } = req.query;
+    
+    if (id) {
+      // Get single product
+      const product = await redis.hgetall(`product:${id}`);
+      if (Object.keys(product).length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+      return res.json({
+        success: true,
+        data: product
+      });
+    }
+    
+    if (search) {
+      // Search products (simplified - in production you'd use Redis search)
+      const allProductIds = await redis.smembers('products:all');
+      const searchResults = [];
+      
+      for (const productId of allProductIds) {
+        const product = await redis.hgetall(`product:${productId}`);
+        if (product.name?.toLowerCase().includes(search.toLowerCase()) ||
+            product.category?.toLowerCase().includes(search.toLowerCase())) {
+          searchResults.push(product);
+        }
+      }
+      
+      return res.json({
+        success: true,
+        data: searchResults,
+        count: searchResults.length,
+        query: search
+      });
+    }
+    
+    if (category) {
+      // Get products by category
+      const categoryProductIds = await redis.smembers(`products:category:${category}`);
+      const categoryProducts = [];
+      
+      for (const productId of categoryProductIds) {
+        const product = await redis.hgetall(`product:${productId}`);
+        if (Object.keys(product).length > 0) {
+          categoryProducts.push(product);
+        }
+      }
+      
+      return res.json({
+        success: true,
+        data: categoryProducts,
+        count: categoryProducts.length,
+        category
+      });
+    }
+    
+    // Get all products
+    const productIds = await redis.smembers('products:all');
+    const products = [];
+    
+    for (const productId of productIds) {
+      const product = await redis.hgetall(`product:${productId}`);
+      if (Object.keys(product).length > 0) {
+        products.push(product);
+      }
+    }
+    
+    return res.json({
+      success: true,
+      data: products,
+      count: products.length,
+      source: 'upstash'
+    });
+    
+  } catch (error) {
+    throw error;
+  }
+}
+
+// POST - Create new product
+async function handlePost(req, res) {
+  try {
+    const productData = req.body;
+    const productId = productData.id || `prod_${Date.now()}`;
+    const product = { 
+      id: productId, 
+      ...productData,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Save to Redis
+    await redis.hset(`product:${productId}`, product);
+    await redis.sadd('products:all', productId);
+    
+    // Index by category
+    if (product.category) {
+      await redis.sadd(`products:category:${product.category}`, productId);
+    }
+    
+    // Increment counter
+    await redis.incr('stats:products:total');
+    
+    return res.status(201).json({
+      success: true,
+      data: product,
+      message: 'Product created successfully'
+    });
+    
+  } catch (error) {
+    throw error;
+  }
+}
+
+// PUT - Update product
+async function handlePut(req, res) {
+  try {
+    const { id } = req.query;
+    const updates = { 
+      ...req.body, 
+      updatedAt: new Date().toISOString() 
+    };
+    delete updates.id; // Don't allow ID updates
+    
+    // Check if product exists
+    const existingProduct = await redis.hgetall(`product:${id}`);
+    if (Object.keys(existingProduct).length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Product not found'
+      });
+    }
+    
+    // Update in Redis
+    await redis.hset(`product:${id}`, updates);
+    
+    return res.json({
+      success: true,
+      data: { id, ...updates },
+      message: 'Product updated successfully'
+    });
+    
+  } catch (error) {
+    throw error;
+  }
+}
+
+// DELETE - Delete product
+async function handleDelete(req, res) {
+  try {
+    const { id } = req.query;
+    
+    // Get product details first
+    const product = await redis.hgetall(`product:${id}`);
+    if (Object.keys(product).length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Product not found'
+      });
+    }
+    
+    // Remove from all sets
+    await redis.srem('products:all', id);
+    if (product.category) {
+      await redis.srem(`products:category:${product.category}`, id);
+    }
+    
+    // Delete product hash
+    await redis.del(`product:${id}`);
+    
+    return res.json({
+      success: true,
+      message: 'Product deleted successfully'
+    });
+    
+  } catch (error) {
+    throw error;
   }
 }

@@ -16,9 +16,9 @@ const getApiBaseUrl = () => {
     return process.env.REACT_APP_PRODUCTS_API_URL;
   }
   
-  // Always use the deployed Upstash API
-  console.log('🚀 Using deployed Upstash API: https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api');
-  return 'https://eyewearr-upstash-mhmkhnpi6-iamusmankhan10s-projects.vercel.app/api';
+  // Always use the same deployed Upstash API for consistency
+  console.log('🚀 Using deployed Upstash API: https://vision-care-hmn4.vercel.app/api');
+  return 'https://vision-care-hmn4.vercel.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

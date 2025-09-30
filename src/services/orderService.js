@@ -131,12 +131,12 @@ const sendPushNotification = async (orderData) => {
 // Get all orders (backend first, then IndexedDB fallback)
 export const getAllOrders = async (filters = {}) => {
   try {
-    // Try to fetch from backend API first
-    console.log('Attempting to fetch orders from backend database...');
+    // Try to fetch from backend API first - REDUCED LOGGING
     const backendData = await orderApiService.getAllOrders(filters);
-    console.log('Backend response:', backendData);
-    console.log(`Fetched ${backendData.orders.length} orders from backend`);
-    console.log('First order:', backendData.orders[0]);
+    // Only log once every 10 calls to reduce spam
+    if (Math.random() < 0.1) {
+      console.log('📦 Orders: Fetched', backendData.orders.length, 'orders from backend');
+    }
     return backendData.orders;
   } catch (backendError) {
     console.warn('Backend fetch failed, falling back to IndexedDB:', backendError.message);

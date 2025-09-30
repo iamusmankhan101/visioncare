@@ -77,8 +77,21 @@ const apiRequest = async (endpoint, options = {}) => {
     
     const data = await response.json();
     console.log(`✅ API Response: ${config.method || 'GET'} ${url} - Success`);
-    console.log(`📊 Data Count: ${Array.isArray(data) ? data.length : 'N/A'} items`);
-    return data;
+    
+    // Handle Vercel API response structure
+    if (data.success && data.products) {
+      console.log(`📊 Data Count: ${data.products.length} items`);
+      return data.products; // Return just the products array
+    } else if (data.success && data.product) {
+      console.log(`📊 Single Product Retrieved`);
+      return data.product; // Return single product
+    } else if (Array.isArray(data)) {
+      console.log(`📊 Data Count: ${data.length} items`);
+      return data; // Already an array
+    } else {
+      console.log(`📊 Data Count: N/A items`);
+      return data; // Return as-is for other responses
+    }
   } catch (error) {
     console.error(`❌ API Error: ${config.method || 'GET'} ${url}`);
     console.error(`❌ Error Details:`, error.message);
@@ -265,5 +278,13 @@ const productApi = {
     }
   }
 };
+
+// Named exports for specific functions
+export const testConnection = productApi.testConnection;
+export const getAllProducts = productApi.getAllProducts;
+export const getProductById = productApi.getProductById;
+export const createProduct = productApi.createProduct;
+export const updateProduct = productApi.updateProduct;
+export const deleteProduct = productApi.deleteProduct;
 
 export default productApi;

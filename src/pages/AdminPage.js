@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -2325,14 +2325,23 @@ const AdminPage = () => {
     window.scrollTo(0, 0);
   }, [dispatch]);
 
-  // Auto-refresh chart data every 30 seconds
+  // Auto-refresh chart data every 30 seconds - TEMPORARILY DISABLED
   useEffect(() => {
+    console.log('🔄 Setting up auto-refresh interval...');
     const interval = setInterval(() => {
+      console.log('🔄 Auto-refresh triggered - loading orders and stats...');
       loadRealOrders();
       loadOrderStats();
     }, 30000);
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('🔄 Cleaning up auto-refresh interval...');
+      clearInterval(interval);
+      // Also clear any pending loadRealOrders timeout
+      if (loadRealOrdersRef.current) {
+        clearTimeout(loadRealOrdersRef.current);
+      }
+    };
   }, []);
 
   // Click outside handler to close dropdowns
@@ -2351,17 +2360,38 @@ const AdminPage = () => {
     };
   }, []);
 
+  // Debounce mechanism to prevent excessive API calls
+  const loadRealOrdersRef = useRef(null);
+  const isLoadingOrdersRef = useRef(false);
+  
   // Load real orders for chart
-  const loadRealOrders = async () => {
-    try {
-      const orders = await getAllOrders();
-      setRealOrders(orders);
-
-    } catch (error) {
-      console.error('Error loading real orders:', error);
-      setRealOrders([]);
+  const loadRealOrders = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (isLoadingOrdersRef.current) {
+      console.log('📊 loadRealOrders already in progress, skipping...');
+      return;
     }
-  };
+    
+    // Clear any existing timeout
+    if (loadRealOrdersRef.current) {
+      clearTimeout(loadRealOrdersRef.current);
+    }
+    
+    // Debounce the API call by 300ms
+    loadRealOrdersRef.current = setTimeout(async () => {
+      isLoadingOrdersRef.current = true;
+      console.log('📊 loadRealOrders executing...');
+      try {
+        const orders = await getAllOrders();
+        setRealOrders(orders);
+      } catch (error) {
+        console.error('Error loading real orders:', error);
+        setRealOrders([]);
+      } finally {
+        isLoadingOrdersRef.current = false;
+      }
+    }, 300);
+  }, []);
 
   // Load order statistics
   const loadOrderStats = async () => {
@@ -2550,16 +2580,16 @@ const AdminPage = () => {
       });
     }
 
-    // Debug: Log the data to console
-    console.log('Chart Debug - Real Orders:', realOrders.length);
-    console.log('Chart Debug - Processed Data:', data);
+    // Debug: Log the data to console (reduced frequency)
+    if (Math.random() < 0.2) {
+      console.log('📊 Chart: Real Orders:', realOrders.length, '| Has Data:', data.some(d => d.orders > 0 || d.revenue > 0));
+    }
     
     // Calculate max values for scaling (minimum 1 to prevent division by zero)
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
     
     const hasAnyData = data.some(d => d.orders > 0 || d.revenue > 0);
-    console.log('Chart Debug - Has Any Data:', hasAnyData);
 
     return { orderData: data, maxRevenue, maxOrders, hasAnyData };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days

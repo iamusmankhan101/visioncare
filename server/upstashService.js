@@ -132,8 +132,10 @@ class UpstashService {
       const orderKey = `order:${order.orderNumber}`;
       const orderData = {
         ...order,
-        createdAt: new Date().toISOString(),
-        items: JSON.stringify(order.items || [])
+        createdAt: order.createdAt || new Date().toISOString(),
+        // Serialize complex objects
+        items: typeof order.items === 'object' ? JSON.stringify(order.items || []) : order.items,
+        shippingAddress: typeof order.shippingAddress === 'object' ? JSON.stringify(order.shippingAddress || {}) : order.shippingAddress
       };
       
       await this.redis.hset(orderKey, orderData);
@@ -183,14 +185,32 @@ class UpstashService {
         if (Object.keys(order).length > 0) {
           // Parse items back to array
           if (order.items) {
-            order.items = JSON.parse(order.items);
+            try {
+              // Handle both string and object cases
+              if (typeof order.items === 'string') {
+                order.items = JSON.parse(order.items);
+              }
+            } catch (parseError) {
+              console.warn(`⚠️ Failed to parse items for order ${orderNumber}:`, parseError.message);
+              order.items = [];
+            }
           }
+          
+          // Parse shippingAddress if it exists
+          if (order.shippingAddress && typeof order.shippingAddress === 'string') {
+            try {
+              order.shippingAddress = JSON.parse(order.shippingAddress);
+            } catch (parseError) {
+              console.warn(`⚠️ Failed to parse shippingAddress for order ${orderNumber}:`, parseError.message);
+            }
+          }
+          
           orders.push(order);
         }
       }
       
       // Sort by creation date (newest first)
-      return orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     } catch (error) {
       console.error('❌ Error getting all orders from Upstash:', error);
       return [];

@@ -1,30 +1,47 @@
 // Order API service for backend database integration
 import { sendOrderWhatsAppNotification } from './whatsappService';
 
-// Use environment variable or fallback to null for localStorage mode
+// Use environment variable or smart URL detection for Upstash API
 const getOrderApiUrl = () => {
-  // Check for order-specific API URL or use products API URL
-  const orderApiUrl = process.env.REACT_APP_ORDER_API_URL || process.env.REACT_APP_PRODUCTS_API_URL;
-  
-  if (orderApiUrl) {
-    console.log('🌐 OrderAPI: Using environment API URL:', orderApiUrl);
-    return orderApiUrl;
-  }
-  
   const hostname = window.location.hostname;
   
-  // For deployed environments without API URL, use localStorage
+  console.log('🔍 OrderAPI: Environment Check');
+  console.log('REACT_APP_ORDER_API_URL:', process.env.REACT_APP_ORDER_API_URL);
+  console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
+  console.log('Current hostname:', hostname);
+  
+  // Check for order-specific API URL first
+  if (process.env.REACT_APP_ORDER_API_URL) {
+    console.log('🌐 OrderAPI: Using order-specific API URL:', process.env.REACT_APP_ORDER_API_URL);
+    return process.env.REACT_APP_ORDER_API_URL;
+  }
+  
+  // Use products API URL if available
+  if (process.env.REACT_APP_PRODUCTS_API_URL) {
+    console.log('🌐 OrderAPI: Using products API URL for orders:', process.env.REACT_APP_PRODUCTS_API_URL);
+    return process.env.REACT_APP_PRODUCTS_API_URL;
+  }
+  
+  // Check if this is a deployed environment (not localhost or IP)
   const isDeployedEnvironment = !hostname.includes('localhost') && 
                                !hostname.includes('127.0.0.1') && 
                                !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
   
   if (isDeployedEnvironment) {
-    console.log('📦 OrderAPI: Deployed environment - using localStorage mode');
-    return null;
+    console.log('🌐 OrderAPI: Deployed environment detected - using Vercel API');
+    // For deployed environments, use the same domain's API endpoints
+    return `https://${hostname}/api`;
   }
   
-  // Local development fallback
-  return 'http://localhost:5005/api';
+  // If accessing via IP address (mobile accessing desktop), use the same IP for API
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    console.log('📱 OrderAPI: Mobile detected - using IP for API requests');
+    return `http://${hostname}:5004/api`;
+  }
+  
+  // Local development - use Upstash server
+  console.log('🚀 OrderAPI: Using local Upstash server');
+  return 'http://localhost:5004/api';
 };
 
 const API_BASE_URL = getOrderApiUrl();

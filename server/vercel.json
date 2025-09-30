@@ -25,6 +25,14 @@
       "dest": "api/products.js"
     },
     {
+      "src": "/api/orders",
+      "dest": "api/orders.js"
+    },
+    {
+      "src": "/api/orders/(.*)",
+      "dest": "api/orders.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "upstashProductServer.js"
     },
@@ -48,6 +56,9 @@
       "maxDuration": 10
     },
     "api/products.js": {
+      "maxDuration": 30
+    },
+    "api/orders.js": {
       "maxDuration": 30
     },
     "upstashProductServer.js": {

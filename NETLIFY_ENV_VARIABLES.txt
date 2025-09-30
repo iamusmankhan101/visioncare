@@ -6,6 +6,7 @@
 REACT_APP_API_URL=https://vision-care-hmn4.vercel.app/api/products
 REACT_APP_API_BASE_URL=https://vision-care-hmn4.vercel.app
 REACT_APP_PRODUCTS_API_URL=https://vision-care-hmn4.vercel.app/api
+REACT_APP_ORDER_API_URL=https://vision-care-hmn4.vercel.app/api
 # 
 # Instructions:
 # 1. Deploy backend to Railway

@@ -11,6 +11,14 @@
     {
       "source": "/api/products/(.*)",
       "destination": "/api/products"
+    },
+    {
+      "source": "/api/orders",
+      "destination": "/api/orders"
+    },
+    {
+      "source": "/api/orders/(.*)",
+      "destination": "/api/orders"
     }
   ]
 }

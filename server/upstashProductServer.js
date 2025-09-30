@@ -18,6 +18,7 @@ const db = new sqlite3.Database(dbPath);
 
 // Initialize database tables
 db.serialize(() => {
+  // Check if table exists and add missing columns
   db.run(`CREATE TABLE IF NOT EXISTS products (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -38,6 +39,26 @@ db.serialize(() => {
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+  
+  // Add missing columns if they don't exist
+  const columnsToAdd = [
+    'originalPrice REAL',
+    'color TEXT',
+    'size TEXT', 
+    'material TEXT',
+    'shape TEXT',
+    'features TEXT',
+    'specifications TEXT'
+  ];
+  
+  columnsToAdd.forEach(column => {
+    db.run(`ALTER TABLE products ADD COLUMN ${column}`, (err) => {
+      if (err && !err.message.includes('duplicate column name')) {
+        // Column might already exist, which is fine
+        console.log(`Note: Column ${column.split(' ')[0]} may already exist`);
+      }
+    });
+  });
 });
 
 // Hybrid storage service (Upstash + SQLite fallback)

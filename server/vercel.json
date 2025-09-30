@@ -3,11 +3,27 @@
   "name": "eyewearr-upstash-api",
   "builds": [
     {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "upstashProductServer.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/health",
+      "dest": "api/health.js"
+    },
+    {
+      "src": "/api/products",
+      "dest": "api/products.js"
+    },
+    {
+      "src": "/api/products/(.*)",
+      "dest": "api/products.js"
+    },
     {
       "src": "/api/(.*)",
       "dest": "upstashProductServer.js"
@@ -28,6 +44,12 @@
     "REDIS_URL": "@redis_url"
   },
   "functions": {
+    "api/health.js": {
+      "maxDuration": 10
+    },
+    "api/products.js": {
+      "maxDuration": 30
+    },
     "upstashProductServer.js": {
       "maxDuration": 30
     }

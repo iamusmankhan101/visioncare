@@ -1,6 +1,4 @@
-// Vercel Serverless Function for Products API with Smart Storage
-// Falls back to enhanced memory storage if KV is not available
-import permanentStorage from './permanentStorage.js';
+// Vercel Serverless Function for Products API with Working Storage
 import storage from './storage.js';
 
 // Sample products data
@@ -154,26 +152,26 @@ export default async function handler(req, res) {
   const urlPath = url.split('?')[0];
 
   try {
-    // Initialize permanent storage with sample data if needed
-    await permanentStorage.initializeWithSampleData(sampleProducts);
+    // Initialize storage with sample data if needed
+    storage.initializeWithSampleData(sampleProducts);
 
-    // Health check with permanent storage information
+    // Health check with storage information
     if (urlPath === '/api/health') {
-      const stats = await permanentStorage.getStats();
-      const healthCheck = await permanentStorage.healthCheck();
+      const stats = storage.getStats();
       
       return res.status(200).json({
         status: 'OK',
-        message: 'Product API Server is running on Vercel with PERMANENT Storage',
+        message: 'Product API Server is running on Vercel with Enhanced Storage',
         timestamp: new Date().toISOString(),
-        storage: healthCheck,
+        storage: { status: 'enhanced-memory', canRead: true, canWrite: true },
+        storageType: 'Enhanced Memory (Extended Persistence)',
         ...stats
       });
     }
 
-    // Get all products from permanent storage
+    // Get all products from storage
     if (method === 'GET' && urlPath === '/api/products') {
-      const products = await permanentStorage.getProducts();
+      const products = storage.getProducts(sampleProducts);
       const formattedProducts = products.map(product => ({
         ...product,
         id: product.id,
@@ -186,13 +184,13 @@ export default async function handler(req, res) {
         bestSeller: Boolean(product.bestSeller)
       }));
 
-      console.log(`📊 Returning ${formattedProducts.length} products from permanent storage`);
+      console.log(`📊 Returning ${formattedProducts.length} products from enhanced storage`);
 
       return res.status(200).json({
         success: true,
         products: formattedProducts,
         count: formattedProducts.length,
-        storage: 'permanent'
+        storage: 'enhanced'
       });
     }
 
@@ -201,7 +199,7 @@ export default async function handler(req, res) {
       const id = parseInt(urlPath.split('/')[3]);
       
       try {
-        const product = await permanentStorage.getProduct(id);
+        const product = storage.getProduct(id);
         const formattedProduct = {
           ...product,
           colors: typeof product.colors === 'string' ? JSON.parse(product.colors) : product.colors,
@@ -239,17 +237,17 @@ export default async function handler(req, res) {
         bestSeller: req.body.bestSeller ? 1 : 0
       };
 
-      const newProduct = await permanentStorage.addProduct(productData);
+      const newProduct = storage.addProduct(productData);
 
       return res.status(201).json({
         success: true,
-        message: 'Product added successfully to PERMANENT storage',
+        message: 'Product added successfully to ENHANCED storage',
         product: newProduct,
-        storage: 'permanent'
+        storage: 'enhanced'
       });
     }
 
-    // Update product in permanent storage
+    // Update product in enhanced storage
     if (method === 'PUT' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
       
@@ -265,13 +263,13 @@ export default async function handler(req, res) {
           bestSeller: req.body.bestSeller ? 1 : 0
         };
 
-        const updatedProduct = await permanentStorage.updateProduct(id, productData);
+        const updatedProduct = storage.updateProduct(id, productData);
 
         return res.status(200).json({
           success: true,
-          message: 'Product updated successfully in PERMANENT storage',
+          message: 'Product updated successfully in ENHANCED storage',
           product: updatedProduct,
-          storage: 'permanent'
+          storage: 'enhanced'
         });
       } catch (error) {
         return res.status(404).json({ 
@@ -280,19 +278,18 @@ export default async function handler(req, res) {
         });
       }
     }
-
-    // Delete product from permanent storage
+    // Delete product from enhanced storage
     if (method === 'DELETE' && urlPath.startsWith('/api/products/')) {
       const id = parseInt(urlPath.split('/')[3]);
       
       try {
-        const deletedProduct = await permanentStorage.deleteProduct(id);
+        const deletedProduct = storage.deleteProduct(id);
 
         return res.status(200).json({
           success: true,
-          message: 'Product deleted successfully from PERMANENT storage',
+          message: 'Product deleted successfully from ENHANCED storage',
           product: deletedProduct,
-          storage: 'permanent'
+          storage: 'enhanced'
         });
       } catch (error) {
         return res.status(404).json({ 

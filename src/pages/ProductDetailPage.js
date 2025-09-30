@@ -145,6 +145,15 @@ const CurrentPrice = styled.span`
   text-align: left;
   color: #333;
   margin-right: 1rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+  }
 `;
 
 const OriginalPrice = styled.span`
@@ -153,6 +162,15 @@ const OriginalPrice = styled.span`
   text-align:left;
   text-decoration: line-through;
   margin-right: 0.5rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    margin-right: 0.4rem;
+  }
 `;
 
 const DiscountedPrice = styled.span`
@@ -160,6 +178,15 @@ const DiscountedPrice = styled.span`
   font-weight: 600;
   color: #e74c3c;
   margin-right: 1rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+  }
 `;
 
 const DiscountPercentage = styled.span`
@@ -286,50 +313,7 @@ const LensSelectionButton = styled.button`
   }
 `;
 
-// About Section Styled Components
-const AboutSection = styled.section`
-  margin: 3rem 0;
-  padding: 2rem;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-`;
-
-const AboutTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: #333;
-`;
-
-const TabsContainer = styled.div`
-  width: 100%;
-`;
-
-const TabsHeader = styled.div`
-  display: flex;
-  border-bottom: 2px solid #e0e0e0;
-  margin-bottom: 1.5rem;
-`;
-
-const Tab = styled.button`
-  padding: 0.75rem 1.5rem;
-  border: none;
-  background: none;
-  font-size: 1rem;
-  font-weight: 500;
-  color: ${props => props.active ? '#48b2ee' : '#666'};
-  border-bottom: 2px solid ${props => props.active ? '#48b2ee' : 'transparent'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    color: #48b2ee;
-  }
-`;
-
-const AboutContent = styled.div`
-  min-height: 200px;
-`;
+// Duplicate About Section components removed - using mobile-responsive versions below
 
 const TabContent = styled.div`
   animation: fadeIn 0.3s ease;
@@ -367,32 +351,9 @@ const SpecValue = styled.span`
 `;
 
 // Reviews Section Styled Components
-const ReviewsSection = styled.section`
-  margin: 3rem 0;
-  padding: 2rem;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-`;
 
-const ReviewsHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-`;
 
-const ReviewsTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-`;
+
 
 const RatingsSummary = styled.div`
   display: flex;
@@ -429,20 +390,6 @@ const OverallScoreText = styled.span`
   margin-left: 0.5rem;
 `;
 
-const RateButton = styled.button`
-  background-color: #48b2ee;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: #48b2ee;
-  }
-`;
 
 
 
@@ -515,6 +462,295 @@ const ReviewMeta = styled.div`
   margin-top: 0.5rem;
   font-size: 0.85rem;
   color: #999;
+`;
+
+// About Section Styled Components
+const AboutSection = styled.section`
+  margin: 3rem 0;
+  padding: 2rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  
+  @media (max-width: 768px) {
+    margin: 2rem 0;
+    padding: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+`;
+
+const AboutTitle = styled.h2`
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+  }
+`;
+
+const TabsContainer = styled.div`
+  width: 100%;
+`;
+
+const TabsHeader = styled.div`
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    gap: 0.25rem;
+  }
+  
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+`;
+
+const Tab = styled.button`
+  background: none;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: ${props => props.active ? '#48b2ee' : '#666'};
+  border-bottom: 2px solid ${props => props.active ? '#48b2ee' : 'transparent'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    color: #48b2ee;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+  }
+`;
+
+const AboutContent = styled.div`
+  color: #666;
+  line-height: 1.6;
+  font-size: 1rem;
+  
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  h3 {
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.75rem 0;
+    
+    @media (max-width: 480px) {
+      font-size: 1.1rem;
+      margin: 1rem 0 0.5rem 0;
+    }
+  }
+  
+  ul {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    
+    @media (max-width: 480px) {
+      padding-left: 1.25rem;
+    }
+  }
+  
+  li {
+    margin-bottom: 0.5rem;
+    
+    @media (max-width: 480px) {
+      margin-bottom: 0.4rem;
+    }
+  }
+`;
+
+// Reviews Section Styled Components
+const ReviewsSection = styled.section`
+  margin: 3rem 0;
+  
+  @media (max-width: 768px) {
+    margin: 2rem 0;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 1.5rem 0;
+  }
+`;
+
+const ReviewsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+`;
+
+const ReviewsTitle = styled.h2`
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+  }
+`;
+
+const RateButton = styled.button`
+  background: #48b2ee;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #3a9bd8;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+`;
+
+// Related Products Section Styled Components
+const RelatedProductsSection = styled.section`
+  margin: 3rem 0;
+  
+  @media (max-width: 768px) {
+    margin: 2rem 0;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 1.5rem 0;
+  }
+`;
+
+// Action Buttons Styled Components
+const ActionButtonsContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+`;
+
+const BuyNowButton = styled.button`
+  flex: 1;
+  background: #48b2ee;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #3a9bd9;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    min-height: 48px;
+  }
+`;
+
+const WishlistActionButton = styled.button`
+  background: none;
+  border: 2px solid #48b2ee;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 1rem;
+  color: #48b2ee;
+  cursor: pointer;
+  min-width: 60px;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: #48b2ee;
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    min-width: auto;
+    flex: 1;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    min-height: 48px;
+  }
 `;
 
 // Write Review Modal Styled Components
@@ -717,30 +953,41 @@ const FileUploadInput = styled.input`
 `;
 
 const SubmitReviewButton = styled.button`
-  background-color: #dc3545;
+  background: #48b2ee;
   color: white;
   border: none;
-  padding: 0.75rem 2rem;
   border-radius: 6px;
+  padding: 0.75rem 1.5rem;
   font-weight: 600;
   cursor: pointer;
-  font-size: 0.9rem;
+  width: 100%;
   transition: background-color 0.2s ease;
   
   &:hover {
-    background-color: #c82333;
+    background: #3a9bd8;
   }
   
   &:disabled {
-    background-color: #ccc;
+    background: #ccc;
     cursor: not-allowed;
   }
 `;
 
-// Related Products Styled Components
-const RelatedProductsSection = styled.section`
-  margin: 3rem 0;
-`;
+// Modal Components for Lens Selection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const RelatedProductsTitle = styled.h2`
   font-size: 1.5rem;
@@ -1854,8 +2101,8 @@ const ProductDetailPage = () => {
               <div className="arrow">→</div>
             </LensSelectionButton>
             
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button
+            <ActionButtonsContainer>
+              <BuyNowButton
                 onClick={() => {
                   // Add product to cart and navigate to cart page
                   if (!product) return;
@@ -1952,25 +2199,11 @@ const ProductDetailPage = () => {
                   dispatch(addToCart(cartItem));
                   navigate('/cart');
                 }}
-                style={{
-                  flex: 1,
-                  background: '#48b2ee',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '1rem',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#3a9bd9'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#48b2ee'}
               >
                 Buy Now
-              </button>
+              </BuyNowButton>
               
-              <button
+              <WishlistActionButton
                 onClick={() => {
                   // Add to wishlist functionality
                   if (isInWishlist) {
@@ -1979,29 +2212,10 @@ const ProductDetailPage = () => {
                     dispatch(addToWishlist(product));
                   }
                 }}
-                style={{
-                  background: 'none',
-                  border: '2px solid #48b2ee',
-                  borderRadius: '8px',
-                  padding: '1rem',
-                  fontSize: '1rem',
-                  color: '#48b2ee',
-                  cursor: 'pointer',
-                  minWidth: '60px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#48b2ee';
-                  e.target.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#48b2ee';
-                }}
               >
                 {isInWishlist ? '♥' : '♡'}
-              </button>
-            </div>
+              </WishlistActionButton>
+            </ActionButtonsContainer>
           </div>
         </ProductInfo>
       </ProductLayout>

@@ -1,11 +1,8 @@
-// Vercel Serverless Function for Orders API with Upstash Redis
-const { Redis } = require('@upstash/redis');
+// Vercel Serverless Function for Orders API with Neon PostgreSQL
+const { neon } = require('@neondatabase/serverless');
 
-// Initialize Redis
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+// Initialize Neon database connection
+const sql = neon(process.env.DATABASE_URL);
 
 // CORS headers - Allow all origins for API access
 const corsHeaders = {

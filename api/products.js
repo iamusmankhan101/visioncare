@@ -1,11 +1,8 @@
-// Vercel Serverless Function for Products API with Upstash Redis
-const { Redis } = require('@upstash/redis');
+// Vercel Serverless Function for Products API with Neon PostgreSQL
+const { neon } = require('@neondatabase/serverless');
 
-// Initialize Redis
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+// Initialize Neon database connection
+const sql = neon(process.env.DATABASE_URL);
 
 // CORS headers - Allow all origins for API access
 const corsHeaders = {
@@ -55,13 +52,37 @@ export default async function handler(req, res) {
 // GET - Fetch all products
 async function handleGet(req, res) {
   try {
+    // Ensure products table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        original_price DECIMAL(10,2),
+        category VARCHAR(100),
+        brand VARCHAR(100),
+        material VARCHAR(100),
+        shape VARCHAR(100),
+        color VARCHAR(100),
+        size VARCHAR(50),
+        image TEXT,
+        gallery TEXT,
+        description TEXT,
+        features TEXT,
+        specifications TEXT,
+        status VARCHAR(50) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
     // Check for specific product ID in query
     const { id, search, category } = req.query;
     
     if (id) {
       // Get single product
-      const product = await redis.hgetall(`product:${id}`);
-      if (Object.keys(product).length === 0) {
+      const result = await sql`SELECT * FROM products WHERE id = ${id}`;
+      if (result.length === 0) {
         return res.status(404).json({
           success: false,
           error: 'Product not found'
@@ -69,67 +90,52 @@ async function handleGet(req, res) {
       }
       return res.json({
         success: true,
-        data: product
+        data: result[0]
       });
     }
     
     if (search) {
-      // Search products (simplified - in production you'd use Redis search)
-      const allProductIds = await redis.smembers('products:all');
-      const searchResults = [];
-      
-      for (const productId of allProductIds) {
-        const product = await redis.hgetall(`product:${productId}`);
-        if (product.name?.toLowerCase().includes(search.toLowerCase()) ||
-            product.category?.toLowerCase().includes(search.toLowerCase())) {
-          searchResults.push(product);
-        }
-      }
+      // Search products
+      const result = await sql`
+        SELECT * FROM products 
+        WHERE name ILIKE ${`%${search}%`} 
+        OR category ILIKE ${`%${search}%`}
+        OR brand ILIKE ${`%${search}%`}
+        ORDER BY created_at DESC
+      `;
       
       return res.json({
         success: true,
-        data: searchResults,
-        count: searchResults.length,
+        data: result,
+        count: result.length,
         query: search
       });
     }
     
     if (category) {
       // Get products by category
-      const categoryProductIds = await redis.smembers(`products:category:${category}`);
-      const categoryProducts = [];
-      
-      for (const productId of categoryProductIds) {
-        const product = await redis.hgetall(`product:${productId}`);
-        if (Object.keys(product).length > 0) {
-          categoryProducts.push(product);
-        }
-      }
+      const result = await sql`
+        SELECT * FROM products 
+        WHERE category ILIKE ${`%${category}%`}
+        ORDER BY created_at DESC
+      `;
       
       return res.json({
         success: true,
-        data: categoryProducts,
-        count: categoryProducts.length,
+        data: result,
+        count: result.length,
         category
       });
     }
     
     // Get all products
-    const productIds = await redis.smembers('products:all');
-    const products = [];
-    
-    for (const productId of productIds) {
-      const product = await redis.hgetall(`product:${productId}`);
-      if (Object.keys(product).length > 0) {
-        products.push(product);
-      }
-    }
+    const result = await sql`SELECT * FROM products ORDER BY created_at DESC`;
     
     return res.json({
       success: true,
-      data: products,
-      count: products.length,
-      source: 'upstash'
+      data: result,
+      count: result.length,
+      source: 'neon'
     });
     
   } catch (error) {
@@ -140,29 +146,40 @@ async function handleGet(req, res) {
 // POST - Create new product
 async function handlePost(req, res) {
   try {
-    const productData = req.body;
-    const productId = productData.id || `prod_${Date.now()}`;
-    const product = { 
-      id: productId, 
-      ...productData,
-      createdAt: new Date().toISOString()
-    };
+    const {
+      name,
+      price,
+      original_price,
+      category,
+      brand,
+      material,
+      shape,
+      color,
+      size,
+      image,
+      gallery,
+      description,
+      features,
+      specifications,
+      status = 'active'
+    } = req.body;
     
-    // Save to Redis
-    await redis.hset(`product:${productId}`, product);
-    await redis.sadd('products:all', productId);
-    
-    // Index by category
-    if (product.category) {
-      await redis.sadd(`products:category:${product.category}`, productId);
-    }
-    
-    // Increment counter
-    await redis.incr('stats:products:total');
+    // Insert new product
+    const result = await sql`
+      INSERT INTO products (
+        name, price, original_price, category, brand, material, 
+        shape, color, size, image, gallery, description, 
+        features, specifications, status
+      ) VALUES (
+        ${name}, ${price}, ${original_price}, ${category}, ${brand}, 
+        ${material}, ${shape}, ${color}, ${size}, ${image}, 
+        ${gallery}, ${description}, ${features}, ${specifications}, ${status}
+      ) RETURNING *
+    `;
     
     return res.status(201).json({
       success: true,
-      data: product,
+      data: result[0],
       message: 'Product created successfully'
     });
     
@@ -175,27 +192,57 @@ async function handlePost(req, res) {
 async function handlePut(req, res) {
   try {
     const { id } = req.query;
-    const updates = { 
-      ...req.body, 
-      updatedAt: new Date().toISOString() 
-    };
-    delete updates.id; // Don't allow ID updates
+    const {
+      name,
+      price,
+      original_price,
+      category,
+      brand,
+      material,
+      shape,
+      color,
+      size,
+      image,
+      gallery,
+      description,
+      features,
+      specifications,
+      status
+    } = req.body;
     
-    // Check if product exists
-    const existingProduct = await redis.hgetall(`product:${id}`);
-    if (Object.keys(existingProduct).length === 0) {
+    // Update product
+    const result = await sql`
+      UPDATE products SET 
+        name = ${name},
+        price = ${price},
+        original_price = ${original_price},
+        category = ${category},
+        brand = ${brand},
+        material = ${material},
+        shape = ${shape},
+        color = ${color},
+        size = ${size},
+        image = ${image},
+        gallery = ${gallery},
+        description = ${description},
+        features = ${features},
+        specifications = ${specifications},
+        status = ${status},
+        updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    if (result.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Product not found'
       });
     }
     
-    // Update in Redis
-    await redis.hset(`product:${id}`, updates);
-    
     return res.json({
       success: true,
-      data: { id, ...updates },
+      data: result[0],
       message: 'Product updated successfully'
     });
     
@@ -209,23 +256,19 @@ async function handleDelete(req, res) {
   try {
     const { id } = req.query;
     
-    // Get product details first
-    const product = await redis.hgetall(`product:${id}`);
-    if (Object.keys(product).length === 0) {
+    // Delete product
+    const result = await sql`
+      DELETE FROM products 
+      WHERE id = ${id} 
+      RETURNING *
+    `;
+    
+    if (result.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Product not found'
       });
     }
-    
-    // Remove from all sets
-    await redis.srem('products:all', id);
-    if (product.category) {
-      await redis.srem(`products:category:${product.category}`, id);
-    }
-    
-    // Delete product hash
-    await redis.del(`product:${id}`);
     
     return res.json({
       success: true,

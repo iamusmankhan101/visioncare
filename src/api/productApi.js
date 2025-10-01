@@ -1,23 +1,42 @@
 import sampleProducts from '../utils/addSampleProducts';
-
 // Backend API configuration for eyewear-products-db database
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
   // Debug environment variables
+  console.log('Environment Variables Check:');
   console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
   console.log('REACT_APP_ORDER_API_URL:', process.env.REACT_APP_ORDER_API_URL);
+  console.log('PGDATABASE:', process.env.PGDATABASE);
   console.log('Current hostname:', hostname);
-  console.log('Target Database: eyewear-products-db');
+  console.log('Target Database: Neon PostgreSQL');
   
-  // Use Vercel API with eyewear-products-db database
+  // Use environment variable if available (from Vercel)
+  const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
+  if (envApiUrl) {
+    console.log('Using environment API for Neon database:', envApiUrl);
+    return envApiUrl;
+  }
+  
+  // Check if we're in deployed environment
+  const isDeployedEnvironment = !hostname.includes('localhost') && 
+                               !hostname.includes('127.0.0.1') && 
+                               !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
+  
+  if (isDeployedEnvironment) {
+    // Use same domain for deployed environment
+    const deployedApiUrl = `${window.location.protocol}//${window.location.host}/api`;
+    console.log('Using deployed API for Neon database:', deployedApiUrl);
+    return deployedApiUrl;
+  }
+  
+  // Fallback to Vercel API with Neon database
   const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
-  console.log('Using Vercel API for eyewear-products-db database:', vercelApiUrl);
+  console.log('Using Vercel API for Neon database:', vercelApiUrl);
   return vercelApiUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();
-
 // Helper function to handle API requests
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -138,16 +157,16 @@ const productApi = {
   // Get all products
   getAllProducts: async () => {
     try {
-      console.log('🔍 Attempting to fetch products from Vercel API...');
+      console.log('🔍 Attempting to fetch products from Neon database...');
       console.log(`🔗 API URL: ${API_BASE_URL}/products`);
-      console.log('🚀 Expected: Products from Vercel backend database');
+      console.log('🗄️ Database: Neon PostgreSQL from Vercel backend database');
       
       const response = await apiRequest('/products');
       
       // Check if response has the expected structure
       if (response && response.data) {
         const products = response.data;
-        console.log(`✅ Successfully fetched ${products.length} products from Vercel`);
+        console.log(`✅ Successfully fetched ${products.length} products from Neon database`);
         console.log('📊 Products:', products.map(p => `${p.name} ($${p.price})`).join(', '));
         
         // Save as backup for offline use
@@ -155,7 +174,7 @@ const productApi = {
         return products;
       } else if (Array.isArray(response)) {
         // Handle direct array response
-        console.log(`✅ Successfully fetched ${response.length} products from Vercel`);
+        console.log(`✅ Successfully fetched ${response.length} products from Neon database`);
         console.log('📊 Products:', response.map(p => `${p.name} ($${p.price})`).join(', '));
         
         saveProductsBackup(response);
@@ -165,12 +184,12 @@ const productApi = {
         throw new Error('Invalid API response format');
       }
     } catch (error) {
-      console.error('❌ Vercel API failed, using localStorage backup:', error.message);
+      console.error('❌ Neon database API failed, using localStorage backup:', error.message);
       console.error('🔍 Full error:', error);
       
-      console.warn('🌐 Vercel API error - check deployment status');
-      console.warn('🔗 Vercel API URL:', API_BASE_URL);
-      console.warn('💡 Check Vercel function logs and deployment status');
+      console.warn('🗄️ Neon database connection error via Vercel');
+      console.warn('🔗 API URL:', API_BASE_URL);
+      console.warn('💡 Check Vercel deployment and Neon database connection');
       // Fallback to localStorage backup
       const backupProducts = getStoredProducts();
       console.log(`📦 Using ${backupProducts.length} products from localStorage backup`);

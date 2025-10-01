@@ -37,6 +37,7 @@ import WishlistPage from './pages/WishlistPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ExchangeReturnPage from './pages/ExchangeReturnPage';
 import FAQPage from './pages/FAQPage';
+import CommentsPage from './components/CommentsPage';
 import debugOrders from './utils/debugOrders';
 import testAdminAuth from './utils/testAdminAuth';
 import { testEmailJSConnection, debugEmailJSConfig } from './services/emailService';
@@ -119,6 +120,7 @@ function AppContent() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/help/exchange-return" element={<ExchangeReturnPage />} />
           <Route path="/help/faq" element={<FAQPage />} />
+          <Route path="/comments" element={<CommentsPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/login" element={<LoginPage />} />

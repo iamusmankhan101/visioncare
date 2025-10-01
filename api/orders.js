@@ -52,68 +52,72 @@ export default async function handler(req, res) {
 // GET - Fetch all orders
 async function handleGet(req, res) {
   try {
+    // Ensure orders table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        order_number VARCHAR(100) UNIQUE NOT NULL,
+        customer_name VARCHAR(255),
+        customer_email VARCHAR(255),
+        customer_phone VARCHAR(50),
+        total DECIMAL(10,2),
+        status VARCHAR(50) DEFAULT 'pending',
+        items JSONB,
+        shipping_address JSONB,
+        payment_method VARCHAR(100),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
     const { id, status, search, limit = 100 } = req.query;
     
     if (id) {
-      // Get single order
-      const order = await redis.hgetall(`order:${id}`);
-      if (Object.keys(order).length === 0) {
+      // Get single order by order_number or id
+      const result = await sql`
+        SELECT * FROM orders 
+        WHERE order_number = ${id} OR id = ${id}
+        LIMIT 1
+      `;
+      
+      if (result.length === 0) {
         return res.status(404).json({
           success: false,
           error: 'Order not found'
         });
       }
       
-      // Parse items back to array
-      if (order.items) {
-        try {
-          order.items = JSON.parse(order.items);
-        } catch (e) {
-          order.items = [];
-        }
-      }
-      
       return res.json({
         success: true,
-        data: order
+        data: result[0]
       });
     }
     
-    // Get all orders
-    const orderNumbers = await redis.smembers('orders:all');
-    const orders = [];
+    // Build query with filters
+    let query = `SELECT * FROM orders WHERE 1=1`;
+    const params = [];
     
-    for (const orderNumber of orderNumbers.slice(0, parseInt(limit))) {
-      const order = await redis.hgetall(`order:${orderNumber}`);
-      if (Object.keys(order).length > 0) {
-        // Parse items back to array
-        if (order.items) {
-          try {
-            order.items = JSON.parse(order.items);
-          } catch (e) {
-            order.items = [];
-          }
-        }
-        
-        // Apply filters
-        if (status && order.status !== status) continue;
-        if (search && !order.customerName?.toLowerCase().includes(search.toLowerCase()) && 
-                     !order.customerEmail?.toLowerCase().includes(search.toLowerCase()) &&
-                     !order.orderNumber?.toLowerCase().includes(search.toLowerCase())) continue;
-        
-        orders.push(order);
-      }
+    if (status) {
+      query += ` AND status = $${params.length + 1}`;
+      params.push(status);
     }
     
-    // Sort by creation date (newest first)
-    orders.sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0));
+    if (search) {
+      query += ` AND (customer_name ILIKE $${params.length + 1} OR customer_email ILIKE $${params.length + 2} OR order_number ILIKE $${params.length + 3})`;
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    
+    query += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
+    params.push(parseInt(limit));
+    
+    // Execute query - using template literal for dynamic query
+    const result = await sql`SELECT * FROM orders ORDER BY created_at DESC LIMIT ${parseInt(limit)}`;
     
     return res.json({
       success: true,
-      orders: orders,
-      count: orders.length,
-      total: orderNumbers.length,
-      source: 'upstash'
+      data: result,
+      count: result.length,
+      source: 'neon'
     });
     
   } catch (error) {
@@ -124,36 +128,32 @@ async function handleGet(req, res) {
 // POST - Create new order
 async function handlePost(req, res) {
   try {
-    const orderData = req.body;
-    const orderNumber = orderData.orderNumber || `ORD-${Date.now()}`;
+    const {
+      orderNumber = `ORD-${Date.now()}`,
+      customerName,
+      customerEmail,
+      customerPhone,
+      total,
+      status = 'pending',
+      items,
+      shippingAddress,
+      paymentMethod
+    } = req.body;
     
-    const order = {
-      orderNumber,
-      ...orderData,
-      createdAt: new Date().toISOString(),
-      status: orderData.status || 'pending'
-    };
-    
-    // Serialize items array
-    if (order.items) {
-      order.items = JSON.stringify(order.items);
-    }
-    
-    // Save to Redis
-    await redis.hset(`order:${orderNumber}`, order);
-    await redis.sadd('orders:all', orderNumber);
-    
-    // Index by status
-    if (order.status) {
-      await redis.sadd(`orders:status:${order.status}`, orderNumber);
-    }
-    
-    // Increment order counter
-    await redis.incr('stats:orders:total');
+    // Insert new order
+    const result = await sql`
+      INSERT INTO orders (
+        order_number, customer_name, customer_email, customer_phone,
+        total, status, items, shipping_address, payment_method
+      ) VALUES (
+        ${orderNumber}, ${customerName}, ${customerEmail}, ${customerPhone},
+        ${total}, ${status}, ${JSON.stringify(items)}, ${JSON.stringify(shippingAddress)}, ${paymentMethod}
+      ) RETURNING *
+    `;
     
     return res.status(201).json({
       success: true,
-      data: { ...order, items: orderData.items }, // Return original items array
+      data: result[0],
       message: 'Order created successfully'
     });
     
@@ -166,41 +166,43 @@ async function handlePost(req, res) {
 async function handlePut(req, res) {
   try {
     const { id } = req.query;
-    const updates = { 
-      ...req.body, 
-      updatedAt: new Date().toISOString() 
-    };
+    const {
+      status,
+      customerName,
+      customerEmail,
+      customerPhone,
+      total,
+      items,
+      shippingAddress,
+      paymentMethod
+    } = req.body;
     
-    // Check if order exists
-    const existingOrder = await redis.hgetall(`order:${id}`);
-    if (Object.keys(existingOrder).length === 0) {
+    // Update order
+    const result = await sql`
+      UPDATE orders SET 
+        status = ${status},
+        customer_name = ${customerName},
+        customer_email = ${customerEmail},
+        customer_phone = ${customerPhone},
+        total = ${total},
+        items = ${items ? JSON.stringify(items) : null},
+        shipping_address = ${shippingAddress ? JSON.stringify(shippingAddress) : null},
+        payment_method = ${paymentMethod},
+        updated_at = NOW()
+      WHERE id = ${id} OR order_number = ${id}
+      RETURNING *
+    `;
+    
+    if (result.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Order not found'
       });
     }
     
-    // Handle status change indexing
-    if (updates.status && updates.status !== existingOrder.status) {
-      // Remove from old status index
-      if (existingOrder.status) {
-        await redis.srem(`orders:status:${existingOrder.status}`, id);
-      }
-      // Add to new status index
-      await redis.sadd(`orders:status:${updates.status}`, id);
-    }
-    
-    // Serialize items if present
-    if (updates.items) {
-      updates.items = JSON.stringify(updates.items);
-    }
-    
-    // Update in Redis
-    await redis.hset(`order:${id}`, updates);
-    
     return res.json({
       success: true,
-      data: { orderNumber: id, ...updates },
+      data: result[0],
       message: 'Order updated successfully'
     });
     
@@ -214,23 +216,19 @@ async function handleDelete(req, res) {
   try {
     const { id } = req.query;
     
-    // Get order details first
-    const order = await redis.hgetall(`order:${id}`);
-    if (Object.keys(order).length === 0) {
+    // Delete order
+    const result = await sql`
+      DELETE FROM orders 
+      WHERE id = ${id} OR order_number = ${id}
+      RETURNING *
+    `;
+    
+    if (result.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Order not found'
       });
     }
-    
-    // Remove from all sets
-    await redis.srem('orders:all', id);
-    if (order.status) {
-      await redis.srem(`orders:status:${order.status}`, id);
-    }
-    
-    // Delete order hash
-    await redis.del(`order:${id}`);
     
     return res.json({
       success: true,

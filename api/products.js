@@ -76,6 +76,15 @@ async function handleGet(req, res) {
       )
     `;
 
+    // Ensure comments table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
     // Check for specific product ID in query
     const { id, search, category } = req.query;
     

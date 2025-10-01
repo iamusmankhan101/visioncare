@@ -1,18 +1,19 @@
 import sampleProducts from '../utils/addSampleProducts';
 
-// Backend API configuration with Vercel deployment support
+// Backend API configuration - Using Vercel deployment
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
   // Debug environment variables
   console.log('🔍 Environment Variables Check:');
   console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
-  console.log('REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
+  console.log('REACT_APP_ORDER_API_URL:', process.env.REACT_APP_ORDER_API_URL);
   console.log('Current hostname:', hostname);
   
-  // Force use of the latest Upstash API deployment with CORS fix
-  console.log('🚀 Using latest Upstash API with CORS: https://eyewearr-21hgzfnxp-iamusmankhan10s-projects.vercel.app/api');
-  return 'https://eyewearr-21hgzfnxp-iamusmankhan10s-projects.vercel.app/api';
+  // Always use Vercel backend API for products
+  const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
+  console.log('🚀 Using Vercel API for products:', vercelApiUrl);
+  return vercelApiUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -76,11 +77,9 @@ const apiRequest = async (endpoint, options = {}) => {
     // Check if it's a network error
     if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
       console.error(`❌ Network Error: Cannot connect to backend server`);
-      console.error(`❌ Make sure the API server is accessible at ${API_BASE_URL}`);
-      if (API_BASE_URL.includes('localhost')) {
-        console.error(`❌ Start server with: cd server && npm run dev:products`);
-        console.error(`❌ Check if mobile device can access localhost:5004`);
-      }
+      console.error(`❌ Make sure the Vercel API is accessible at ${API_BASE_URL}`);
+      console.error(`❌ Vercel API URL: ${API_BASE_URL}`);
+      console.error(`❌ Check Vercel deployment status and function logs`);
     }
     
     throw error;
@@ -139,16 +138,16 @@ const productApi = {
   // Get all products
   getAllProducts: async () => {
     try {
-      console.log('🔍 Attempting to fetch products from Upstash API...');
+      console.log('🔍 Attempting to fetch products from Vercel API...');
       console.log(`🔗 API URL: ${API_BASE_URL}/products`);
-      console.log('🚀 Expected: Products from Upstash Redis database');
+      console.log('🚀 Expected: Products from Vercel backend database');
       
       const response = await apiRequest('/products');
       
       // Check if response has the expected structure
       if (response && response.data) {
         const products = response.data;
-        console.log(`✅ Successfully fetched ${products.length} products from Upstash`);
+        console.log(`✅ Successfully fetched ${products.length} products from Vercel`);
         console.log('📊 Products:', products.map(p => `${p.name} ($${p.price})`).join(', '));
         
         // Save as backup for offline use
@@ -156,7 +155,7 @@ const productApi = {
         return products;
       } else if (Array.isArray(response)) {
         // Handle direct array response
-        console.log(`✅ Successfully fetched ${response.length} products from Upstash`);
+        console.log(`✅ Successfully fetched ${response.length} products from Vercel`);
         console.log('📊 Products:', response.map(p => `${p.name} ($${p.price})`).join(', '));
         
         saveProductsBackup(response);
@@ -166,16 +165,12 @@ const productApi = {
         throw new Error('Invalid API response format');
       }
     } catch (error) {
-      console.error('❌ Upstash API failed, using localStorage backup:', error.message);
+      console.error('❌ Vercel API failed, using localStorage backup:', error.message);
       console.error('🔍 Full error:', error);
       
-      if (API_BASE_URL.includes('localhost')) {
-        console.warn('🚨 UPSTASH SERVER NOT RESPONDING!');
-        console.warn('💡 Make sure your Upstash server is running: npm run dev:upstash');
-        console.warn('🔗 Test manually: http://localhost:5004/api/products');
-      } else {
-        console.warn('🌐 Deployed API error - check Vercel function logs');
-      }
+      console.warn('🌐 Vercel API error - check deployment status');
+      console.warn('🔗 Vercel API URL:', API_BASE_URL);
+      console.warn('💡 Check Vercel function logs and deployment status');
       // Fallback to localStorage backup
       const backupProducts = getStoredProducts();
       console.log(`📦 Using ${backupProducts.length} products from localStorage backup`);

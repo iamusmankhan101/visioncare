@@ -1,18 +1,18 @@
 import sampleProducts from '../utils/addSampleProducts';
 
-// Backend API configuration - Using Vercel deployment
+// Backend API configuration for eyewear-products-db database
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
   // Debug environment variables
-  console.log('🔍 Environment Variables Check:');
   console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
   console.log('REACT_APP_ORDER_API_URL:', process.env.REACT_APP_ORDER_API_URL);
   console.log('Current hostname:', hostname);
+  console.log('Target Database: eyewear-products-db');
   
-  // Always use Vercel backend API for products
+  // Use Vercel API with eyewear-products-db database
   const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
-  console.log('🚀 Using Vercel API for products:', vercelApiUrl);
+  console.log('Using Vercel API for eyewear-products-db database:', vercelApiUrl);
   return vercelApiUrl;
 };
 

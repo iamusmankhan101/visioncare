@@ -1,5 +1,5 @@
 // Vercel Serverless Function for Orders API with Neon PostgreSQL
-const { neon } = require('@neondatabase/serverless');
+import { neon } from '@neondatabase/serverless';
 
 // Initialize Neon database connection
 const sql = neon(process.env.DATABASE_URL);

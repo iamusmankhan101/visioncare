@@ -193,7 +193,7 @@ const sampleProducts = [
   {
     name: "Eco-Friendly Bamboo Frames",
     price: 3200,
-    category: "Eyeglasses",
+    category: "fashion-glasses",
     material: "Wood",
     shape: "Rectangle",
     rim: "Full Rim",
@@ -216,7 +216,7 @@ const sampleProducts = [
   {
     name: "Bold Statement Glasses",
     price: 2800,
-    category: "Eyeglasses",
+    category: "fashion-glasses",
     material: "Acetate",
     shape: "Cat Eye",
     rim: "Full Rim",
@@ -239,7 +239,7 @@ const sampleProducts = [
   {
     name: "Retro Round Glasses",
     price: 2200,
-    category: "Eyeglasses",
+    category: "reading-glasses",
     material: "Metal",
     shape: "Round",
     rim: "Full Rim",
@@ -262,7 +262,7 @@ const sampleProducts = [
   {
     name: "Street Style Urban Frames",
     price: 2600,
-    category: "Sunglasses",
+    category: "sports-glasses",
     material: "Plastic",
     shape: "Square",
     rim: "Full Rim",
@@ -285,7 +285,7 @@ const sampleProducts = [
   {
     name: "Artsy Designer Frames",
     price: 3500,
-    category: "Eyeglasses",
+    category: "computer-glasses",
     material: "Acetate",
     shape: "Geometric",
     rim: "Full Rim",

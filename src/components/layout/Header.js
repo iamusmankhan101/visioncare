@@ -1260,10 +1260,10 @@ const Header = () => {
             </DropdownIcon>
           </NavButton>
           <Dropdown>
-            <DropdownLink to="/products?category=eyeglasses&gender=men">Men's Eyeglasses</DropdownLink>
-            <DropdownLink to="/products?category=eyeglasses&gender=women">Women's Eyeglasses</DropdownLink>
-            <DropdownLink to="/products?category=eyeglasses&type=reading">Reading Glasses</DropdownLink>
-            <DropdownLink to="/products?category=eyeglasses&type=computer">Computer Glasses</DropdownLink>
+            <DropdownLink to="/products?category=fashion-glasses">Fashion Glasses</DropdownLink>
+            <DropdownLink to="/products?category=reading-glasses">Reading Glasses</DropdownLink>
+            <DropdownLink to="/products?category=sports-glasses">Sports Glasses</DropdownLink>
+            <DropdownLink to="/products?category=computer-glasses">Computer Glasses</DropdownLink>
           </Dropdown>
         </NavItem>
         
@@ -1515,10 +1515,10 @@ const Header = () => {
               <FiChevronDown style={{ transform: mobileDropdowns.eyeglasses ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
             </MobileNavButton>
             <MobileDropdown isOpen={mobileDropdowns.eyeglasses}>
-              <MobileDropdownLink to="/products?category=eyeglasses&gender=men" onClick={() => setMobileMenuOpen(false)}>Men's Eyeglasses</MobileDropdownLink>
-              <MobileDropdownLink to="/products?category=eyeglasses&gender=women" onClick={() => setMobileMenuOpen(false)}>Women's Eyeglasses</MobileDropdownLink>
-              <MobileDropdownLink to="/products?category=eyeglasses&type=reading" onClick={() => setMobileMenuOpen(false)}>Reading Glasses</MobileDropdownLink>
-              <MobileDropdownLink to="/products?category=eyeglasses&type=computer" onClick={() => setMobileMenuOpen(false)}>Computer Glasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=fashion-glasses" onClick={() => setMobileMenuOpen(false)}>Fashion Glasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=reading-glasses" onClick={() => setMobileMenuOpen(false)}>Reading Glasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=sports-glasses" onClick={() => setMobileMenuOpen(false)}>Sports Glasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=computer-glasses" onClick={() => setMobileMenuOpen(false)}>Computer Glasses</MobileDropdownLink>
             </MobileDropdown>
           </div>
           

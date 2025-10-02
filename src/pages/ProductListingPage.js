@@ -925,17 +925,19 @@ const ProductListingPage = () => {
     });
     
     // Log individual products
-    console.log('📦 All items:', items.map(p => ({ id: p.id, name: p.name, category: p.category })));
-    console.log('📦 Filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category })));
+    console.log('📦 All items:', items.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
+    console.log('📦 Filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
   }, [items, filteredItems, filters, sortOption]);
 
-  // Get category, search, featured, best-sellers, and style from URL query params
+  // Get category, search, featured, best-sellers, style, gender, and type from URL query params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryParam = params.get('category');
     const searchParam = params.get('search');
     const featuredParam = params.get('featured');
     const styleParam = params.get('style');
+    const genderParam = params.get('gender');
+    const typeParam = params.get('type');
     
     
     const newFilters = {};
@@ -957,11 +959,11 @@ const ProductListingPage = () => {
       newFilters.style = decodedStyle;
       newActiveQuickFilter = 'all'; // Set to 'all' when filtering by style
     }
-    if (categoryParam === 'best-sellers') {
-      newFilters.bestSelling = true;
-      newActiveQuickFilter = 'best-sellers';
-      // Remove category filter when it's best-sellers to avoid conflicts
-      delete newFilters.category;
+    if (genderParam) {
+      newFilters.gender = genderParam;
+    }
+    if (typeParam) {
+      newFilters.type = typeParam;
     }
     
     // Update active quick filter based on URL params

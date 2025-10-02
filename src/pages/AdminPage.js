@@ -2102,6 +2102,7 @@ const AdminPage = () => {
     rim: '',
     brand: '',
     gender: 'Unisex',
+    type: '',
     discount: {
       hasDiscount: false,
       discountPercentage: 0
@@ -2622,6 +2623,7 @@ const AdminPage = () => {
 
   // Add these new options arrays
   const genders = ['Men', 'Women', 'Unisex'];
+  const typeOptions = ['', 'reading', 'computer', 'polarized', 'aviator', 'sports', 'fashion'];
   const lensTypeOptions = ['Non-Prescription', 'Prescription', 'Progressive', 'Bifocal', 'Reading', 'Blue-Light'];
   const sizeOptions = ['Small', 'Medium', 'Large', '138mm', '140mm', '142mm'];
   const statusOptions = ['In Stock', 'Out of Stock', 'Coming Soon'];
@@ -3729,6 +3731,26 @@ const AdminPage = () => {
                                 {genders.map(gender => (
                                   <option key={gender} value={gender}>
                                     {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                                  </option>
+                                ))}
+                              </Select>
+                            </DetailsItem>
+                          </DetailsList>
+                        </SidebarSection>
+
+                        <SidebarSection>
+                          <SidebarTitle>Type</SidebarTitle>
+                          <DetailsList>
+                            <DetailsItem>
+                              <Select
+                                name="type"
+                                value={productData.type}
+                                onChange={handleInputChange}
+                              >
+                                <option value="">Select Type (Optional)</option>
+                                {typeOptions.slice(1).map(type => (
+                                  <option key={type} value={type}>
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
                                   </option>
                                 ))}
                               </Select>

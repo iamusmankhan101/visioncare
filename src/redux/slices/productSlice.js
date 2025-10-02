@@ -79,6 +79,8 @@ const initialState = {
     shape: null,
     color: null,
     style: null,
+    gender: null,
+    type: null,
     features: []
   },
   sortOption: 'featured',
@@ -307,6 +309,34 @@ const applyFilters = (items, filters, sortOption) => {
   // Apply color filter
   if (filters.color) {
     result = result.filter(item => item.color === filters.color);
+  }
+  
+  // Apply gender filter
+  if (filters.gender) {
+    result = result.filter(item => {
+      if (!item.gender) return false;
+      return item.gender.toLowerCase() === filters.gender.toLowerCase();
+    });
+  }
+  
+  // Apply type filter (for subcategories like reading, computer, etc.)
+  if (filters.type) {
+    result = result.filter(item => {
+      if (!item.type) {
+        // If no type field, check if category matches the type
+        const itemCategory = item.category ? item.category.toLowerCase() : '';
+        const filterType = filters.type.toLowerCase();
+        
+        // Handle special cases
+        if (filterType === 'reading' && (itemCategory.includes('reading') || itemCategory === 'reading-glasses')) return true;
+        if (filterType === 'computer' && (itemCategory.includes('computer') || itemCategory === 'computer-glasses')) return true;
+        if (filterType === 'polarized' && (itemCategory.includes('polarized') || item.features?.includes('Polarized'))) return true;
+        if (filterType === 'aviator' && (itemCategory.includes('aviator') || item.shape === 'Aviator')) return true;
+        
+        return false;
+      }
+      return item.type.toLowerCase() === filters.type.toLowerCase();
+    });
   }
   
   // Apply features filter

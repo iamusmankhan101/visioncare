@@ -1092,6 +1092,9 @@ const ProductListingPage = () => {
   if (filters.material) activeFilters.push({ type: 'material', value: filters.material });
   if (filters.shape) activeFilters.push({ type: 'shape', value: filters.shape });
   if (filters.color) activeFilters.push({ type: 'color', value: filters.color });
+  if (filters.gender) activeFilters.push({ type: 'gender', value: filters.gender });
+  if (filters.type) activeFilters.push({ type: 'type', value: filters.type });
+  if (filters.style) activeFilters.push({ type: 'style', value: filters.style });
   filters.features.forEach(feature => activeFilters.push({ type: 'feature', value: feature }));
   
   // Filter categories for sidebar - use actual categories from products
@@ -1180,6 +1183,9 @@ const ProductListingPage = () => {
                 if (filter.type === 'material') handleMaterialChange(null);
                 if (filter.type === 'shape') handleShapeChange(null);
                 if (filter.type === 'color') handleColorChange(null);
+                if (filter.type === 'gender') dispatch(setFilters({ gender: null }));
+                if (filter.type === 'type') dispatch(setFilters({ type: null }));
+                if (filter.type === 'style') dispatch(setFilters({ style: null }));
                 if (filter.type === 'feature') handleFeatureToggle(filter.value);
               }}>×</button>
             </FilterTag>
@@ -1476,9 +1482,14 @@ const ProductListingPage = () => {
                     {filter.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                     <button onClick={() => {
                       if (filter.type === 'category') handleCategoryChange(null);
+                      if (filter.type === 'brand') handleBrandChange(null);
+                      if (filter.type === 'search') dispatch(setFilters({ search: null }));
                       if (filter.type === 'material') handleMaterialChange(null);
                       if (filter.type === 'shape') handleShapeChange(null);
                       if (filter.type === 'color') handleColorChange(null);
+                      if (filter.type === 'gender') dispatch(setFilters({ gender: null }));
+                      if (filter.type === 'type') dispatch(setFilters({ type: null }));
+                      if (filter.type === 'style') dispatch(setFilters({ style: null }));
                       if (filter.type === 'feature') handleFeatureToggle(filter.value);
                     }}>×</button>
                   </FilterTag>

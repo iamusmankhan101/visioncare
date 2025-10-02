@@ -38,6 +38,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import ExchangeReturnPage from './pages/ExchangeReturnPage';
 import FAQPage from './pages/FAQPage';
 import CommentsPage from './components/CommentsPage';
+import ProductDetailTest from './components/ProductDetailTest';
 import debugOrders from './utils/debugOrders';
 import testAdminAuth from './utils/testAdminAuth';
 import { testEmailJSConnection, debugEmailJSConfig } from './services/emailService';
@@ -132,6 +133,7 @@ function AppContent() {
           <Route path="/admin-debug" element={<AdminDebug />} />
           <Route path="/order-items-debug" element={<OrderItemsDebug />} />
           <Route path="/slug-test" element={<SlugTest />} />
+          <Route path="/product-detail-test" element={<ProductDetailTest />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

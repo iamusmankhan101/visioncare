@@ -1384,8 +1384,13 @@ const ProductDetailPage = () => {
 
   // Set product from Redux store when data is loaded
   useEffect(() => {
+    console.log('🔍 ProductDetailPage: Looking for product with slug:', slug);
+    console.log('📦 Available products:', products?.length || 0);
+    
     if (products && products.length > 0) {
       const foundProduct = findProductBySlug(products, slug);
+      console.log('🎯 Found product:', foundProduct ? foundProduct.name : 'Not found');
+      
       if (foundProduct) {
         setProduct(foundProduct);
         // Set default selections
@@ -1395,9 +1400,18 @@ const ProductDetailPage = () => {
         if (foundProduct.sizes && foundProduct.sizes.length > 0) {
           setSelectedSize(foundProduct.sizes[0]);
         }
+      } else {
+        console.warn('❌ Product not found for slug:', slug);
       }
     }
   }, [products, slug]);
+
+  // Calculate discount information
+  const hasDiscount = product?.discount?.hasDiscount || false;
+  const originalPrice = product?.price || 0;
+  const discountedPrice = hasDiscount 
+    ? originalPrice - (originalPrice * (product.discount.discountPercentage / 100))
+    : originalPrice;
 
   const openLensModal = () => {
     handleContinueToUsage();
@@ -1958,12 +1972,6 @@ const ProductDetailPage = () => {
     }
   };
 
-  // Calculate pricing using actual product data structure
-  const originalPrice = product?.price || 0;
-  const hasDiscount = product?.discount?.hasDiscount && product?.discount?.discountPercentage > 0;
-  const discountedPrice = hasDiscount 
-    ? originalPrice * (1 - product?.discount?.discountPercentage / 100)
-    : originalPrice;
 
   // Ensure products are loaded for related products
   useEffect(() => {
@@ -1972,13 +1980,29 @@ const ProductDetailPage = () => {
     }
   }, [dispatch, products.length]);
 
-  if (status === 'loading' || !product) {
+  if (status === 'loading') {
     return (
       <PageContainer>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
           <div style={{ textAlign: 'center' }}>
-            <h3>Loading product...</h3>
-            <p>Please wait while we fetch the product details.</p>
+            <h2>Loading product details...</h2>
+            <p>Please wait while we fetch the product information.</p>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (!product && status === 'succeeded') {
+    return (
+      <PageContainer>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2>Product Not Found</h2>
+            <p>The product you're looking for doesn't exist or has been removed.</p>
+            <Link to="/products" style={{ color: '#48b2ee', textDecoration: 'none' }}>
+              ← Back to Products
+            </Link>
           </div>
         </div>
       </PageContainer>
@@ -1992,7 +2016,7 @@ const ProductDetailPage = () => {
           <div style={{ textAlign: 'center' }}>
             <h3>Error loading product</h3>
             <p>{error || 'Failed to load product details'}</p>
-            <button onClick={() => dispatch(fetchProductById(id))}>Retry</button>
+            <button onClick={() => window.location.reload()}>Retry</button>
           </div>
         </div>
       </PageContainer>
@@ -2001,7 +2025,13 @@ const ProductDetailPage = () => {
 
   return (
     <PageContainer>
-     
+      <BreadcrumbNav>
+        <Link to="/">Home</Link>
+        <span>/</span>
+        <Link to="/products">Products</Link>
+        <span>/</span>
+        <span>{product?.name || 'Product'}</span>
+      </BreadcrumbNav>
 
       <ProductLayout>
         <ImageGallery>

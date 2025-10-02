@@ -168,9 +168,10 @@ const sampleLensProducts = [
 
 const sampleProducts = [
   {
+    id: 1,
     name: "Classic Aviator Sunglasses",
     price: 2500,
-    category: "Sunglasses",
+    category: "men",
     material: "Metal",
     shape: "Aviator",
     rim: "Full Rim",
@@ -191,6 +192,7 @@ const sampleProducts = [
     description: "Classic aviator sunglasses with premium gold frame and UV protection."
   },
   {
+    id: 2,
     name: "Eco-Friendly Bamboo Frames",
     price: 3200,
     category: "fashion-glasses",
@@ -214,6 +216,7 @@ const sampleProducts = [
     description: "Sustainable bamboo frames perfect for environmentally conscious customers."
   },
   {
+    id: 3,
     name: "Bold Statement Glasses",
     price: 2800,
     category: "fashion-glasses",
@@ -237,6 +240,7 @@ const sampleProducts = [
     description: "Make a bold statement with these striking cat-eye frames."
   },
   {
+    id: 4,
     name: "Retro Round Glasses",
     price: 2200,
     category: "reading-glasses",
@@ -260,6 +264,7 @@ const sampleProducts = [
     description: "Classic round frames with a vintage copper finish."
   },
   {
+    id: 5,
     name: "Street Style Urban Frames",
     price: 2600,
     category: "sports-glasses",
@@ -283,6 +288,7 @@ const sampleProducts = [
     description: "Urban street style frames perfect for the modern trendsetter."
   },
   {
+    id: 6,
     name: "Artsy Designer Frames",
     price: 3500,
     category: "computer-glasses",
@@ -304,6 +310,30 @@ const sampleProducts = [
     discount: { hasDiscount: false, discountPercentage: 0 },
     status: "In Stock",
     description: "Unique geometric frames for the artistic and creative individual."
+  },
+  {
+    id: 7,
+    name: "Elegant Women's Sunglasses",
+    price: 2800,
+    category: "women",
+    material: "Acetate",
+    shape: "Cat Eye",
+    rim: "Full Rim",
+    style: "Fashion",
+    colors: [{ name: "Rose Gold", hex: "#E8B4B8" }],
+    features: ["uv-protection", "lightweight"],
+    image: "/images/sunglasses.webp",
+    featured: true,
+    bestSeller: true,
+    bestSelling: true,
+    brand: "Fashion Vision",
+    gender: "Women",
+    frameColor: "Rose Gold",
+    sizes: ["Small", "Medium"],
+    lensTypes: ["Non-Prescription", "Prescription"],
+    discount: { hasDiscount: true, discountPercentage: 20 },
+    status: "In Stock",
+    description: "Stylish cat-eye sunglasses perfect for the modern woman."
   }
 ];
 

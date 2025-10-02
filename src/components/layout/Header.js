@@ -1275,10 +1275,8 @@ const Header = () => {
             </DropdownIcon>
           </NavButton>
           <Dropdown>
-            <DropdownLink to="/products?category=sunglasses&gender=men">Men's Sunglasses</DropdownLink>
-            <DropdownLink to="/products?category=sunglasses&gender=women">Women's Sunglasses</DropdownLink>
-            <DropdownLink to="/products?category=sunglasses&type=polarized">Polarized Sunglasses</DropdownLink>
-            <DropdownLink to="/products?category=sunglasses&type=aviator">Aviator Sunglasses</DropdownLink>
+            <DropdownLink to="/products?category=men">Men</DropdownLink>
+            <DropdownLink to="/products?category=women">Women</DropdownLink>
           </Dropdown>
         </NavItem>
         
@@ -1528,10 +1526,8 @@ const Header = () => {
               <FiChevronDown style={{ transform: mobileDropdowns.sunglasses ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
             </MobileNavButton>
             <MobileDropdown isOpen={mobileDropdowns.sunglasses}>
-              <MobileDropdownLink to="/products?category=sunglasses&gender=men" onClick={() => setMobileMenuOpen(false)}>Men's Sunglasses</MobileDropdownLink>
-              <MobileDropdownLink to="/products?category=sunglasses&gender=women" onClick={() => setMobileMenuOpen(false)}>Women's Sunglasses</MobileDropdownLink>
-              <MobileDropdownLink to="/products?category=sunglasses&type=polarized" onClick={() => setMobileMenuOpen(false)}>Polarized Sunglasses</MobileDropdownLink>
-              <MobileDropdownLink to="/products?category=sunglasses&type=aviator" onClick={() => setMobileMenuOpen(false)}>Aviator Sunglasses</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=men" onClick={() => setMobileMenuOpen(false)}>Men</MobileDropdownLink>
+              <MobileDropdownLink to="/products?category=women" onClick={() => setMobileMenuOpen(false)}>Women</MobileDropdownLink>
             </MobileDropdown>
           </div>
           

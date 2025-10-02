@@ -19,28 +19,26 @@ export const generateSlug = (name) => {
 };
 
 /**
- * Generate a unique slug by appending product ID if needed
+ * Generate a unique slug using only the product name (no ID)
  * @param {string} name - Product name
- * @param {number|string} id - Product ID (can be number, string, or ObjectId)
- * @returns {string} - Unique URL-friendly slug
+ * @param {number|string} id - Product ID (kept for backward compatibility but not used in URL)
+ * @returns {string} - URL-friendly slug based on product name only
  */
 export const generateUniqueSlug = (name, id) => {
-  if (!name || (!id && id !== 0)) {
-    console.warn('generateUniqueSlug: Missing name or id', { name, id });
+  if (!name) {
+    console.warn('generateUniqueSlug: Missing product name', { name, id });
     return 'unknown-product';
   }
   
-  const baseSlug = generateSlug(name);
+  // Generate slug from name only (no ID appended)
+  const slug = generateSlug(name);
   
-  // Handle different ID formats
-  let idString = id;
-  if (typeof id === 'object' && id.toString) {
-    idString = id.toString(); // For ObjectId or other objects
-  } else if (typeof id !== 'string') {
-    idString = String(id); // Convert numbers to strings
+  // If slug is empty after processing, use fallback
+  if (!slug) {
+    return 'product';
   }
   
-  return `${baseSlug}-${idString}`;
+  return slug;
 };
 
 /**
@@ -77,22 +75,29 @@ export const extractIdFromSlug = (slug) => {
 export const productMatchesSlug = (product, slug) => {
   if (!product || !slug) return false;
   
-  // Get product ID (try both id and _id fields)
-  const productId = product.id || product._id;
-  if (!productId) return false;
-  
-  // Try to match by generated slug
-  const productSlug = generateUniqueSlug(product.name, productId);
+  // Generate slug from product name and compare
+  const productSlug = generateUniqueSlug(product.name);
   if (productSlug === slug) return true;
   
-  // Fallback: try to extract ID from slug and match
-  const extractedId = extractIdFromSlug(slug);
-  if (!extractedId) return false;
+  // Fallback: try to match by name directly (case-insensitive)
+  if (product.name) {
+    const normalizedProductName = product.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-');
+    const normalizedSlug = slug.toLowerCase();
+    if (normalizedProductName === normalizedSlug) return true;
+  }
   
-  // Try different ID comparison strategies
-  return extractedId === productId || 
-         extractedId === String(productId) || 
-         String(extractedId) === String(productId);
+  // Legacy support: try to extract ID from slug and match (for old URLs)
+  const extractedId = extractIdFromSlug(slug);
+  if (extractedId) {
+    const productId = product.id || product._id;
+    if (productId) {
+      return extractedId === productId || 
+             extractedId === String(productId) || 
+             String(extractedId) === String(productId);
+    }
+  }
+  
+  return false;
 };
 
 /**

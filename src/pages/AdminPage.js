@@ -2763,19 +2763,20 @@ const AdminPage = () => {
 
   // Handle color selection
   const handleColorToggle = (colorOption) => {
-    const isSelected = productData.colors.some(c => c.name === colorOption.name);
+    const currentColors = Array.isArray(productData.colors) ? productData.colors : [];
+    const isSelected = currentColors.some(c => c.name === colorOption.name);
 
     if (isSelected) {
       // Remove color
       setProductData({
         ...productData,
-        colors: productData.colors.filter(c => c.name !== colorOption.name)
+        colors: currentColors.filter(c => c.name !== colorOption.name)
       });
     } else {
       // Add color
       setProductData({
         ...productData,
-        colors: [...productData.colors, colorOption]
+        colors: [...currentColors, colorOption]
       });
     }
   };
@@ -3573,11 +3574,11 @@ const AdminPage = () => {
                               {colorOptions.map(colorOption => (
                                 <ColorRadioOption
                                   key={colorOption.name}
-                                  selected={productData.colors.some(c => c.name === colorOption.name)}
+                                  selected={Array.isArray(productData.colors) && productData.colors.some(c => c.name === colorOption.name)}
                                 >
                                   <RadioInput
                                     type="checkbox"
-                                    checked={productData.colors.some(c => c.name === colorOption.name)}
+                                    checked={Array.isArray(productData.colors) && productData.colors.some(c => c.name === colorOption.name)}
                                     onChange={() => handleColorToggle(colorOption)}
                                   />
                                   <ColorSwatch color={colorOption.hex} />
@@ -4375,11 +4376,11 @@ const AdminPage = () => {
                         {colorOptions.map(colorOption => (
                           <ColorRadioOption
                             key={colorOption.name}
-                            selected={productData.colors.some(c => c.name === colorOption.name)}
+                            selected={Array.isArray(productData.colors) && productData.colors.some(c => c.name === colorOption.name)}
                           >
                             <RadioInput
                               type="checkbox"
-                              checked={productData.colors.some(c => c.name === colorOption.name)}
+                              checked={Array.isArray(productData.colors) && productData.colors.some(c => c.name === colorOption.name)}
                               onChange={() => handleColorToggle(colorOption)}
                             />
                             <ColorSwatch color={colorOption.hex} />

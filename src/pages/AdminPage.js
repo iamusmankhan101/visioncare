@@ -2824,7 +2824,11 @@ const AdminPage = () => {
 
   // Handle edit product - MOVED INSIDE COMPONENT
   const handleEditProduct = (product) => {
-    setProductData({
+    console.log('✏️ AdminPage: Editing product:', product.name);
+    console.log('✏️ AdminPage: Product ID:', product.id || product._id);
+    console.log('✏️ AdminPage: Product data:', product);
+    
+    const editData = {
       ...defaultProductData, // Start with default values
       ...product, // Override with product data
       price: product.price ? product.price.toString() : '', // Convert price to string for form input
@@ -2849,17 +2853,24 @@ const AdminPage = () => {
       lensTypes: Array.isArray(product.lensTypes) ? product.lensTypes : [],
       gallery: Array.isArray(product.gallery) ? product.gallery : [],
       discount: product.discount || { hasDiscount: false, discountPercentage: 0 }
-    });
+    };
+    
+    console.log('✏️ AdminPage: Setting edit data:', editData);
+    setProductData(editData);
     setActiveTab('edit-product');
   };
 
   // Handle delete product - MOVED INSIDE COMPONENT
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        dispatch(deleteProduct(productId));
+        console.log('🗑️ Deleting product with ID:', productId);
+        await dispatch(deleteProductAsync(productId)).unwrap();
         setSuccessMessage('Product deleted successfully!');
         setTimeout(() => setSuccessMessage(''), 3000);
+        
+        // Refresh the product list to ensure UI is updated
+        dispatch(fetchProducts());
       } catch (error) {
         console.error('Failed to delete product:', error);
         setSuccessMessage('Error deleting product: ' + error.message);
@@ -2874,24 +2885,45 @@ const AdminPage = () => {
     setIsLoading(true);
 
     try {
+      console.log('✏️ AdminPage: Submitting product update');
+      console.log('✏️ AdminPage: Current productData:', productData);
+      
+      // Validate required fields
+      if (!productData.id && !productData._id) {
+        throw new Error('Product ID is missing. Cannot update product.');
+      }
+      
+      if (!productData.name || !productData.price) {
+        throw new Error('Product name and price are required.');
+      }
+
       // Ensure price is a number
       const updatedProduct = {
         ...productData,
         price: parseFloat(productData.price)
       };
+      
+      const productId = updatedProduct.id || updatedProduct._id;
+      console.log('✏️ AdminPage: Updating product with ID:', productId);
+      console.log('✏️ AdminPage: Updated product data:', updatedProduct);
 
       // Dispatch async action to update product in API and Redux store
       await dispatch(updateProductAsync({
-        id: updatedProduct.id,
+        id: productId,
         productData: updatedProduct
       })).unwrap();
 
+      console.log('✅ AdminPage: Product updated successfully');
+      
       // Show success message
       setSuccessMessage('Product updated successfully!');
 
       // Reset file upload state
       setSelectedFile(null);
       setPreviewUrl('');
+      
+      // Refresh the product list to ensure UI is updated
+      dispatch(fetchProducts());
 
       // Reset form and go back to manage products
       setTimeout(() => {
@@ -2899,9 +2931,10 @@ const AdminPage = () => {
         setActiveTab('manage-products');
       }, 2000);
     } catch (error) {
-      console.error('Failed to update product:', error);
+      console.error('❌ AdminPage: Failed to update product:', error);
       const errorMessage = error?.message || error?.error || error || 'Unknown error occurred';
       setSuccessMessage('Error updating product: ' + errorMessage);
+      setTimeout(() => setSuccessMessage(''), 5000);
     } finally {
       setIsLoading(false);
     }

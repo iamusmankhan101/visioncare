@@ -174,18 +174,64 @@ const productSlice = createSlice({
       })
       
       // Handle updateProductAsync
+      .addCase(updateProductAsync.pending, (state) => {
+        state.status = 'loading';
+      })
       .addCase(updateProductAsync.fulfilled, (state, action) => {
-        const index = state.items.findIndex(item => item.id === action.payload.id);
+        const updatedProduct = action.payload;
+        console.log('✏️ Redux: Updating product:', updatedProduct.name);
+        console.log('✏️ Redux: Updated product ID:', updatedProduct.id || updatedProduct._id);
+        
+        // Try different ID matching strategies for live database compatibility
+        const index = state.items.findIndex(item => {
+          const itemId = item.id || item._id;
+          const updatedId = updatedProduct.id || updatedProduct._id;
+          return itemId === updatedId || 
+                 String(itemId) === String(updatedId) || 
+                 itemId === String(updatedId);
+        });
+        
         if (index !== -1) {
-          state.items[index] = action.payload;
+          state.items[index] = updatedProduct;
           state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
+          console.log('✅ Redux: Product updated successfully in store');
+        } else {
+          console.warn('⚠️ Redux: Product not found in store for update');
         }
+        state.status = 'succeeded';
+      })
+      .addCase(updateProductAsync.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+        console.error('❌ Redux: Update product failed:', action.payload);
       })
       
       // Handle deleteProductAsync
+      .addCase(deleteProductAsync.pending, (state) => {
+        state.status = 'loading';
+      })
       .addCase(deleteProductAsync.fulfilled, (state, action) => {
-        state.items = state.items.filter(item => item.id !== action.payload);
+        const deletedId = action.payload;
+        console.log('🗑️ Redux: Deleting product with ID:', deletedId);
+        console.log('🗑️ Redux: Before deletion, items count:', state.items.length);
+        
+        // Try different ID matching strategies for live database compatibility
+        state.items = state.items.filter(item => {
+          const itemId = item.id || item._id;
+          const match = itemId !== deletedId && 
+                       String(itemId) !== String(deletedId) && 
+                       itemId !== String(deletedId);
+          return match;
+        });
+        
+        console.log('🗑️ Redux: After deletion, items count:', state.items.length);
         state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
+        state.status = 'succeeded';
+      })
+      .addCase(deleteProductAsync.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+        console.error('🗑️ Redux: Delete product failed:', action.payload);
       })
       
       // Handle fetchProductById

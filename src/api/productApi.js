@@ -263,22 +263,55 @@ const productApi = {
   // Update a product
   updateProduct: async (id, productData) => {
     try {
+      console.log('✏️ ProductAPI: Attempting to update product with ID:', id);
+      console.log('✏️ ProductAPI: ID type:', typeof id);
+      console.log('✏️ ProductAPI: Product data:', productData);
+      console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${id}`);
+      
       const updatedProduct = await apiRequest(`/products/${id}`, {
         method: 'PUT',
         body: JSON.stringify(productData),
       });
       
+      console.log('✅ ProductAPI: Product updated successfully:', updatedProduct);
+      
       // Update localStorage backup
       try {
         const products = await productApi.getAllProducts();
         saveProductsBackup(products);
+        console.log('✅ ProductAPI: Backup updated after update');
       } catch (backupError) {
-        console.warn('Failed to update backup after updating product:', backupError.message);
+        console.warn('⚠️ ProductAPI: Failed to update backup after updating product:', backupError.message);
       }
       
       return updatedProduct;
     } catch (error) {
-      console.error(`Error updating product ${id}:`, error);
+      console.error(`❌ ProductAPI: Error updating product ${id}:`, error);
+      console.error(`❌ ProductAPI: Full error details:`, error.message);
+      
+      // If API fails, try to update localStorage backup as fallback
+      try {
+        console.warn('🔄 ProductAPI: API update failed, attempting localStorage fallback');
+        const products = getStoredProducts();
+        const productIndex = products.findIndex(p => {
+          const productId = p.id || p._id;
+          return productId === id || 
+                 String(productId) === String(id) || 
+                 productId === String(id);
+        });
+        
+        if (productIndex !== -1) {
+          products[productIndex] = { ...products[productIndex], ...productData };
+          saveProductsBackup(products);
+          console.log('📦 ProductAPI: Product updated in localStorage backup');
+          return products[productIndex];
+        } else {
+          console.warn('⚠️ ProductAPI: Product not found in localStorage backup');
+        }
+      } catch (fallbackError) {
+        console.error('❌ ProductAPI: Fallback update also failed:', fallbackError.message);
+      }
+      
       throw new Error(`Failed to update product: ${error.message}`);
     }
   },
@@ -286,21 +319,52 @@ const productApi = {
   // Delete a product
   deleteProduct: async (id) => {
     try {
+      console.log('🗑️ ProductAPI: Attempting to delete product with ID:', id);
+      console.log('🗑️ ProductAPI: ID type:', typeof id);
+      console.log('🔗 ProductAPI: Delete URL:', `${API_BASE_URL}/products/${id}`);
+      
       const result = await apiRequest(`/products/${id}`, {
         method: 'DELETE',
       });
+      
+      console.log('✅ ProductAPI: Product deleted successfully:', result);
       
       // Update localStorage backup
       try {
         const products = await productApi.getAllProducts();
         saveProductsBackup(products);
+        console.log('✅ ProductAPI: Backup updated after deletion');
       } catch (backupError) {
-        console.warn('Failed to update backup after deleting product:', backupError.message);
+        console.warn('⚠️ ProductAPI: Failed to update backup after deleting product:', backupError.message);
       }
       
       return result;
     } catch (error) {
-      console.error(`Error deleting product ${id}:`, error);
+      console.error(`❌ ProductAPI: Error deleting product ${id}:`, error);
+      console.error(`❌ ProductAPI: Full error details:`, error.message);
+      
+      // If API fails, try to remove from localStorage backup as fallback
+      try {
+        console.warn('🔄 ProductAPI: API delete failed, attempting localStorage fallback');
+        const products = getStoredProducts();
+        const filteredProducts = products.filter(p => {
+          const productId = p.id || p._id;
+          return productId !== id && 
+                 String(productId) !== String(id) && 
+                 productId !== String(id);
+        });
+        
+        if (filteredProducts.length < products.length) {
+          saveProductsBackup(filteredProducts);
+          console.log('📦 ProductAPI: Product removed from localStorage backup');
+          return { message: 'Product deleted from local storage (API unavailable)' };
+        } else {
+          console.warn('⚠️ ProductAPI: Product not found in localStorage backup');
+        }
+      } catch (fallbackError) {
+        console.error('❌ ProductAPI: Fallback deletion also failed:', fallbackError.message);
+      }
+      
       throw new Error(`Failed to delete product: ${error.message}`);
     }
   }

@@ -239,9 +239,20 @@ export const getAllOrders = async (filters = {}) => {
     }
 
     const data = await response.json();
+    console.log('📦 OrderAPI: Received data from backend:', data);
+    
+    // Validate response structure
+    if (!data || (!data.orders && !Array.isArray(data))) {
+      console.warn('⚠️ OrderAPI: Invalid response structure, expected orders array');
+      return { orders: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    }
+    
+    // Handle different response formats
+    const ordersArray = data.orders || (Array.isArray(data) ? data : []);
+    console.log('📦 OrderAPI: Processing', ordersArray.length, 'orders');
     
     // Transform backend data to match frontend format
-    const transformedOrders = data.orders.map(order => ({
+    const transformedOrders = ordersArray.map(order => ({
       id: order.id,
       orderNumber: order.order_number,
       orderDate: order.created_at,
@@ -249,13 +260,13 @@ export const getAllOrders = async (filters = {}) => {
       paymentStatus: order.payment_status,
       total: order.total,
       customerInfo: {
-        firstName: order.customer_name.split(' ')[0] || '',
-        lastName: order.customer_name.split(' ').slice(1).join(' ') || '',
-        email: order.customer_email,
-        phone: order.customer_phone
+        firstName: (order.customer_name || '').split(' ')[0] || '',
+        lastName: (order.customer_name || '').split(' ').slice(1).join(' ') || '',
+        email: order.customer_email || '',
+        phone: order.customer_phone || ''
       },
-      shippingAddress: JSON.parse(order.shipping_address || '{}'),
-      billingAddress: JSON.parse(order.billing_address || '{}'),
+      shippingAddress: order.shipping_address ? JSON.parse(order.shipping_address) : {},
+      billingAddress: order.billing_address ? JSON.parse(order.billing_address) : {},
       subtotal: order.subtotal,
       shippingCost: order.shipping_amount,
       taxAmount: order.tax_amount,
@@ -266,7 +277,7 @@ export const getAllOrders = async (filters = {}) => {
       vendorName: order.vendor_name,
       storeName: order.store_name,
       itemCount: order.item_count,
-      items: order.items ? order.items.map(item => ({
+      items: Array.isArray(order.items) ? order.items.map(item => ({
         id: item.id,
         name: item.product_name,
         sku: item.product_sku,
@@ -315,13 +326,13 @@ export const getOrderById = async (id) => {
       paymentStatus: order.payment_status,
       total: order.total,
       customerInfo: {
-        firstName: order.customer_name.split(' ')[0] || '',
-        lastName: order.customer_name.split(' ').slice(1).join(' ') || '',
-        email: order.customer_email,
-        phone: order.customer_phone
+        firstName: (order.customer_name || '').split(' ')[0] || '',
+        lastName: (order.customer_name || '').split(' ').slice(1).join(' ') || '',
+        email: order.customer_email || '',
+        phone: order.customer_phone || ''
       },
-      shippingAddress: JSON.parse(order.shipping_address || '{}'),
-      billingAddress: JSON.parse(order.billing_address || '{}'),
+      shippingAddress: order.shipping_address ? JSON.parse(order.shipping_address) : {},
+      billingAddress: order.billing_address ? JSON.parse(order.billing_address) : {},
       subtotal: order.subtotal,
       shippingCost: order.shipping_amount,
       taxAmount: order.tax_amount,

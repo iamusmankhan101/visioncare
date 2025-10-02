@@ -1934,7 +1934,7 @@ const ProductDetailPage = () => {
           price: p.price,
           originalPrice: p.discount?.hasDiscount ? Math.round(p.price / (1 - p.discount.discountPercentage / 100)) : null,
           image: p.image,
-          colors: p.colors ? p.colors.map(color => color.hex) : ['#000000'],
+          colors: Array.isArray(p.colors) ? p.colors.map(color => color.hex) : ['#000000'],
           discount: p.discount?.hasDiscount ? `${p.discount.discountPercentage}% OFF` : null
         }))
     : [];
@@ -1949,11 +1949,12 @@ const ProductDetailPage = () => {
             </p>
             <h4 style={{ marginBottom: '0.5rem', color: '#333', textAlign: 'left' }}>Features:</h4>
             <ul style={{ paddingLeft: '1.5rem', color: '#666', textAlign: 'left' }}>
-              {product?.features?.map((feature, index) => (
+              {(Array.isArray(product?.features) ? product.features : []).map((feature, index) => (
                 <li key={index} style={{ marginBottom: '0.25rem' }}>
                   {typeof feature === 'string' ? feature.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : feature}
                 </li>
-              )) || (
+              ))}
+              {(!product?.features || !Array.isArray(product.features) || product.features.length === 0) && (
                 <li style={{ marginBottom: '0.25rem' }}>High-quality construction</li>
               )}
             </ul>
@@ -1995,14 +1996,12 @@ const ProductDetailPage = () => {
           <TabContent>
             <h4 style={{ marginBottom: '1rem', color: '#333', textAlign: 'left' }}>Care Instructions:</h4>
             <ul style={{ paddingLeft: '1.5rem', color: '#666', lineHeight: '1.6', textAlign: 'left' }}>
-              {product?.careInstructions?.map((instruction, index) => (
-                <li key={index} style={{ marginBottom: '0.5rem' }}>{instruction}</li>
-              )) || [
+              {(Array.isArray(product?.careInstructions) ? product.careInstructions : [
                 'Clean with microfiber cloth',
                 'Store in protective case',
                 'Avoid extreme temperatures',
                 'Use lens cleaner for stubborn spots'
-              ].map((instruction, index) => (
+              ]).map((instruction, index) => (
                 <li key={index} style={{ marginBottom: '0.5rem' }}>{instruction}</li>
               ))}
             </ul>
@@ -2163,15 +2162,12 @@ const ProductDetailPage = () => {
               <div>
                 <ColorLabel>Color: {selectedColor}</ColorLabel>
                 <ColorOptions>
-                  {product.colors.map((color, index) => (
+                  {(Array.isArray(product?.colors) ? product.colors : []).map((color, index) => (
                     <ColorSwatch
                       key={index}
                       color={color.hex}
                       selected={selectedColor === color.name}
-                      onClick={() => {
-                        setSelectedColor(color.name);
-                        setSelectedImage(index);
-                      }}
+                      onClick={() => setSelectedColor(color.name)}
                       title={color.name}
                     />
                   ))}
@@ -2183,7 +2179,7 @@ const ProductDetailPage = () => {
               <div>
                 <SizeLabel>Size: {selectedSize}</SizeLabel>
                 <SizeOptions>
-                  {product.sizes.map((size) => (
+                  {(Array.isArray(product?.sizes) ? product.sizes : []).map((size) => (
                     <SizeOption
                       key={size}
                       selected={selectedSize === size}
@@ -2426,7 +2422,7 @@ const ProductDetailPage = () => {
                   )}
                 </ProductPrice>
                 <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
-                  {relatedProduct.colors.map((color, index) => (
+                  {(Array.isArray(relatedProduct?.colors) ? relatedProduct.colors : []).map((color, index) => (
                     <ColorDot key={index} color={color} />
                   ))}
                 </div>

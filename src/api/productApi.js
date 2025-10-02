@@ -1,5 +1,5 @@
 import sampleProducts from '../utils/addSampleProducts';
-// Backend API configuration for eyewear-products-db database
+// Backend API configuration for Neon PostgreSQL database
 const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
@@ -26,17 +26,17 @@ const getApiBaseUrl = () => {
   if (isDeployedEnvironment) {
     // Use same domain for deployed environment
     const deployedApiUrl = `${window.location.protocol}//${window.location.host}/api`;
-    console.log('Using deployed API for Neon database:', deployedApiUrl);
     return deployedApiUrl;
   }
   
   // Fallback to Vercel API with Neon database
-  const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
-  console.log('Using Vercel API for Neon database:', vercelApiUrl);
+  const vercelApiUrl = process.env.REACT_APP_PRODUCTS_API_URL || 'https://vision-care-hmn4.vercel.app/api';
+  console.log('Using Vercel API with Neon database:', vercelApiUrl);
   return vercelApiUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();
+
 // Helper function to handle API requests
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;

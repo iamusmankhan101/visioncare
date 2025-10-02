@@ -1997,12 +1997,66 @@ const ProductDetailPage = () => {
     return (
       <PageContainer>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '50px 0' }}>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', maxWidth: '600px' }}>
             <h2>Product Not Found</h2>
             <p>The product you're looking for doesn't exist or has been removed.</p>
-            <Link to="/products" style={{ color: '#48b2ee', textDecoration: 'none' }}>
-              ← Back to Products
-            </Link>
+            
+            <div style={{ 
+              backgroundColor: '#f8f9fa', 
+              padding: '1rem', 
+              borderRadius: '8px', 
+              margin: '1rem 0',
+              textAlign: 'left'
+            }}>
+              <h4 style={{ margin: '0 0 0.5rem 0' }}>Debug Information:</h4>
+              <p style={{ margin: '0.25rem 0', fontSize: '0.9rem' }}>
+                <strong>Looking for slug:</strong> <code>{slug}</code>
+              </p>
+              <p style={{ margin: '0.25rem 0', fontSize: '0.9rem' }}>
+                <strong>Available products:</strong> {products?.length || 0}
+              </p>
+              {products?.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>
+                    <strong>Valid product slugs:</strong>
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: '1rem', fontSize: '0.8rem' }}>
+                    {products.slice(0, 5).map(p => (
+                      <li key={p.id}>
+                        <Link 
+                          to={`/products/${generateUniqueSlug(p.name, p.id)}`}
+                          style={{ color: '#48b2ee', textDecoration: 'none' }}
+                        >
+                          {p.name} → {generateUniqueSlug(p.name, p.id)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            
+            <div style={{ marginTop: '2rem' }}>
+              <Link 
+                to="/products" 
+                style={{ 
+                  color: '#48b2ee', 
+                  textDecoration: 'none',
+                  marginRight: '1rem'
+                }}
+              >
+                ← Back to Products
+              </Link>
+              <Link 
+                to="/product-detail-test" 
+                style={{ 
+                  color: '#48b2ee', 
+                  textDecoration: 'none'
+                }}
+              >
+                Test Product Links
+              </Link>
+            </div>
           </div>
         </div>
       </PageContainer>

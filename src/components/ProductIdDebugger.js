@@ -25,7 +25,6 @@ const ProductIdDebugger = () => {
         <h1>Product ID Debugger</h1>
         <div style={{ backgroundColor: '#ffe8e8', padding: '1rem', borderRadius: '8px' }}>
           <h3 style={{ color: '#d63031', margin: '0 0 1rem 0' }}>Error Loading Products</h3>
-          <p style={{ color: '#d63031', margin: 0 }}>{error || 'Failed to load products'}</p>
         </div>
       </div>
     );
@@ -34,13 +33,16 @@ const ProductIdDebugger = () => {
   return (
     <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
       <h1>Product ID Debugger</h1>
-      <p>This shows all available product IDs in your database:</p>
+      <p>This shows all available product IDs in your <strong>Vercel database</strong>:</p>
+      <p style={{ fontSize: '0.9rem', color: '#666' }}>
+        Backend: <code>https://vision-care-hmn4.vercel.app</code>
+      </p>
       
       <div style={{ 
         backgroundColor: '#e8f5e8', 
         padding: '1rem', 
         borderRadius: '8px', 
-        margin: '1rem 0' 
+        margin: '1rem 0'
       }}>
         <h3 style={{ margin: '0 0 0.5rem 0', color: '#2d5a2d' }}>Database Summary</h3>
         <p style={{ margin: '0.25rem 0', fontSize: '0.9rem', color: '#2d5a2d' }}>

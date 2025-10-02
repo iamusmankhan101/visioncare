@@ -41,6 +41,7 @@ import CommentsPage from './components/CommentsPage';
 import ProductDetailTest from './components/ProductDetailTest';
 import SlugDebugger from './components/SlugDebugger';
 import LiveProductDebugger from './components/LiveProductDebugger';
+import ProductIdDebugger from './components/ProductIdDebugger';
 import debugOrders from './utils/debugOrders';
 import testAdminAuth from './utils/testAdminAuth';
 import { testEmailJSConnection, debugEmailJSConfig } from './services/emailService';
@@ -138,6 +139,7 @@ function AppContent() {
           <Route path="/product-detail-test" element={<ProductDetailTest />} />
           <Route path="/slug-debugger" element={<SlugDebugger />} />
           <Route path="/live-product-debugger" element={<LiveProductDebugger />} />
+          <Route path="/product-id-debugger" element={<ProductIdDebugger />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

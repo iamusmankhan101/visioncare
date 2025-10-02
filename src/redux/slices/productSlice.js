@@ -234,6 +234,13 @@ const productSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
         console.error('🗑️ Redux: Delete product failed:', action.payload);
+        
+        // If it's a 404 error, the product doesn't exist anyway
+        // So we can try to remove it from the local state
+        if (action.payload && (action.payload.includes('Product not found') || action.payload.includes('404'))) {
+          console.log('🗑️ Redux: Product not found in database, removing from local state anyway');
+          // We don't have the ID in rejected action, but the error handling in AdminPage will refresh the list
+        }
       })
       
       // Handle fetchProductById

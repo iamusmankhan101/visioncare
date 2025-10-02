@@ -2889,8 +2889,23 @@ const AdminPage = () => {
       } catch (error) {
         console.error('❌ AdminPage: Failed to delete product:', error);
         console.error('❌ AdminPage: Error details:', error.message);
-        setSuccessMessage('Error deleting product: ' + error.message);
+        
+        // Provide more user-friendly error messages
+        let errorMessage = 'Error deleting product: ';
+        if (error.message.includes('Product not found') || error.message.includes('404')) {
+          errorMessage += 'Product not found. It may have already been deleted or the ID is incorrect.';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+          errorMessage += 'Network error. Please check your connection and try again.';
+        } else {
+          errorMessage += error.message;
+        }
+        
+        setSuccessMessage(errorMessage);
         setTimeout(() => setSuccessMessage(''), 5000);
+        
+        // Refresh the product list to sync with current database state
+        console.log('🔄 AdminPage: Refreshing product list after failed deletion...');
+        dispatch(fetchProducts());
       }
     } else {
       console.log('🚫 AdminPage: User cancelled deletion');
@@ -3833,7 +3848,7 @@ const AdminPage = () => {
                                   </option>
                                 ))}
                               </Select>
-                              {productData.sizes && productData.sizes.length > 0 && (
+                              {Array.isArray(productData.sizes) && productData.sizes.length > 0 && (
                                 <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                   {productData.sizes.map((size, index) => (
                                     <span
@@ -3902,7 +3917,7 @@ const AdminPage = () => {
                                   </option>
                                 ))}
                               </Select>
-                              {productData.features && productData.features.length > 0 && (
+                              {Array.isArray(productData.features) && productData.features.length > 0 && (
                                 <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                   {productData.features.map((feature, index) => (
                                     <span
@@ -3967,7 +3982,7 @@ const AdminPage = () => {
                                 />
                               </MediaUploadArea>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
-                                {productData.gallery?.map((img, index) => (
+                                {(Array.isArray(productData.gallery) ? productData.gallery : []).map((img, index) => (
                                   <div key={index} style={{ position: 'relative', width: '60px', height: '60px' }}>
                                     <img
                                       src={img}
@@ -4221,13 +4236,14 @@ const AdminPage = () => {
                                 Add multiple images to showcase your product from different angles
                               </p>
                               <GalleryGrid>
-                                {(productData.gallery || []).map((image, index) => (
+                                {(Array.isArray(productData.gallery) ? productData.gallery : []).map((image, index) => (
                                   <GalleryItem key={index}>
                                     <GalleryImage src={image} alt={`Gallery image ${index + 1}`} />
                                     <GalleryRemoveButton
                                       type="button"
                                       onClick={() => {
-                                        const updatedGallery = [...(productData.gallery || [])];
+                                        const currentGallery = Array.isArray(productData.gallery) ? productData.gallery : [];
+                                        const updatedGallery = [...currentGallery];
                                         updatedGallery.splice(index, 1);
                                         setProductData({...productData, gallery: updatedGallery});
                                       }}

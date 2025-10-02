@@ -357,9 +357,23 @@ const productApi = {
         if (filteredProducts.length < products.length) {
           saveProductsBackup(filteredProducts);
           console.log('📦 ProductAPI: Product removed from localStorage backup');
+          
+          // If the API returned 404, consider it a successful deletion
+          // since the product doesn't exist in the database anyway
+          if (error.message.includes('Product not found') || error.message.includes('404')) {
+            console.log('✅ ProductAPI: Product was not in database, removed from local storage');
+            return { message: 'Product deleted (was not in database)' };
+          }
+          
           return { message: 'Product deleted from local storage (API unavailable)' };
         } else {
-          console.warn('⚠️ ProductAPI: Product not found in localStorage backup');
+          console.warn('⚠️ ProductAPI: Product not found in localStorage backup either');
+          
+          // If it's a 404 and not in localStorage, it's effectively deleted
+          if (error.message.includes('Product not found') || error.message.includes('404')) {
+            console.log('✅ ProductAPI: Product not found anywhere, considering deletion successful');
+            return { message: 'Product not found (already deleted or never existed)' };
+          }
         }
       } catch (fallbackError) {
         console.error('❌ ProductAPI: Fallback deletion also failed:', fallbackError.message);

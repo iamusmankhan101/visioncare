@@ -55,10 +55,10 @@ export const updateProductAsync = createAsyncThunk(
 
 export const deleteProductAsync = createAsyncThunk(
   'products/deleteProduct',
-  async (productName, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
-      await productApi.deleteProduct(productName);
-      return productName;
+      await productApi.deleteProduct(id);
+      return id;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -211,17 +211,18 @@ const productSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(deleteProductAsync.fulfilled, (state, action) => {
-        const deletedProductName = action.payload;
-        console.log('🗑️ Redux: Deleting product with name:', deletedProductName);
+        const deletedId = action.payload;
+        console.log('🗑️ Redux: Deleting product with ID:', deletedId);
         console.log('🗑️ Redux: Before deletion, items count:', state.items.length);
         
-        // Filter by product name instead of ID
+        // Try different ID matching strategies for live database compatibility
         state.items = state.items.filter(item => {
-          const itemName = item.name;
-          // Keep items that DON'T match the deleted product name
-          const shouldKeep = itemName !== deletedProductName && 
-                            String(itemName).toLowerCase() !== String(deletedProductName).toLowerCase();
-          console.log('🗑️ Redux: Item name:', itemName, 'Deleted name:', deletedProductName, 'Keep:', shouldKeep);
+          const itemId = item.id || item._id;
+          // Keep items that DON'T match the deleted ID
+          const shouldKeep = itemId !== deletedId && 
+                            String(itemId) !== String(deletedId) && 
+                            itemId !== String(deletedId);
+          console.log('🗑️ Redux: Item ID:', itemId, 'Deleted ID:', deletedId, 'Keep:', shouldKeep);
           return shouldKeep;
         });
         

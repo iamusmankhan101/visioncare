@@ -317,17 +317,13 @@ const productApi = {
   },
 
   // Delete a product
-  deleteProduct: async (productName) => {
+  deleteProduct: async (id) => {
     try {
-      // Generate slug from product name for the API call
-      const { generateSlug } = await import('../utils/slugUtils');
-      const productSlug = generateSlug(productName);
+      console.log('🗑️ ProductAPI: Attempting to delete product with ID:', id);
+      console.log('🗑️ ProductAPI: ID type:', typeof id);
+      console.log('🔗 ProductAPI: Delete URL:', `${API_BASE_URL}/products/${id}`);
       
-      console.log('🗑️ ProductAPI: Attempting to delete product with name:', productName);
-      console.log('🗑️ ProductAPI: Generated slug:', productSlug);
-      console.log('🔗 ProductAPI: Delete URL:', `${API_BASE_URL}/products/${productSlug}`);
-      
-      const result = await apiRequest(`/products/${productSlug}`, {
+      const result = await apiRequest(`/products/${id}`, {
         method: 'DELETE',
       });
       
@@ -355,9 +351,10 @@ const productApi = {
         try {
           const products = getStoredProducts();
           const filteredProducts = products.filter(p => {
-            // Filter by product name instead of ID
-            return p.name !== productName && 
-                   String(p.name).toLowerCase() !== String(productName).toLowerCase();
+            const productId = p.id || p._id;
+            return productId !== id && 
+                   String(productId) !== String(id) && 
+                   productId !== String(id);
           });
           
           if (filteredProducts.length < products.length) {
@@ -377,9 +374,10 @@ const productApi = {
         console.warn('🔄 ProductAPI: API delete failed, attempting localStorage fallback');
         const products = getStoredProducts();
         const filteredProducts = products.filter(p => {
-          // Filter by product name instead of ID
-          return p.name !== productName && 
-                 String(p.name).toLowerCase() !== String(productName).toLowerCase();
+          const productId = p.id || p._id;
+          return productId !== id && 
+                 String(productId) !== String(id) && 
+                 productId !== String(id);
         });
         
         if (filteredProducts.length < products.length) {

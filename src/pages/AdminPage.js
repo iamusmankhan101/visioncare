@@ -2862,13 +2862,13 @@ const AdminPage = () => {
   };
 
   // Handle delete product - MOVED INSIDE COMPONENT
-  const handleDeleteProduct = async (productName) => {
-    console.log('🗑️ AdminPage: Delete button clicked for product name:', productName);
-    console.log('🗑️ AdminPage: Product name type:', typeof productName);
+  const handleDeleteProduct = async (productId) => {
+    console.log('🗑️ AdminPage: Delete button clicked for product ID:', productId);
+    console.log('🗑️ AdminPage: Product ID type:', typeof productId);
     
-    if (!productName) {
-      console.error('❌ AdminPage: No product name provided for deletion');
-      setSuccessMessage('Error: No product name provided');
+    if (!productId) {
+      console.error('❌ AdminPage: No product ID provided for deletion');
+      setSuccessMessage('Error: No product ID provided');
       setTimeout(() => setSuccessMessage(''), 3000);
       return;
     }
@@ -2876,9 +2876,9 @@ const AdminPage = () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         console.log('🗑️ AdminPage: User confirmed deletion, proceeding...');
-        console.log('🗑️ AdminPage: Dispatching deleteProductAsync with name:', productName);
+        console.log('🗑️ AdminPage: Dispatching deleteProductAsync with ID:', productId);
         
-        const result = await dispatch(deleteProductAsync(productName)).unwrap();
+        const result = await dispatch(deleteProductAsync(productId)).unwrap();
         console.log('✅ AdminPage: Delete operation completed:', result);
         
         // Handle different success messages based on result
@@ -4136,7 +4136,7 @@ const AdminPage = () => {
                             </ActionButton>
                             <ActionButton
                               danger
-                              onClick={() => handleDeleteProduct(product.name)}
+                              onClick={() => handleDeleteProduct(product.id || product._id)}
                             >
                               Delete
                             </ActionButton>
@@ -4724,7 +4724,7 @@ const AdminPage = () => {
                                 </ActionButton>
                                 <ActionButton
                                   danger
-                                  onClick={() => handleDeleteProduct(product.name)}
+                                  onClick={() => handleDeleteProduct(product.id || product._id)}
                                 >
                                   <FiTrash2 style={{ marginRight: '0.5rem' }} />
                                   Delete
@@ -4874,7 +4874,7 @@ const AdminPage = () => {
                               </ActionButton>
                               <ActionButton
                                 danger
-                                onClick={() => handleDeleteProduct(product.name)}
+                                onClick={() => handleDeleteProduct(product.id || product._id)}
                               >
                                 Delete
                               </ActionButton>

@@ -2594,8 +2594,8 @@ const AdminPage = () => {
     return { orderData: data, maxRevenue, maxOrders, hasAnyData };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
 
-  // Available options for form selects
-  const categories = ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+  // Available options for form selects - Updated to match URL parameters
+  const categories = ['sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
   const materials = ['Metal', 'Plastic', 'Titanium', 'Acetate', 'Wood', 'Other'];
   const shapes = ['Round', 'Square', 'Rectangle', 'Cat Eye', 'Aviator', 'Oval', 'Geometric', 'Other'];
   const rimOptions = ['Full Rim', 'Semi-Rimless', 'Rimless', 'Half Rim'];
@@ -4517,7 +4517,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category)
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category)
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Total Eyewear</StatLabel>
@@ -4525,7 +4525,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category) && p.featured
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category) && p.featured
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Featured</StatLabel>
@@ -4533,7 +4533,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category) && p.bestSeller
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category) && p.bestSeller
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Best Sellers</StatLabel>
@@ -4541,7 +4541,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(p.category) && p.status === 'In Stock'
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category) && p.status === 'In Stock'
                         ).length : 0}
                       </StatValue>
                       <StatLabel>In Stock</StatLabel>
@@ -4557,7 +4557,7 @@ const AdminPage = () => {
                     ) : products && products.length > 0 ? (
                       (() => {
                         const eyewearProducts = products.filter(product => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses'].includes(product.category)
+                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(product.category)
                         );
                         
                         return eyewearProducts.length > 0 ? (
@@ -4734,7 +4734,10 @@ const AdminPage = () => {
                         .filter(product => 
                           product.category === 'Contact Lenses' || 
                           product.category === 'Transparent Lenses' || 
-                          product.category === 'Colored Lenses'
+                          product.category === 'Colored Lenses' ||
+                          product.category === 'contact-lenses' || 
+                          product.category === 'transparent-lenses' || 
+                          product.category === 'colored-lenses'
                         )
                         .map(product => (
                           <ProductCard key={product.id}>

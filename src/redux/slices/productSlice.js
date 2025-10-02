@@ -235,12 +235,24 @@ const applyFilters = (items, filters, sortOption) => {
   let result = [...items];
   
   // First, exclude lens categories from general product listings
-  const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+  const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
   result = result.filter(item => !lensCategories.includes(item.category));
   
-  // Apply category filter
+  // Apply category filter - handle both old and new formats
   if (filters.category) {
-    result = result.filter(item => item.category === filters.category);
+    result = result.filter(item => {
+      if (!item.category) return false;
+      
+      // Direct match
+      if (item.category === filters.category) return true;
+      
+      // Convert category to lowercase with dashes for comparison
+      const normalizeCategory = (cat) => cat.toLowerCase().replace(/\s+/g, '-');
+      const itemCategoryNormalized = normalizeCategory(item.category);
+      const filterCategoryNormalized = normalizeCategory(filters.category);
+      
+      return itemCategoryNormalized === filterCategoryNormalized;
+    });
   }
   
   // Apply brand filter

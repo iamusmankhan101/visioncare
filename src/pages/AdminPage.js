@@ -2881,7 +2881,12 @@ const AdminPage = () => {
         const result = await dispatch(deleteProductAsync(productId)).unwrap();
         console.log('✅ AdminPage: Delete operation completed:', result);
         
-        setSuccessMessage('Product deleted successfully!');
+        // Handle different success messages based on result
+        if (result.message && result.message.includes('was not in database')) {
+          setSuccessMessage('Product removed successfully! (It was not found in the database)');
+        } else {
+          setSuccessMessage('Product deleted successfully!');
+        }
         setTimeout(() => setSuccessMessage(''), 3000);
         
         // Refresh the product list to ensure UI is updated

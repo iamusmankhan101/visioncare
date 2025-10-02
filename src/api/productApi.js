@@ -340,10 +340,36 @@ const productApi = {
       
       return result;
     } catch (error) {
-      console.error(`❌ ProductAPI: Error deleting product ${id}:`, error);
-      console.error(`❌ ProductAPI: Full error details:`, error.message);
+      console.error('❌ ProductAPI: Error deleting product', id + ':', error);
+      console.error('❌ ProductAPI: Full error details:', error.message);
       
-      // If API fails, try to remove from localStorage backup as fallback
+      // Check if it's a 404 error - treat as successful deletion
+      if (error.message.includes('Product not found') || error.message.includes('404')) {
+        console.log('✅ ProductAPI: Product not found in database (404), treating as successful deletion');
+        
+        // Try to remove from localStorage backup as cleanup
+        try {
+          const products = getStoredProducts();
+          const filteredProducts = products.filter(p => {
+            const productId = p.id || p._id;
+            return productId !== id && 
+                   String(productId) !== String(id) && 
+                   productId !== String(id);
+          });
+          
+          if (filteredProducts.length < products.length) {
+            saveProductsBackup(filteredProducts);
+            console.log('📦 ProductAPI: Product also removed from localStorage backup');
+          }
+        } catch (fallbackError) {
+          console.warn('⚠️ ProductAPI: Could not clean localStorage, but that\'s okay');
+        }
+        
+        // Return success for 404 - product doesn't exist anyway
+        return { message: 'Product deleted (was not in database)' };
+      }
+      
+      // For other errors, try localStorage fallback
       try {
         console.warn('🔄 ProductAPI: API delete failed, attempting localStorage fallback');
         const products = getStoredProducts();
@@ -357,23 +383,9 @@ const productApi = {
         if (filteredProducts.length < products.length) {
           saveProductsBackup(filteredProducts);
           console.log('📦 ProductAPI: Product removed from localStorage backup');
-          
-          // If the API returned 404, consider it a successful deletion
-          // since the product doesn't exist in the database anyway
-          if (error.message.includes('Product not found') || error.message.includes('404')) {
-            console.log('✅ ProductAPI: Product was not in database, removed from local storage');
-            return { message: 'Product deleted (was not in database)' };
-          }
-          
           return { message: 'Product deleted from local storage (API unavailable)' };
         } else {
           console.warn('⚠️ ProductAPI: Product not found in localStorage backup either');
-          
-          // If it's a 404 and not in localStorage, it's effectively deleted
-          if (error.message.includes('Product not found') || error.message.includes('404')) {
-            console.log('✅ ProductAPI: Product not found anywhere, considering deletion successful');
-            return { message: 'Product not found (already deleted or never existed)' };
-          }
         }
       } catch (fallbackError) {
         console.error('❌ ProductAPI: Fallback deletion also failed:', fallbackError.message);

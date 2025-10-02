@@ -218,10 +218,12 @@ const productSlice = createSlice({
         // Try different ID matching strategies for live database compatibility
         state.items = state.items.filter(item => {
           const itemId = item.id || item._id;
-          const match = itemId !== deletedId && 
-                       String(itemId) !== String(deletedId) && 
-                       itemId !== String(deletedId);
-          return match;
+          // Keep items that DON'T match the deleted ID
+          const shouldKeep = itemId !== deletedId && 
+                            String(itemId) !== String(deletedId) && 
+                            itemId !== String(deletedId);
+          console.log('🗑️ Redux: Item ID:', itemId, 'Deleted ID:', deletedId, 'Keep:', shouldKeep);
+          return shouldKeep;
         });
         
         console.log('🗑️ Redux: After deletion, items count:', state.items.length);

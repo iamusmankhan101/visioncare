@@ -155,18 +155,36 @@ router.put('/:id', (req, res) => {
 // DELETE /api/products/:id - Delete product
 router.delete('/:id', (req, res) => {
   try {
-    const productId = parseInt(req.params.id);
-    const productIndex = products.findIndex(p => p.id === productId);
+    const productId = req.params.id;
+    console.log('🗑️ Backend: Delete request for product ID:', productId);
+    console.log('🗑️ Backend: ID type:', typeof productId);
+    console.log('🗑️ Backend: Available products:', products.length);
+    
+    // Try multiple ID matching strategies for live database compatibility
+    const productIndex = products.findIndex(p => {
+      const pId = p.id || p._id;
+      const match = pId === productId || 
+                   String(pId) === String(productId) || 
+                   pId === parseInt(productId) ||
+                   parseInt(pId) === parseInt(productId);
+      console.log('🗑️ Backend: Comparing product ID:', pId, 'with requested ID:', productId, 'match:', match);
+      return match;
+    });
+    
+    console.log('🗑️ Backend: Product index found:', productIndex);
     
     if (productIndex === -1) {
+      console.warn('❌ Backend: Product not found for ID:', productId);
       return res.status(404).json({ message: 'Product not found' });
     }
     
     // Remove the product
     const deletedProduct = products.splice(productIndex, 1)[0];
+    console.log('✅ Backend: Product deleted successfully:', deletedProduct.name);
     
     res.json({ message: 'Product deleted successfully', product: deletedProduct });
   } catch (error) {
+    console.error('❌ Backend: Error deleting product:', error);
     res.status(500).json({ message: 'Error deleting product', error: error.message });
   }
 });

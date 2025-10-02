@@ -2862,20 +2862,38 @@ const AdminPage = () => {
 
   // Handle delete product - MOVED INSIDE COMPONENT
   const handleDeleteProduct = async (productId) => {
+    console.log('🗑️ AdminPage: Delete button clicked for product ID:', productId);
+    console.log('🗑️ AdminPage: Product ID type:', typeof productId);
+    
+    if (!productId) {
+      console.error('❌ AdminPage: No product ID provided for deletion');
+      setSuccessMessage('Error: No product ID provided');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      return;
+    }
+    
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        console.log('🗑️ Deleting product with ID:', productId);
-        await dispatch(deleteProductAsync(productId)).unwrap();
+        console.log('🗑️ AdminPage: User confirmed deletion, proceeding...');
+        console.log('🗑️ AdminPage: Dispatching deleteProductAsync with ID:', productId);
+        
+        const result = await dispatch(deleteProductAsync(productId)).unwrap();
+        console.log('✅ AdminPage: Delete operation completed:', result);
+        
         setSuccessMessage('Product deleted successfully!');
         setTimeout(() => setSuccessMessage(''), 3000);
         
         // Refresh the product list to ensure UI is updated
+        console.log('🔄 AdminPage: Refreshing product list...');
         dispatch(fetchProducts());
       } catch (error) {
-        console.error('Failed to delete product:', error);
+        console.error('❌ AdminPage: Failed to delete product:', error);
+        console.error('❌ AdminPage: Error details:', error.message);
         setSuccessMessage('Error deleting product: ' + error.message);
-        setTimeout(() => setSuccessMessage(''), 3000);
+        setTimeout(() => setSuccessMessage(''), 5000);
       }
+    } else {
+      console.log('🚫 AdminPage: User cancelled deletion');
     }
   };
 
@@ -4684,7 +4702,7 @@ const AdminPage = () => {
                                 </ActionButton>
                                 <ActionButton
                                   danger
-                                  onClick={() => handleDeleteProduct(product.id)}
+                                  onClick={() => handleDeleteProduct(product.id || product._id)}
                                 >
                                   <FiTrash2 style={{ marginRight: '0.5rem' }} />
                                   Delete

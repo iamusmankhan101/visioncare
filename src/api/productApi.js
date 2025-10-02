@@ -321,9 +321,9 @@ const productApi = {
     try {
       console.log('🗑️ ProductAPI: Attempting to delete product with ID:', id);
       console.log('🗑️ ProductAPI: ID type:', typeof id);
-      console.log('🔗 ProductAPI: Delete URL:', `${API_BASE_URL}/products/${id}`);
+      console.log('🔗 ProductAPI: Delete URL:', `${API_BASE_URL}/products?id=${id}`);
       
-      const result = await apiRequest(`/products/${id}`, {
+      const result = await apiRequest(`/products?id=${id}`, {
         method: 'DELETE',
       });
       

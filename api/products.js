@@ -265,26 +265,53 @@ async function handleDelete(req, res) {
   try {
     const { id } = req.query;
     
+    console.log('🗑️ DELETE request received for product ID:', id);
+    console.log('🗑️ ID type:', typeof id);
+    console.log('🗑️ Full query params:', req.query);
+    
+    if (!id) {
+      console.log('❌ No ID provided in DELETE request');
+      return res.status(400).json({
+        success: false,
+        error: 'Product ID is required'
+      });
+    }
+    
+    // First check if product exists
+    console.log('🔍 Checking if product exists...');
+    const existingProduct = await sql`SELECT * FROM products WHERE id = ${id}`;
+    
+    if (existingProduct.length === 0) {
+      console.log('❌ Product not found for deletion:', id);
+      return res.status(404).json({
+        success: false,
+        error: 'Product not found',
+        message: 'Product not found'
+      });
+    }
+    
+    console.log('📦 Found product to delete:', existingProduct[0].name);
+    
     // Delete product
+    console.log('🗑️ Deleting product from database...');
     const result = await sql`
       DELETE FROM products 
       WHERE id = ${id} 
       RETURNING *
     `;
     
-    if (result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Product not found'
-      });
-    }
+    console.log('✅ Product deleted successfully:', result[0].name);
     
     return res.json({
       success: true,
-      message: 'Product deleted successfully'
+      message: 'Product deleted successfully',
+      data: result[0]
     });
     
   } catch (error) {
+    console.error('❌ Error in handleDelete:', error);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
     throw error;
   }
 }

@@ -1388,8 +1388,48 @@ const ProductDetailPage = () => {
     console.log('📦 Available products:', products?.length || 0);
     
     if (products && products.length > 0) {
-      const foundProduct = findProductBySlug(products, slug);
+      // Log product structure for debugging
+      console.log('📋 First product structure:', products[0]);
+      
+      // Try multiple matching strategies
+      let foundProduct = null;
+      
+      // Strategy 1: Use the existing slug-based matching
+      foundProduct = findProductBySlug(products, slug);
+      
+      // Strategy 2: If slug matching fails, try direct ID matching
+      if (!foundProduct) {
+        const extractedId = extractIdFromSlug(slug);
+        console.log('🔍 Extracted ID from slug:', extractedId);
+        
+        if (extractedId) {
+          // Try numeric ID match
+          foundProduct = products.find(p => p.id === extractedId);
+          
+          // Try string ID match (for MongoDB ObjectIds, etc.)
+          if (!foundProduct) {
+            foundProduct = products.find(p => p.id === extractedId.toString());
+          }
+          
+          // Try _id field (common in MongoDB)
+          if (!foundProduct) {
+            foundProduct = products.find(p => p._id === extractedId.toString());
+          }
+        }
+      }
+      
+      // Strategy 3: If still not found, try partial name matching
+      if (!foundProduct && slug) {
+        const slugParts = slug.split('-');
+        const searchTerm = slugParts.slice(0, -1).join(' '); // Remove last part (ID)
+        foundProduct = products.find(p => 
+          p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        console.log('🔍 Trying name search with term:', searchTerm);
+      }
+      
       console.log('🎯 Found product:', foundProduct ? foundProduct.name : 'Not found');
+      console.log('🎯 Product ID:', foundProduct ? foundProduct.id || foundProduct._id : 'N/A');
       
       if (foundProduct) {
         setProduct(foundProduct);
@@ -1402,6 +1442,7 @@ const ProductDetailPage = () => {
         }
       } else {
         console.warn('❌ Product not found for slug:', slug);
+        console.warn('❌ Available product IDs:', products.map(p => p.id || p._id).slice(0, 10));
       }
     }
   }, [products, slug]);

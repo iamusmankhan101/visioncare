@@ -21,27 +21,51 @@ export const generateSlug = (name) => {
 /**
  * Generate a unique slug by appending product ID if needed
  * @param {string} name - Product name
- * @param {number} id - Product ID
+ * @param {number|string} id - Product ID (can be number, string, or ObjectId)
  * @returns {string} - Unique URL-friendly slug
  */
 export const generateUniqueSlug = (name, id) => {
+  if (!name || (!id && id !== 0)) {
+    console.warn('generateUniqueSlug: Missing name or id', { name, id });
+    return 'unknown-product';
+  }
+  
   const baseSlug = generateSlug(name);
-  return `${baseSlug}-${id}`;
+  
+  // Handle different ID formats
+  let idString = id;
+  if (typeof id === 'object' && id.toString) {
+    idString = id.toString(); // For ObjectId or other objects
+  } else if (typeof id !== 'string') {
+    idString = String(id); // Convert numbers to strings
+  }
+  
+  return `${baseSlug}-${idString}`;
 };
 
 /**
  * Extract product ID from a slug that includes ID
  * @param {string} slug - URL slug with ID
- * @returns {number|null} - Extracted product ID or null if not found
+ * @returns {string|number|null} - Extracted product ID or null if not found
  */
 export const extractIdFromSlug = (slug) => {
   if (!slug) return null;
   
   const parts = slug.split('-');
   const lastPart = parts[parts.length - 1];
-  const id = parseInt(lastPart);
   
-  return isNaN(id) ? null : id;
+  // Try to parse as number first (for numeric IDs)
+  const numericId = parseInt(lastPart);
+  if (!isNaN(numericId)) {
+    return numericId;
+  }
+  
+  // If not a number, return as string (for ObjectIds, UUIDs, etc.)
+  if (lastPart && lastPart.length > 0) {
+    return lastPart;
+  }
+  
+  return null;
 };
 
 /**
@@ -53,13 +77,22 @@ export const extractIdFromSlug = (slug) => {
 export const productMatchesSlug = (product, slug) => {
   if (!product || !slug) return false;
   
+  // Get product ID (try both id and _id fields)
+  const productId = product.id || product._id;
+  if (!productId) return false;
+  
   // Try to match by generated slug
-  const productSlug = generateUniqueSlug(product.name, product.id);
+  const productSlug = generateUniqueSlug(product.name, productId);
   if (productSlug === slug) return true;
   
   // Fallback: try to extract ID from slug and match
   const extractedId = extractIdFromSlug(slug);
-  return extractedId === product.id;
+  if (!extractedId) return false;
+  
+  // Try different ID comparison strategies
+  return extractedId === productId || 
+         extractedId === String(productId) || 
+         String(extractedId) === String(productId);
 };
 
 /**

@@ -390,7 +390,10 @@ const productApi = {
             body: JSON.stringify(productDataForNeon),
           });
           
-          console.log(`✅ ProductAPI: Synced product: ${product.name} → Neon ID: ${createdProduct.id}`);
+          // Handle different API response structures
+          const neonId = createdProduct?.id || createdProduct?._id || createdProduct?.data?.id || 'unknown';
+          console.log(`✅ ProductAPI: Synced product: ${product.name} → Neon ID: ${neonId}`);
+          console.log('🔍 ProductAPI: Full API response:', createdProduct);
           syncedCount++;
           
         } catch (error) {

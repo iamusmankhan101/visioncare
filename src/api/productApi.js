@@ -260,31 +260,129 @@ const productApi = {
     }
   },
 
-  // Update a product
+  // Smart ID resolution - finds the correct Neon database ID for a product
+  resolveProductId: async (localId, productName) => {
+    try {
+      console.log('🔍 ProductAPI: Resolving product ID for:', localId, productName);
+      
+      // If it's already a valid Neon database ID, return it
+      if (typeof localId === 'number' || (typeof localId === 'string' && !localId.startsWith('local_') && !localId.includes('temp_') && localId.length < 10)) {
+        // Test if this ID exists in Neon database
+        try {
+          await apiRequest(`/products/${localId}`);
+          console.log('✅ ProductAPI: ID is valid in Neon database:', localId);
+          return localId;
+        } catch (testError) {
+          console.warn('⚠️ ProductAPI: ID not found in Neon database, searching by name:', localId);
+        }
+      }
+      
+      // Search for product by name in Neon database
+      try {
+        const allProducts = await apiRequest('/products');
+        const products = allProducts.products || allProducts || [];
+        
+        const matchingProduct = products.find(p => 
+          p.name === productName || 
+          p.name?.toLowerCase() === productName?.toLowerCase()
+        );
+        
+        if (matchingProduct) {
+          console.log(`✅ ProductAPI: Found matching product in Neon database. Local ID: ${localId}, Neon ID: ${matchingProduct.id}`);
+          return matchingProduct.id;
+        }
+        
+        console.warn('⚠️ ProductAPI: No matching product found in Neon database by name');
+        return null;
+      } catch (searchError) {
+        console.error('❌ ProductAPI: Failed to search products in Neon database:', searchError.message);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ ProductAPI: Error resolving product ID:', error);
+      return null;
+    }
+  },
+
+  // Update a product with smart ID resolution
   updateProduct: async (id, productData) => {
     try {
       console.log('✏️ ProductAPI: Attempting to update product with ID:', id);
       console.log('✏️ ProductAPI: ID type:', typeof id);
       console.log('✏️ ProductAPI: Product data:', productData);
-      console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${id}`);
       
-      const updatedProduct = await apiRequest(`/products/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(productData),
-      });
-      
-      console.log('✅ ProductAPI: Product updated successfully:', updatedProduct);
-      
-      // Update localStorage backup
-      try {
-        const products = await productApi.getAllProducts();
-        saveProductsBackup(products);
-        console.log('✅ ProductAPI: Backup updated after update');
-      } catch (backupError) {
-        console.warn('⚠️ ProductAPI: Failed to update backup after updating product:', backupError.message);
+      // Smart ID resolution - try to find the correct Neon database ID
+      let resolvedId = id;
+      if (String(id).startsWith('local_') || String(id).includes('temp_') || String(id).length > 15) {
+        console.log('🔍 ProductAPI: Detected temporary ID, attempting to resolve...');
+        const neonId = await productApi.resolveProductId(id, productData.name);
+        if (neonId) {
+          resolvedId = neonId;
+          console.log(`✅ ProductAPI: Resolved ID from ${id} to ${resolvedId}`);
+        } else {
+          console.warn('⚠️ ProductAPI: Could not resolve ID, product may need to be created in Neon database');
+        }
       }
       
-      return updatedProduct;
+      console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${resolvedId}`);
+      
+      // Try to update with resolved ID
+      try {
+        const updatedProduct = await apiRequest(`/products/${resolvedId}`, {
+          method: 'PUT',
+          body: JSON.stringify(productData),
+        });
+        
+        console.log('✅ ProductAPI: Product updated successfully:', updatedProduct);
+        
+        // Update localStorage backup
+        try {
+          const products = await productApi.getAllProducts();
+          saveProductsBackup(products);
+          console.log('✅ ProductAPI: Backup updated after update');
+        } catch (backupError) {
+          console.warn('⚠️ ProductAPI: Failed to update backup after updating product:', backupError.message);
+        }
+        
+        return updatedProduct;
+      } catch (updateError) {
+        // If update fails with 404, the product doesn't exist in Neon database
+        if (updateError.message.includes('Product not found') || updateError.message.includes('404')) {
+          console.warn('⚠️ ProductAPI: Product not found in Neon database, creating new product...');
+          
+          // Create the product in Neon database instead of updating
+          try {
+            const newProduct = await productApi.createProduct(productData);
+            console.log(`✅ ProductAPI: Product created in Neon database with new ID: ${newProduct.id}`);
+            
+            // Update localStorage to replace the old product with the new one
+            try {
+              const products = getStoredProducts();
+              const productIndex = products.findIndex(p => {
+                const productId = p.id || p._id;
+                return productId === id || 
+                       String(productId) === String(id) || 
+                       productId === String(id);
+              });
+              
+              if (productIndex !== -1) {
+                products[productIndex] = newProduct;
+                saveProductsBackup(products);
+                console.log('✅ ProductAPI: localStorage updated with new Neon database product');
+              }
+            } catch (localUpdateError) {
+              console.warn('⚠️ ProductAPI: Failed to update localStorage with new product');
+            }
+            
+            return newProduct;
+          } catch (createError) {
+            console.error('❌ ProductAPI: Failed to create product in Neon database:', createError.message);
+            throw updateError; // Throw original update error
+          }
+        } else {
+          throw updateError;
+        }
+      }
     } catch (error) {
       console.error(`❌ ProductAPI: Error updating product ${id}:`, error);
       console.error(`❌ ProductAPI: Full error details:`, error.message);
@@ -721,6 +819,7 @@ export const testConnection = productApi.testConnection;
 export const getAllProducts = productApi.getAllProducts;
 export const getProductById = productApi.getProductById;
 export const createProduct = productApi.createProduct;
+export const resolveProductId = productApi.resolveProductId;
 export const updateProduct = productApi.updateProduct;
 export const editProduct = productApi.editProduct;
 export const patchProduct = productApi.patchProduct;

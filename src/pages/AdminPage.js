@@ -2829,6 +2829,24 @@ const AdminPage = () => {
     'Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 
     'Fashion Glasses', 'fashion-glasses', 'prescription-glasses', 'Prescription Glasses'
   ];
+  
+  // Function to check if a product is eyewear (more flexible matching)
+  const isEyewearProduct = (product) => {
+    if (!product.category) return false;
+    const category = product.category.toLowerCase();
+    
+    // Exclude contact lenses and lens-only products
+    if (category.includes('contact') || category.includes('transparent-lenses') || category.includes('colored-lenses')) {
+      return false;
+    }
+    
+    // Include any product with glasses/sunglasses related keywords
+    return category.includes('glasses') || 
+           category.includes('sunglasses') || 
+           category.includes('eyeglasses') || 
+           category.includes('eyewear') ||
+           eyewearCategories.includes(product.category);
+  };
   const materials = ['Metal', 'Plastic', 'Titanium', 'Acetate', 'Wood', 'Other'];
   const shapes = ['Round', 'Square', 'Rectangle', 'Cat Eye', 'Aviator', 'Oval', 'Geometric', 'Other'];
   const rimOptions = ['Full Rim', 'Semi-Rimless', 'Rimless', 'Half Rim'];
@@ -5013,16 +5031,14 @@ const AdminPage = () => {
                   }}>
                     <StatCard>
                       <StatValue>
-                        {products ? products.filter(p => 
-                          eyewearCategories.includes(p.category)
-                        ).length : 0}
+                        {products ? products.filter(isEyewearProduct).length : 0}
                       </StatValue>
                       <StatLabel>Total Eyewear</StatLabel>
                     </StatCard>
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          eyewearCategories.includes(p.category) && p.featured
+                          isEyewearProduct(p) && p.featured
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Featured</StatLabel>
@@ -5030,7 +5046,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          eyewearCategories.includes(p.category) && p.bestSeller
+                          isEyewearProduct(p) && p.bestSeller
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Best Sellers</StatLabel>
@@ -5038,7 +5054,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          eyewearCategories.includes(p.category) && p.status === 'In Stock'
+                          isEyewearProduct(p) && p.status === 'In Stock'
                         ).length : 0}
                       </StatValue>
                       <StatLabel>In Stock</StatLabel>
@@ -5058,11 +5074,16 @@ const AdminPage = () => {
                         console.log('🔍 All product categories found:', allCategories);
                         console.log('🔍 Eyewear categories filter:', eyewearCategories);
                         
-                        const eyewearProducts = products.filter(product => 
-                          eyewearCategories.includes(product.category)
-                        );
+                        // Debug: Show each product and whether it passes the filter
+                        products.forEach(product => {
+                          const isEyewear = isEyewearProduct(product);
+                          console.log(`🔍 Product "${product.name}" (${product.category}) -> ${isEyewear ? '✅ INCLUDED' : '❌ EXCLUDED'}`);
+                        });
+                        
+                        const eyewearProducts = products.filter(isEyewearProduct);
                         
                         console.log('🔍 Filtered eyewear products:', eyewearProducts.length, 'out of', products.length, 'total products');
+                        console.log('🔍 Eyewear product names:', eyewearProducts.map(p => p.name));
                         
                         return eyewearProducts.length > 0 ? (
                           eyewearProducts.map(product => (

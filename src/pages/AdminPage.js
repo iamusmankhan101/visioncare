@@ -2832,7 +2832,21 @@ const AdminPage = () => {
   
   // Function to check if a product is eyewear (more flexible matching)
   const isEyewearProduct = (product) => {
-    if (!product.category) return false;
+    // If no category is set, check product name for eyewear keywords
+    if (!product.category || product.category.trim() === '') {
+      const productName = (product.name || '').toLowerCase();
+      // Include if product name suggests it's eyewear
+      return productName.includes('glasses') || 
+             productName.includes('sunglasses') || 
+             productName.includes('eyeglasses') || 
+             productName.includes('eyewear') ||
+             productName.includes('frame') ||
+             productName.includes('lens') ||
+             // For now, include all products without categories as potential eyewear
+             // (since this is an eyewear store, most products are likely eyewear)
+             true;
+    }
+    
     const category = product.category.toLowerCase();
     
     // Exclude contact lenses and lens-only products

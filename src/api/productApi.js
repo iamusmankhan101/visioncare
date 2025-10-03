@@ -359,6 +359,26 @@ const productApi = {
   },
 
 
+  // Load products from Neon database and update local storage
+  loadProductsFromNeon: async () => {
+    try {
+      console.log('🔄 ProductAPI: Loading products from Neon database...');
+      
+      // Get products from Neon database
+      const neonProducts = await apiRequest('/products');
+      console.log(`✅ ProductAPI: Loaded ${neonProducts.length} products from Neon database`);
+      
+      // Update localStorage backup with Neon products
+      saveProductsBackup(neonProducts);
+      console.log('✅ ProductAPI: Updated localStorage with Neon products');
+      
+      return neonProducts;
+    } catch (error) {
+      console.error('❌ ProductAPI: Failed to load products from Neon:', error);
+      throw error;
+    }
+  },
+
   // Sync local products to Neon database
   syncLocalProductsToNeon: async () => {
     try {
@@ -509,6 +529,7 @@ export const createProduct = productApi.createProduct;
 export const updateProduct = productApi.updateProduct;
 export const deleteProduct = productApi.deleteProduct;
 export const syncLocalProductsToNeon = productApi.syncLocalProductsToNeon;
+export const loadProductsFromNeon = productApi.loadProductsFromNeon;
 
 
 export default productApi;

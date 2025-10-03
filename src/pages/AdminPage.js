@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync, deleteProductAsync } from '../redux/slices/productSlice';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
 import AdminHeader from '../components/admin/AdminHeader';
 import { getAllOrders, getOrderStats } from '../services/orderService';
-import { getAllProducts, syncLocalProductsToNeon } from '../api/productApi';
+import productApi, { getAllProducts, syncLocalProductsToNeon, loadProductsFromNeon } from '../api/productApi';
 import { useAuth } from '../context/AuthContext';
 
 // Modern Dashboard Styled Components
@@ -3370,6 +3369,31 @@ const AdminPage = () => {
   };
 
 
+  // Load products from Neon database
+  const handleLoadFromNeon = async () => {
+    if (window.confirm('This will replace your current product list with products from the Neon database. Continue?')) {
+      try {
+        setIsLoading(true);
+        setSuccessMessage('Loading products from Neon database...');
+        
+        console.log('🔄 AdminPage: Loading products from Neon database...');
+        await loadProductsFromNeon();
+        
+        // Refresh the product list
+        dispatch(fetchProducts());
+        
+        setSuccessMessage('✅ Products loaded from Neon database successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (error) {
+        console.error('❌ AdminPage: Load from Neon failed:', error);
+        setSuccessMessage('Load failed: ' + error.message);
+        setTimeout(() => setSuccessMessage(''), 5000);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   // Sync local products to Neon database
   const handleSyncToNeon = async () => {
     if (window.confirm('This will sync all local products to the Neon database. This may take a few minutes. Continue?')) {
@@ -3381,10 +3405,16 @@ const AdminPage = () => {
         const result = await syncLocalProductsToNeon();
         
         console.log('✅ AdminPage: Sync completed:', result);
-        setSuccessMessage(`Sync completed! ${result.synced} products synced to Neon database. ${result.errors} errors.`);
+        setSuccessMessage(`Sync completed! ${result.synced} products synced to Neon database. Loading updated products...`);
         
-        // Refresh the product list to get the new Neon products
+        // Load products from Neon database to get the new IDs
+        console.log('🔄 AdminPage: Loading products from Neon database...');
+        await loadProductsFromNeon();
+        
+        // Refresh the product list to show the new Neon products with correct IDs
         dispatch(fetchProducts());
+        
+        setSuccessMessage(`✅ Sync completed! ${result.synced} products synced and loaded from Neon database.`);
         
         setTimeout(() => setSuccessMessage(''), 5000);
       } catch (error) {
@@ -4569,31 +4599,51 @@ const AdminPage = () => {
                     <SuccessMessage>{successMessage}</SuccessMessage>
                   )}
 
-                  {/* Sync to Neon Database Button */}
+                  {/* Neon Database Controls */}
                   <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#0369a1' }}>🗄️ Sync to Neon Database</h4>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#0369a1' }}>🗄️ Neon Database Controls</h4>
                         <p style={{ margin: '0', fontSize: '0.875rem', color: '#0369a1' }}>
-                          Upload all local products to your Neon PostgreSQL database for persistent storage and editing.
+                          Sync local products to Neon database or load products from Neon with correct IDs.
                         </p>
                       </div>
-                      <button
-                        onClick={handleSyncToNeon}
-                        disabled={isLoading}
-                        style={{
-                          padding: '0.75rem 1.5rem',
-                          background: '#0ea5e9',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          cursor: isLoading ? 'not-allowed' : 'pointer',
-                          fontWeight: '500',
-                          opacity: isLoading ? 0.6 : 1
-                        }}
-                      >
-                        {isLoading ? 'Syncing...' : 'Sync to Neon'}
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          onClick={handleLoadFromNeon}
+                          disabled={isLoading}
+                          style={{
+                            padding: '0.75rem 1rem',
+                            background: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                            fontWeight: '500',
+                            opacity: isLoading ? 0.6 : 1,
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          {isLoading ? 'Loading...' : 'Load from Neon'}
+                        </button>
+                        <button
+                          onClick={handleSyncToNeon}
+                          disabled={isLoading}
+                          style={{
+                            padding: '0.75rem 1rem',
+                            background: '#0ea5e9',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                            fontWeight: '500',
+                            opacity: isLoading ? 0.6 : 1,
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          {isLoading ? 'Syncing...' : 'Sync to Neon'}
+                        </button>
+                      </div>
                     </div>
                   </div>
 

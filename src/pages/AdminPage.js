@@ -2936,11 +2936,25 @@ const AdminPage = () => {
       });
     }
     
-    setProductData({
+    const newProductData = {
       ...productData,
       [name]: name === 'price' ? parseFloat(value) : value
-    });
-    console.log('🔄 AdminPage: Updated productData:', { ...productData, [name]: name === 'price' ? parseFloat(value) : value });
+    };
+    
+    setProductData(newProductData);
+    console.log('🔄 AdminPage: Updated productData:', newProductData);
+    
+    // Special debugging for problematic fields - show actual values
+    if (['style', 'gender', 'status'].includes(name)) {
+      console.log(`🔍 AdminPage: AFTER UPDATE - ${name} field:`, {
+        actualValue: newProductData[name],
+        allProblematicFields: {
+          style: newProductData.style,
+          gender: newProductData.gender,
+          status: newProductData.status
+        }
+      });
+    }
   };
 
   // Handle feature checkbox changes
@@ -3267,6 +3281,15 @@ const AdminPage = () => {
       console.log('✏️ AdminPage: Submitting product update');
       console.log('✏️ AdminPage: Current productData:', productData);
       
+      // CRITICAL DEBUG: Check if problematic fields are in productData before update
+      console.log('🚨 AdminPage: CRITICAL CHECK - Fields before update:');
+      console.log('  - productData.style:', productData.style);
+      console.log('  - productData.gender:', productData.gender);
+      console.log('  - productData.status:', productData.status);
+      console.log('  - typeof productData.style:', typeof productData.style);
+      console.log('  - typeof productData.gender:', typeof productData.gender);
+      console.log('  - typeof productData.status:', typeof productData.status);
+      
       // Validate required fields
       if (!productData.id && !productData._id) {
         throw new Error('Product ID is missing. Cannot update product.');
@@ -3330,6 +3353,12 @@ const AdminPage = () => {
       }, 2000);
     } catch (error) {
       console.error('❌ AdminPage: Failed to update product:', error);
+      console.error('❌ AdminPage: Error details:', {
+        message: error?.message,
+        error: error?.error,
+        fullError: error
+      });
+      
       const errorMessage = error?.message || error?.error || error || 'Unknown error occurred';
       setSuccessMessage('Error updating product: ' + errorMessage);
       setTimeout(() => setSuccessMessage(''), 5000);

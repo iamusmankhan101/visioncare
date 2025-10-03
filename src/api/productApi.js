@@ -316,6 +316,94 @@ const productApi = {
     }
   },
 
+  // Edit a product (alias for updateProduct with additional features)
+  editProduct: async (id, productData, options = {}) => {
+    try {
+      console.log('✏️ ProductAPI: Editing product with ID:', id);
+      console.log('✏️ ProductAPI: Edit options:', options);
+      
+      // Validate product data before editing
+      if (!productData.name || !productData.price) {
+        throw new Error('Product name and price are required for editing');
+      }
+      
+      // Ensure price is a valid number
+      const validatedData = {
+        ...productData,
+        price: parseFloat(productData.price),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Add edit timestamp if not in options
+      if (!options.skipTimestamp) {
+        validatedData.lastEditedAt = new Date().toISOString();
+      }
+      
+      // Use the existing updateProduct function
+      const result = await productApi.updateProduct(id, validatedData);
+      
+      console.log('✅ ProductAPI: Product edited successfully');
+      return result;
+    } catch (error) {
+      console.error('❌ ProductAPI: Error editing product:', error);
+      throw error;
+    }
+  },
+
+  // Partial update for specific product fields
+  patchProduct: async (id, partialData) => {
+    try {
+      console.log('🔧 ProductAPI: Patching product with ID:', id);
+      console.log('🔧 ProductAPI: Partial data:', partialData);
+      
+      // Get current product data first
+      const currentProduct = await productApi.getProductById(id);
+      
+      // Merge with partial data
+      const updatedData = {
+        ...currentProduct,
+        ...partialData,
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Use updateProduct for the actual update
+      return await productApi.updateProduct(id, updatedData);
+    } catch (error) {
+      console.error('❌ ProductAPI: Error patching product:', error);
+      throw error;
+    }
+  },
+
+  // Bulk edit multiple products
+  bulkEditProducts: async (productUpdates) => {
+    try {
+      console.log('📦 ProductAPI: Bulk editing products:', productUpdates.length);
+      
+      const results = [];
+      const errors = [];
+      
+      for (const update of productUpdates) {
+        try {
+          const result = await productApi.editProduct(update.id, update.data, update.options);
+          results.push({ id: update.id, success: true, data: result });
+        } catch (error) {
+          errors.push({ id: update.id, success: false, error: error.message });
+        }
+      }
+      
+      console.log(`✅ ProductAPI: Bulk edit completed - ${results.length} success, ${errors.length} errors`);
+      
+      return {
+        success: results,
+        errors: errors,
+        total: productUpdates.length
+      };
+    } catch (error) {
+      console.error('❌ ProductAPI: Error in bulk edit:', error);
+      throw error;
+    }
+  },
+
   // Delete a product
   deleteProduct: async (id) => {
     try {
@@ -402,6 +490,9 @@ export const getAllProducts = productApi.getAllProducts;
 export const getProductById = productApi.getProductById;
 export const createProduct = productApi.createProduct;
 export const updateProduct = productApi.updateProduct;
+export const editProduct = productApi.editProduct;
+export const patchProduct = productApi.patchProduct;
+export const bulkEditProducts = productApi.bulkEditProducts;
 export const deleteProduct = productApi.deleteProduct;
 
 export default productApi;

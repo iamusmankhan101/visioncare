@@ -202,6 +202,13 @@ const productSlice = createSlice({
         console.log('✏️ Redux: Processing product update/create:', updatedProduct.name);
         console.log('✏️ Redux: Product ID:', updatedProduct.id || updatedProduct._id);
         
+        // Debug the updated product fields
+        console.log('🔍 Redux: Updated product fields:', {
+          style: updatedProduct.style,
+          gender: updatedProduct.gender,
+          status: updatedProduct.status
+        });
+        
         // Try different ID matching strategies for live database compatibility
         const index = state.items.findIndex(item => {
           const itemId = item.id || item._id;
@@ -213,13 +220,19 @@ const productSlice = createSlice({
         
         if (index !== -1) {
           // Update existing product
+          const oldProduct = state.items[index];
           state.items[index] = updatedProduct;
           console.log('✅ Redux: Product updated successfully in store');
+          console.log('🔍 Redux: Before/After comparison:', {
+            before: { style: oldProduct.style, gender: oldProduct.gender, status: oldProduct.status },
+            after: { style: updatedProduct.style, gender: updatedProduct.gender, status: updatedProduct.status }
+          });
         } else {
           // Product not found in store - this shouldn't happen during normal updates
           console.warn('⚠️ Redux: Product not found in store for update');
           console.warn('⚠️ Redux: This might indicate a data synchronization issue');
-          // Don't add as new product to avoid duplicates
+          console.warn('⚠️ Redux: Looking for ID:', updatedProduct.id || updatedProduct._id);
+          console.warn('⚠️ Redux: Available IDs:', state.items.map(item => item.id || item._id));
         }
         
         state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);

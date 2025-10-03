@@ -4,12 +4,13 @@ const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
   // Debug environment variables
-  console.log('Environment Variables Check:');
+  console.log('🔍 Environment Variables Check:');
   console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
   console.log('REACT_APP_ORDER_API_URL:', process.env.REACT_APP_ORDER_API_URL);
   console.log('PGDATABASE:', process.env.PGDATABASE);
   console.log('Current hostname:', hostname);
-  console.log('Target Database: Neon PostgreSQL');
+  console.log('🎯 Target Database: Neon PostgreSQL');
+  console.log('🔗 Will use API URL for Neon database operations');
   
   // Use environment variable if available (from Vercel)
   const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
@@ -288,10 +289,16 @@ const productApi = {
       console.log('  - status:', productData.status);
       console.log('  - description:', productData.description);
       
+      console.log('🔗 ProductAPI: Making PUT request to Neon database...');
+      console.log('🔗 ProductAPI: Full URL:', `${API_BASE_URL}/products/${id}`);
+      console.log('🔗 ProductAPI: Request body:', JSON.stringify(productData, null, 2));
+      
       const updatedProduct = await apiRequest(`/products/${id}`, {
         method: 'PUT',
         body: JSON.stringify(productData),
       });
+      
+      console.log('✅ ProductAPI: Neon database responded successfully!');
       
       console.log('✅ ProductAPI: Product updated successfully:', updatedProduct);
       
@@ -333,52 +340,17 @@ const productApi = {
                              error.status === 404;
       
       if (isNotFoundError) {
-        console.warn('🔄 ProductAPI: Product not found (404) - this should not happen during edit');
-        console.log('🔄 ProductAPI: Product ID:', id, 'might not exist in backend database');
-        console.log('🔄 ProductAPI: This suggests the product exists locally but not in backend');
-        // Don't create a new product - this causes duplicates
-        // Instead, fall through to localStorage fallback to update local data
+        console.error('❌ ProductAPI: Product not found (404) in Neon database');
+        console.error('❌ ProductAPI: Product ID:', id, 'does not exist in Neon database');
+        console.error('❌ ProductAPI: This product needs to be created in Neon database first');
+        throw new Error(`Product with ID ${id} not found in Neon database. Cannot update non-existent product.`);
       }
       
-      // If not a 404 error OR create failed, try localStorage fallback
-      try {
-        console.warn('🔄 ProductAPI: Attempting localStorage fallback');
-        const products = getStoredProducts();
-        // Ensure products is an array
-        const productsArray = Array.isArray(products) ? products : [];
-        const productIndex = productsArray.findIndex(p => {
-          const productId = p.id || p._id;
-          return productId === id || 
-                 String(productId) === String(id) || 
-                 productId === String(id);
-        });
-        
-        if (productIndex !== -1) {
-          const originalProduct = productsArray[productIndex];
-          const updatedProduct = { ...originalProduct, ...productData };
-          
-          // Debug problematic fields in localStorage fallback
-          console.log('🔍 ProductAPI: localStorage fallback - Problematic fields:');
-          console.log('  - Original style:', originalProduct.style);
-          console.log('  - New style:', productData.style);
-          console.log('  - Updated style:', updatedProduct.style);
-          console.log('  - Original gender:', originalProduct.gender);
-          console.log('  - New gender:', productData.gender);
-          console.log('  - Updated gender:', updatedProduct.gender);
-          console.log('  - Original status:', originalProduct.status);
-          console.log('  - New status:', productData.status);
-          console.log('  - Updated status:', updatedProduct.status);
-          
-          productsArray[productIndex] = updatedProduct;
-          saveProductsBackup(productsArray);
-          console.log('📦 ProductAPI: Product updated in localStorage backup');
-          return updatedProduct;
-        } else {
-          console.warn('⚠️ ProductAPI: Product not found in localStorage backup');
-        }
-      } catch (fallbackError) {
-        console.error('❌ ProductAPI: Fallback update also failed:', fallbackError.message);
-      }
+      // For other errors, don't use localStorage fallback - force Neon database usage
+      console.error('❌ ProductAPI: Neon database update failed');
+      console.error('❌ ProductAPI: Error details:', error.message);
+      console.error('❌ ProductAPI: Not using localStorage fallback - must use Neon database');
+      console.error('❌ ProductAPI: Please check Neon database connection and API endpoint');
       
       // If all fallbacks failed, re-throw the original error
       console.error(`❌ ProductAPI: All update attempts failed, re-throwing error:`, error.message);

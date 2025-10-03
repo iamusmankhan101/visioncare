@@ -3344,6 +3344,7 @@ const AdminPage = () => {
       setPreviewUrl('');
       
       // Refresh the product list to ensure UI is updated
+      console.log('🔄 AdminPage: Refreshing product list after update...');
       dispatch(fetchProducts());
 
       // Reset form and go back to manage products

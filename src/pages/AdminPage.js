@@ -8,6 +8,7 @@ import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
 import AdminHeader from '../components/admin/AdminHeader';
 import { getAllOrders, getOrderStats } from '../services/orderService';
+import { getAllProducts, syncLocalProductsToNeon } from '../api/productApi';
 import { useAuth } from '../context/AuthContext';
 
 // Modern Dashboard Styled Components
@@ -3369,6 +3370,33 @@ const AdminPage = () => {
   };
 
 
+  // Sync local products to Neon database
+  const handleSyncToNeon = async () => {
+    if (window.confirm('This will sync all local products to the Neon database. This may take a few minutes. Continue?')) {
+      try {
+        setIsLoading(true);
+        setSuccessMessage('Syncing products to Neon database...');
+        
+        console.log('🚀 AdminPage: Starting sync to Neon database...');
+        const result = await syncLocalProductsToNeon();
+        
+        console.log('✅ AdminPage: Sync completed:', result);
+        setSuccessMessage(`Sync completed! ${result.synced} products synced to Neon database. ${result.errors} errors.`);
+        
+        // Refresh the product list to get the new Neon products
+        dispatch(fetchProducts());
+        
+        setTimeout(() => setSuccessMessage(''), 5000);
+      } catch (error) {
+        console.error('❌ AdminPage: Sync failed:', error);
+        setSuccessMessage('Sync failed: ' + error.message);
+        setTimeout(() => setSuccessMessage(''), 5000);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   // Update existing products with random style values
   const handleUpdateExistingProductsWithStyles = () => {
     if (window.confirm('This will update all existing products without style data with random styles. Continue?')) {
@@ -4540,6 +4568,34 @@ const AdminPage = () => {
                   {successMessage && (
                     <SuccessMessage>{successMessage}</SuccessMessage>
                   )}
+
+                  {/* Sync to Neon Database Button */}
+                  <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#0369a1' }}>🗄️ Sync to Neon Database</h4>
+                        <p style={{ margin: '0', fontSize: '0.875rem', color: '#0369a1' }}>
+                          Upload all local products to your Neon PostgreSQL database for persistent storage and editing.
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleSyncToNeon}
+                        disabled={isLoading}
+                        style={{
+                          padding: '0.75rem 1.5rem',
+                          background: '#0ea5e9',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
+                          fontWeight: '500',
+                          opacity: isLoading ? 0.6 : 1
+                        }}
+                      >
+                        {isLoading ? 'Syncing...' : 'Sync to Neon'}
+                      </button>
+                    </div>
+                  </div>
 
                   <ProductList>
                     {isProductsLoading ? (

@@ -359,6 +359,61 @@ const productApi = {
   },
 
 
+  // Sync local products to Neon database
+  syncLocalProductsToNeon: async () => {
+    try {
+      console.log('🔄 ProductAPI: Starting sync of local products to Neon database...');
+      
+      // Get all local products
+      const localProducts = getStoredProducts();
+      console.log(`📦 ProductAPI: Found ${localProducts.length} local products to sync`);
+      
+      if (localProducts.length === 0) {
+        console.log('✅ ProductAPI: No local products to sync');
+        return { synced: 0, errors: 0 };
+      }
+      
+      let syncedCount = 0;
+      let errorCount = 0;
+      const errors = [];
+      
+      for (const product of localProducts) {
+        try {
+          console.log(`🔄 ProductAPI: Syncing product: ${product.name} (ID: ${product.id})`);
+          
+          // Remove the local ID and let Neon assign a new one
+          const { id, _id, ...productDataForNeon } = product;
+          
+          // Create product in Neon database
+          const createdProduct = await apiRequest('/products', {
+            method: 'POST',
+            body: JSON.stringify(productDataForNeon),
+          });
+          
+          console.log(`✅ ProductAPI: Synced product: ${product.name} → Neon ID: ${createdProduct.id}`);
+          syncedCount++;
+          
+        } catch (error) {
+          console.error(`❌ ProductAPI: Failed to sync product: ${product.name}`, error.message);
+          errors.push({ product: product.name, error: error.message });
+          errorCount++;
+        }
+      }
+      
+      console.log(`🎯 ProductAPI: Sync completed - ${syncedCount} synced, ${errorCount} errors`);
+      
+      if (errors.length > 0) {
+        console.log('❌ ProductAPI: Sync errors:', errors);
+      }
+      
+      return { synced: syncedCount, errors: errorCount, errorDetails: errors };
+      
+    } catch (error) {
+      console.error('❌ ProductAPI: Sync operation failed:', error);
+      throw error;
+    }
+  },
+
   // Delete a product
   deleteProduct: async (id) => {
     try {
@@ -450,6 +505,7 @@ export const getProductById = productApi.getProductById;
 export const createProduct = productApi.createProduct;
 export const updateProduct = productApi.updateProduct;
 export const deleteProduct = productApi.deleteProduct;
+export const syncLocalProductsToNeon = productApi.syncLocalProductsToNeon;
 
 
 export default productApi;

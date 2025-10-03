@@ -698,6 +698,14 @@ const StatValue = styled.div`
   margin-bottom: 0.5rem;
 `;
 
+const StatLabel = styled.div`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+`;
+
 const StatChange = styled.div`
   display: flex;
   align-items: center;

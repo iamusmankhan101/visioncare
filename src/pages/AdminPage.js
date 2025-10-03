@@ -2305,34 +2305,55 @@ const AdminPage = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   
-  // Default product state - used for initialization and reset
+  // Default product state - used for initialization and reset - ALL FIELDS CONNECTED TO NEON
   const defaultProductData = {
+    // Core product fields
+    id: null,
     name: '',
     price: '',
+    original_price: null,
+    
+    // Category and classification
     category: '',
+    type: '',
+    gender: 'Unisex',
+    
+    // Physical properties
     material: '',
     shape: '',
     style: '',
+    rim: '',
     frameColor: '',
+    brand: '',
+    
+    // Product status and description
+    status: 'In Stock',
     description: '',
-    image: '',
-    gallery: [],
-    colorImages: {}, // New field for color-specific images
-    featured: false,
-    bestSeller: false,
+    
+    // Arrays and complex fields
     colors: [],
     sizes: [],
     features: [],
     lensTypes: [],
-    status: 'In Stock',
-    rim: '',
-    brand: '',
-    gender: 'Unisex',
-    type: '',
+    gallery: [],
+    
+    // Image fields
+    image: '',
+    colorImages: {},
+    
+    // Boolean flags
+    featured: false,
+    bestSeller: false,
+    
+    // Discount object
     discount: {
       hasDiscount: false,
       discountPercentage: 0
-    }
+    },
+    
+    // Metadata
+    createdAt: null,
+    updatedAt: null
   };
   
   const [productData, setProductData] = useState(defaultProductData);
@@ -3167,29 +3188,51 @@ const AdminPage = () => {
     const editData = {
       ...defaultProductData, // Start with default values
       ...product, // Override with product data
-      price: product.price ? product.price.toString() : '', // Convert price to string for form input
-      // Ensure all fields have proper defaults
+      
+      // Core product fields
+      id: product.id || product._id,
       name: product.name || '',
+      price: product.price ? product.price.toString() : '', // Convert price to string for form input
+      original_price: product.original_price || null,
+      
+      // Category and classification
       category: product.category || '',
+      type: product.type || '',
+      gender: product.gender || 'Unisex',
+      
+      // Physical properties
       material: product.material || '',
       shape: product.shape || '',
-      style: product.style || '', // Keep empty string for "Select Style" option
-      frameColor: product.frameColor || '',
-      description: product.description || '',
-      image: product.image || '',
-      status: product.status || 'In Stock',
+      style: product.style || '',
       rim: product.rim || '',
+      frameColor: product.frameColor || '',
       brand: product.brand || '',
-      gender: product.gender || 'Unisex',
-      featured: Boolean(product.featured),
-      bestSeller: Boolean(product.bestSeller),
+      
+      // Product status and description
+      status: product.status || 'In Stock',
+      description: product.description || '',
+      
+      // Arrays and complex fields
       colors: Array.isArray(product.colors) ? product.colors : [],
       sizes: Array.isArray(product.sizes) ? product.sizes : [],
       features: Array.isArray(product.features) ? product.features : [],
       lensTypes: Array.isArray(product.lensTypes) ? product.lensTypes : [],
       gallery: Array.isArray(product.gallery) ? product.gallery : [],
+      
+      // Image fields
+      image: product.image || '',
       colorImages: product.colorImages || {},
-      discount: product.discount || { hasDiscount: false, discountPercentage: 0 }
+      
+      // Boolean flags
+      featured: Boolean(product.featured),
+      bestSeller: Boolean(product.bestSeller),
+      
+      // Discount object
+      discount: product.discount || { hasDiscount: false, discountPercentage: 0 },
+      
+      // Metadata
+      createdAt: product.createdAt || new Date().toISOString(),
+      updatedAt: product.updatedAt || new Date().toISOString()
     };
     
     console.log('✏️ AdminPage: Setting edit data:', editData);
@@ -3309,32 +3352,97 @@ const AdminPage = () => {
         throw new Error('Product name and price are required.');
       }
 
-      // Ensure price is a number and fix undefined fields
+      // Ensure ALL fields are properly formatted for Neon database
       const updatedProduct = {
         ...productData,
-        price: parseFloat(productData.price),
-        // Ensure problematic fields have proper defaults if they're undefined
+        // Core product fields
+        id: productData.id || productData._id,
+        name: productData.name || '',
+        price: parseFloat(productData.price) || 0,
+        original_price: productData.original_price || null,
+        
+        // Category and classification
+        category: productData.category || '',
+        type: productData.type || '',
+        gender: productData.gender || 'Unisex',
+        
+        // Physical properties
+        material: productData.material || '',
+        shape: productData.shape || '',
         style: productData.style || '',
+        rim: productData.rim || '',
         frameColor: productData.frameColor || '',
+        brand: productData.brand || '',
+        
+        // Product status and description
+        status: productData.status || 'In Stock',
+        description: productData.description || '',
+        
+        // Arrays and complex fields
+        colors: Array.isArray(productData.colors) ? productData.colors : [],
+        sizes: Array.isArray(productData.sizes) ? productData.sizes : [],
+        features: Array.isArray(productData.features) ? productData.features : [],
         lensTypes: Array.isArray(productData.lensTypes) ? productData.lensTypes : [],
-        discount: productData.discount || { hasDiscount: false, discountPercentage: 0 }
+        gallery: Array.isArray(productData.gallery) ? productData.gallery : [],
+        
+        // Image fields
+        image: productData.image || '',
+        colorImages: productData.colorImages || {},
+        
+        // Boolean flags
+        featured: Boolean(productData.featured),
+        bestSeller: Boolean(productData.bestSeller),
+        
+        // Discount object
+        discount: productData.discount || { hasDiscount: false, discountPercentage: 0 },
+        
+        // Metadata
+        createdAt: productData.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
       const productId = updatedProduct.id || updatedProduct._id;
       console.log('✏️ AdminPage: Updating product with ID:', productId);
       console.log('✏️ AdminPage: Updated product data:', updatedProduct);
       
-      // Debug specific fields that aren't updating
-      console.log('🔍 AdminPage: Debugging specific fields:');
-      console.log('  - gender:', updatedProduct.gender);
-      console.log('  - material:', updatedProduct.material);
-      console.log('  - shape:', updatedProduct.shape);
-      console.log('  - style:', updatedProduct.style);
-      console.log('  - frameColor:', updatedProduct.frameColor);
-      console.log('  - lensTypes:', updatedProduct.lensTypes);
-      console.log('  - discount:', updatedProduct.discount);
-      console.log('  - status:', updatedProduct.status);
-      console.log('  - description:', updatedProduct.description);
+      // Debug ALL fields being sent to Neon database
+      console.log('🔍 AdminPage: ALL FIELDS being sent to Neon database:');
+      console.log('  📋 Core Fields:');
+      console.log('    - id:', updatedProduct.id);
+      console.log('    - name:', updatedProduct.name);
+      console.log('    - price:', updatedProduct.price);
+      console.log('    - original_price:', updatedProduct.original_price);
+      console.log('  📂 Classification:');
+      console.log('    - category:', updatedProduct.category);
+      console.log('    - type:', updatedProduct.type);
+      console.log('    - gender:', updatedProduct.gender);
+      console.log('  🔧 Physical Properties:');
+      console.log('    - material:', updatedProduct.material);
+      console.log('    - shape:', updatedProduct.shape);
+      console.log('    - style:', updatedProduct.style);
+      console.log('    - rim:', updatedProduct.rim);
+      console.log('    - frameColor:', updatedProduct.frameColor);
+      console.log('    - brand:', updatedProduct.brand);
+      console.log('  📝 Status & Description:');
+      console.log('    - status:', updatedProduct.status);
+      console.log('    - description:', updatedProduct.description);
+      console.log('  📊 Arrays & Complex:');
+      console.log('    - colors:', updatedProduct.colors);
+      console.log('    - sizes:', updatedProduct.sizes);
+      console.log('    - features:', updatedProduct.features);
+      console.log('    - lensTypes:', updatedProduct.lensTypes);
+      console.log('    - gallery:', updatedProduct.gallery);
+      console.log('  🖼️ Images:');
+      console.log('    - image:', updatedProduct.image ? 'Present' : 'None');
+      console.log('    - colorImages:', Object.keys(updatedProduct.colorImages).length, 'color images');
+      console.log('  🏷️ Flags:');
+      console.log('    - featured:', updatedProduct.featured);
+      console.log('    - bestSeller:', updatedProduct.bestSeller);
+      console.log('  💰 Discount:');
+      console.log('    - discount:', updatedProduct.discount);
+      console.log('  📅 Metadata:');
+      console.log('    - createdAt:', updatedProduct.createdAt);
+      console.log('    - updatedAt:', updatedProduct.updatedAt);
 
       // Dispatch synchronous action to update product in Redux store
       const result = dispatch(updateProduct({

@@ -333,22 +333,11 @@ const productApi = {
                              error.status === 404;
       
       if (isNotFoundError) {
-        console.warn('🔄 ProductAPI: Product not found (404), attempting to create instead of update');
-        console.log('🔄 ProductAPI: Original product ID:', id);
-        console.log('🔄 ProductAPI: Product data for creation:', productData);
-        
-        try {
-          // Remove the ID from productData since we're creating a new product
-          const { id: _, ...createData } = productData;
-          console.log('🔄 ProductAPI: Creating product with data:', createData);
-          
-          const newProduct = await productApi.createProduct(createData);
-          console.log('✅ ProductAPI: Product created successfully instead of updated:', newProduct);
-          return newProduct;
-        } catch (createError) {
-          console.error('❌ ProductAPI: Failed to create product after update failed:', createError);
-          // Fall through to localStorage fallback
-        }
+        console.warn('🔄 ProductAPI: Product not found (404) - this should not happen during edit');
+        console.log('🔄 ProductAPI: Product ID:', id, 'might not exist in backend database');
+        console.log('🔄 ProductAPI: This suggests the product exists locally but not in backend');
+        // Don't create a new product - this causes duplicates
+        // Instead, fall through to localStorage fallback to update local data
       }
       
       // If not a 404 error OR create failed, try localStorage fallback

@@ -55,30 +55,17 @@ export const updateProductAsync = createAsyncThunk(
         errorName: error?.name
       });
       
-      // If product not found (404), try to create it instead
+      // If product not found (404), don't create a new product as this causes duplicates
       const isNotFoundError = errorMessage.includes('Product not found') || 
                              errorMessage.includes('404') ||
                              error?.status === 404 ||
                              (error?.response && error.response.status === 404);
       
       if (isNotFoundError) {
-        console.warn('🔄 Redux: Product not found for update (404), attempting to create instead');
-        console.log('🔄 Redux: Original product ID:', id);
-        console.log('🔄 Redux: Product data for creation:', productData);
-        
-        try {
-          // Remove the ID from productData since we're creating a new product
-          const { id: _, ...createData } = productData;
-          console.log('🔄 Redux: Creating product with data:', createData);
-          
-          const newProduct = await productApi.createProduct(createData);
-          console.log('✅ Redux: Product created successfully instead of updated:', newProduct);
-          return newProduct;
-        } catch (createError) {
-          console.error('❌ Redux: Failed to create product after update failed:', createError);
-          const createErrorMessage = createError?.message || createError?.error || createError || 'Unknown create error';
-          return rejectWithValue(`Update failed (product not found) and create also failed: ${createErrorMessage}`);
-        }
+        console.warn('🔄 Redux: Product not found for update (404)');
+        console.log('🔄 Redux: Product ID:', id, 'exists locally but not in backend');
+        console.log('🔄 Redux: This is normal for products that were added locally');
+        // Don't create new product - just return the error and let localStorage handle it
       }
       
       return rejectWithValue(errorMessage);
@@ -229,11 +216,10 @@ const productSlice = createSlice({
           state.items[index] = updatedProduct;
           console.log('✅ Redux: Product updated successfully in store');
         } else {
-          // Product not found - this might be a new product created after update failed
-          // Check if we should add it as a new product
-          console.warn('⚠️ Redux: Product not found in store for update, adding as new product');
-          state.items.push(updatedProduct);
-          console.log('✅ Redux: Product added as new item in store');
+          // Product not found in store - this shouldn't happen during normal updates
+          console.warn('⚠️ Redux: Product not found in store for update');
+          console.warn('⚠️ Redux: This might indicate a data synchronization issue');
+          // Don't add as new product to avoid duplicates
         }
         
         state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);

@@ -128,12 +128,54 @@ const getStoredProducts = () => {
   }
 };
 
-// Save products to localStorage as backup
+// Save products to localStorage as backup (with size optimization)
 const saveProductsBackup = (products) => {
   try {
-    localStorage.setItem('eyewear_products_backup', JSON.stringify(products));
+    // Create a lightweight version without large image data for localStorage
+    const lightweightProducts = products.map(product => {
+      const { image, gallery, colorImages, ...lightProduct } = product;
+      return {
+        ...lightProduct,
+        // Keep only essential image info, not the full base64 data
+        hasImage: !!image,
+        hasGallery: !!(gallery && gallery.length > 0),
+        hasColorImages: !!(colorImages && Object.keys(colorImages).length > 0)
+      };
+    });
+    
+    localStorage.setItem('eyewear_products_backup', JSON.stringify(lightweightProducts));
+    console.log(`📦 Products backup saved to localStorage (${lightweightProducts.length} products, optimized size)`);
   } catch (error) {
-    console.error('Error saving products backup:', error);
+    if (error.name === 'QuotaExceededError') {
+      console.warn('⚠️ LocalStorage quota exceeded, clearing old backup and trying with minimal data');
+      try {
+        // Clear the old backup and try with even more minimal data
+        localStorage.removeItem('eyewear_products_backup');
+        
+        // Keep only essential product info
+        const minimalProducts = products.map(product => ({
+          id: product.id,
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          category: product.category,
+          material: product.material,
+          shape: product.shape,
+          style: product.style,
+          gender: product.gender,
+          status: product.status,
+          description: product.description
+        }));
+        
+        localStorage.setItem('eyewear_products_backup', JSON.stringify(minimalProducts));
+        console.log(`📦 Minimal products backup saved (${minimalProducts.length} products)`);
+      } catch (retryError) {
+        console.error('❌ Failed to save even minimal backup:', retryError);
+        // Don't throw error - continue without localStorage backup
+      }
+    } else {
+      console.error('❌ Error saving products backup:', error);
+    }
   }
 };
 

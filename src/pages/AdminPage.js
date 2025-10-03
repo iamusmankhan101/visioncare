@@ -3274,7 +3274,7 @@ const AdminPage = () => {
   };
 
   // Handle update product submission - MOVED INSIDE COMPONENT
-  const handleUpdateSubmit = async (e) => {
+  const handleUpdateSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -3322,20 +3322,20 @@ const AdminPage = () => {
       console.log('  - status:', updatedProduct.status);
       console.log('  - description:', updatedProduct.description);
 
-      // Dispatch async action to update product in API and Redux store
-      const result = await dispatch(updateProductAsync({
+      // Dispatch synchronous action to update product in Redux store
+      const result = dispatch(updateProduct({
         id: productId,
-        productData: updatedProduct
-      })).unwrap();
+        ...updatedProduct
+      }));
 
       console.log('✅ AdminPage: Product updated successfully');
       console.log('✅ AdminPage: Update result:', result);
       
       // Debug: Check if the problematic fields were actually saved
       console.log('🔍 AdminPage: POST-UPDATE - Verifying saved fields:');
-      console.log('  - Saved style:', result.style);
-      console.log('  - Saved gender:', result.gender);
-      console.log('  - Saved status:', result.status);
+      console.log('  - Saved style:', result.payload?.style);
+      console.log('  - Saved gender:', result.payload?.gender);
+      console.log('  - Saved status:', result.payload?.status);
       
       // Show success message
       setSuccessMessage('Product updated successfully!');

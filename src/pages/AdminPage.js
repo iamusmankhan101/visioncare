@@ -2925,10 +2925,12 @@ const AdminPage = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(`🔄 AdminPage: Input changed - ${name}: "${value}"`);
     setProductData({
       ...productData,
       [name]: name === 'price' ? parseFloat(value) : value
     });
+    console.log('🔄 AdminPage: Updated productData:', { ...productData, [name]: name === 'price' ? parseFloat(value) : value });
   };
 
   // Handle feature checkbox changes
@@ -3256,12 +3258,13 @@ const AdminPage = () => {
       console.log('✏️ AdminPage: Updated product data:', updatedProduct);
 
       // Dispatch async action to update product in API and Redux store
-      await dispatch(updateProductAsync({
+      const result = await dispatch(updateProductAsync({
         id: productId,
         productData: updatedProduct
       })).unwrap();
 
       console.log('✅ AdminPage: Product updated successfully');
+      console.log('✅ AdminPage: Update result:', result);
       
       // Show success message
       setSuccessMessage('Product updated successfully!');

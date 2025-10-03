@@ -4696,6 +4696,38 @@ const AdminPage = () => {
                     </FormGroup>
 
                     <FormGroup>
+                      <Label htmlFor="category">Category</Label>
+                      <Select
+                        id="category"
+                        name="category"
+                        value={productData.category}
+                        onChange={handleInputChange}
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(category => (
+                          <option key={category} value={category}>
+                            {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                          </option>
+                        ))}
+                      </Select>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select
+                        id="gender"
+                        name="gender"
+                        value={productData.gender || 'Unisex'}
+                        onChange={handleInputChange}
+                      >
+                        <option value="Unisex">Unisex</option>
+                        <option value="Men">Men</option>
+                        <option value="Women">Women</option>
+                        <option value="Kids">Kids</option>
+                      </Select>
+                    </FormGroup>
+
+                    <FormGroup>
                       <Label htmlFor="material">Material</Label>
                       <Select
                         id="material"

@@ -48,6 +48,22 @@ export const updateProductAsync = createAsyncThunk(
       return await productApi.updateProduct(id, productData);
     } catch (error) {
       const errorMessage = error?.message || error?.error || error || 'Unknown error occurred';
+      
+      // If product not found (404), try to create it instead
+      if (errorMessage.includes('Product not found') || errorMessage.includes('404')) {
+        console.warn('🔄 Redux: Product not found for update, attempting to create instead');
+        try {
+          // Remove the ID from productData since we're creating a new product
+          const { id: _, ...createData } = productData;
+          const newProduct = await productApi.createProduct(createData);
+          console.log('✅ Redux: Product created successfully instead of updated');
+          return newProduct;
+        } catch (createError) {
+          console.error('❌ Redux: Failed to create product after update failed:', createError);
+          return rejectWithValue(`Update failed (product not found) and create also failed: ${createError.message}`);
+        }
+      }
+      
       return rejectWithValue(errorMessage);
     }
   }
@@ -179,8 +195,8 @@ const productSlice = createSlice({
       })
       .addCase(updateProductAsync.fulfilled, (state, action) => {
         const updatedProduct = action.payload;
-        console.log('✏️ Redux: Updating product:', updatedProduct.name);
-        console.log('✏️ Redux: Updated product ID:', updatedProduct.id || updatedProduct._id);
+        console.log('✏️ Redux: Processing product update/create:', updatedProduct.name);
+        console.log('✏️ Redux: Product ID:', updatedProduct.id || updatedProduct._id);
         
         // Try different ID matching strategies for live database compatibility
         const index = state.items.findIndex(item => {
@@ -192,12 +208,18 @@ const productSlice = createSlice({
         });
         
         if (index !== -1) {
+          // Update existing product
           state.items[index] = updatedProduct;
-          state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
           console.log('✅ Redux: Product updated successfully in store');
         } else {
-          console.warn('⚠️ Redux: Product not found in store for update');
+          // Product not found - this might be a new product created after update failed
+          // Check if we should add it as a new product
+          console.warn('⚠️ Redux: Product not found in store for update, adding as new product');
+          state.items.push(updatedProduct);
+          console.log('✅ Redux: Product added as new item in store');
         }
+        
+        state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
         state.status = 'succeeded';
       })
       .addCase(updateProductAsync.rejected, (state, action) => {

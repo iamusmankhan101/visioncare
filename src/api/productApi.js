@@ -413,6 +413,171 @@ const productApi = {
     }
   },
 
+  // Sync localStorage products with temporary IDs to Neon database and get proper IDs
+  syncProductIdsToNeonDatabase: async () => {
+    try {
+      console.log('🔄 ProductAPI: Starting ID synchronization with Neon database...');
+      
+      // Get products from localStorage
+      const localProducts = getStoredProducts();
+      const tempIdProducts = localProducts.filter(product => 
+        String(product.id).startsWith('local_') || 
+        String(product.id).includes('temp_') ||
+        !product.id || 
+        typeof product.id === 'string' && product.id.length > 20
+      );
+      
+      if (tempIdProducts.length === 0) {
+        console.log('✅ ProductAPI: No products with temporary IDs found. Sync not needed.');
+        return { synced: 0, failed: 0, results: [] };
+      }
+      
+      console.log(`🔍 ProductAPI: Found ${tempIdProducts.length} products with temporary IDs to sync`);
+      
+      const syncResults = [];
+      let syncedCount = 0;
+      let failedCount = 0;
+      
+      for (const tempProduct of tempIdProducts) {
+        try {
+          console.log(`🔄 ProductAPI: Syncing product "${tempProduct.name}" with temp ID: ${tempProduct.id}`);
+          
+          // Remove the temporary ID and other local-only fields
+          const productDataForSync = {
+            ...tempProduct,
+            createdAt: tempProduct.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          delete productDataForSync.id; // Let Neon database assign proper ID
+          
+          // Create product in Neon database
+          const neonProduct = await apiRequest('/products', {
+            method: 'POST',
+            body: JSON.stringify(productDataForSync),
+          });
+          
+          console.log(`✅ ProductAPI: Product "${tempProduct.name}" synced. Old ID: ${tempProduct.id}, New ID: ${neonProduct.id}`);
+          
+          syncResults.push({
+            oldId: tempProduct.id,
+            newId: neonProduct.id,
+            productName: tempProduct.name,
+            success: true,
+            neonProduct: neonProduct
+          });
+          
+          syncedCount++;
+          
+        } catch (syncError) {
+          console.error(`❌ ProductAPI: Failed to sync product "${tempProduct.name}":`, syncError.message);
+          
+          syncResults.push({
+            oldId: tempProduct.id,
+            productName: tempProduct.name,
+            success: false,
+            error: syncError.message
+          });
+          
+          failedCount++;
+        }
+      }
+      
+      // If any products were successfully synced, refresh localStorage with Neon data
+      if (syncedCount > 0) {
+        try {
+          console.log('🔄 ProductAPI: Refreshing localStorage with Neon database data...');
+          const allNeonProducts = await productApi.getAllProducts();
+          saveProductsBackup(allNeonProducts);
+          console.log('✅ ProductAPI: localStorage refreshed with synchronized Neon database data');
+        } catch (refreshError) {
+          console.warn('⚠️ ProductAPI: Failed to refresh localStorage after sync:', refreshError.message);
+        }
+      }
+      
+      console.log(`✅ ProductAPI: ID synchronization completed. Synced: ${syncedCount}, Failed: ${failedCount}`);
+      
+      return {
+        synced: syncedCount,
+        failed: failedCount,
+        results: syncResults,
+        totalProcessed: tempIdProducts.length
+      };
+      
+    } catch (error) {
+      console.error('❌ ProductAPI: Error during ID synchronization:', error);
+      throw error;
+    }
+  },
+
+  // Check for products that need ID synchronization
+  checkProductSyncStatus: async () => {
+    try {
+      console.log('🔍 ProductAPI: Checking product synchronization status...');
+      
+      const localProducts = getStoredProducts();
+      const tempIdProducts = localProducts.filter(product => 
+        String(product.id).startsWith('local_') || 
+        String(product.id).includes('temp_') ||
+        !product.id || 
+        typeof product.id === 'string' && product.id.length > 20
+      );
+      
+      const syncStatus = {
+        needsSync: tempIdProducts.length > 0,
+        tempIdCount: tempIdProducts.length,
+        totalLocalProducts: localProducts.length,
+        tempIdProducts: tempIdProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          createdAt: p.createdAt
+        }))
+      };
+      
+      if (syncStatus.needsSync) {
+        console.log(`⚠️ ProductAPI: ${tempIdProducts.length} products need ID synchronization with Neon database`);
+      } else {
+        console.log('✅ ProductAPI: All products are synchronized with Neon database');
+      }
+      
+      return syncStatus;
+    } catch (error) {
+      console.error('❌ ProductAPI: Error checking sync status:', error);
+      throw error;
+    }
+  },
+
+  // Auto-sync products on app startup or when connection is restored
+  autoSyncProductIds: async () => {
+    try {
+      console.log('🚀 ProductAPI: Starting automatic product ID synchronization...');
+      
+      // First check if Neon database is available
+      const isConnected = await productApi.testConnection();
+      if (!isConnected) {
+        console.log('⚠️ ProductAPI: Neon database not available. Skipping auto-sync.');
+        return { skipped: true, reason: 'Neon database not available' };
+      }
+      
+      // Check if sync is needed
+      const syncStatus = await productApi.checkProductSyncStatus();
+      if (!syncStatus.needsSync) {
+        console.log('✅ ProductAPI: No products need synchronization');
+        return { skipped: true, reason: 'No products need sync' };
+      }
+      
+      // Perform the sync
+      console.log(`🔄 ProductAPI: Auto-syncing ${syncStatus.tempIdCount} products...`);
+      const syncResult = await productApi.syncProductIdsToNeonDatabase();
+      
+      console.log(`✅ ProductAPI: Auto-sync completed. ${syncResult.synced} products synchronized.`);
+      return { ...syncResult, autoSync: true };
+      
+    } catch (error) {
+      console.error('❌ ProductAPI: Error during auto-sync:', error);
+      return { error: error.message, autoSync: true };
+    }
+  },
+
   // Bulk edit multiple products (prioritizes Neon database for all operations)
   bulkEditProducts: async (productUpdates) => {
     try {
@@ -467,217 +632,6 @@ const productApi = {
       };
     } catch (error) {
       console.error('❌ ProductAPI: Error in bulk edit:', error);
-      throw error;
-    }
-  },
-
-  // Migrate all localStorage products to Neon database
-  migrateLocalProductsToNeon: async () => {
-    try {
-      console.log('🔄 ProductAPI: Starting migration of localStorage products to Neon database...');
-      
-      // Get all products from localStorage
-      const localProducts = getStoredProducts();
-      console.log(`📦 ProductAPI: Found ${localProducts.length} products in localStorage`);
-      
-      if (localProducts.length === 0) {
-        console.log('✅ ProductAPI: No products in localStorage to migrate');
-        return { migrated: 0, errors: 0, skipped: 0 };
-      }
-      
-      // Get existing products from Neon database
-      let neonProducts = [];
-      try {
-        console.log('🌐 ProductAPI: Fetching existing products from Neon database...');
-        neonProducts = await apiRequest('/products');
-        console.log(`🗄️ ProductAPI: Found ${neonProducts.length} existing products in Neon database`);
-      } catch (error) {
-        console.error('❌ ProductAPI: Failed to fetch products from Neon database:', error.message);
-        throw new Error(`Cannot migrate: Neon database is not accessible - ${error.message}`);
-      }
-      
-      const results = {
-        migrated: 0,
-        errors: 0,
-        skipped: 0,
-        details: []
-      };
-      
-      // Process each local product
-      for (const localProduct of localProducts) {
-        try {
-          const productId = localProduct.id || localProduct._id;
-          console.log(`🔄 ProductAPI: Processing product "${localProduct.name}" (ID: ${productId})`);
-          
-          // Check if product already exists in Neon database
-          const existsInNeon = neonProducts.find(p => {
-            const neonId = p.id || p._id;
-            return neonId === productId || String(neonId) === String(productId);
-          });
-          
-          if (existsInNeon) {
-            console.log(`⏭️ ProductAPI: Product "${localProduct.name}" already exists in Neon database, skipping`);
-            results.skipped++;
-            results.details.push({
-              id: productId,
-              name: localProduct.name,
-              status: 'skipped',
-              reason: 'Already exists in Neon database'
-            });
-            continue;
-          }
-          
-          // Prepare product data for migration
-          const migrationData = {
-            ...localProduct,
-            migratedAt: new Date().toISOString(),
-            migrationSource: 'localStorage'
-          };
-          
-          // Remove local-specific fields that shouldn't go to Neon
-          delete migrationData.id; // Let Neon assign new ID
-          delete migrationData._id;
-          
-          // Create product in Neon database
-          console.log(`🌐 ProductAPI: Migrating "${localProduct.name}" to Neon database...`);
-          const createdProduct = await apiRequest('/products', {
-            method: 'POST',
-            body: JSON.stringify(migrationData),
-          });
-          
-          console.log(`✅ ProductAPI: Successfully migrated "${localProduct.name}" to Neon database`);
-          results.migrated++;
-          results.details.push({
-            id: productId,
-            name: localProduct.name,
-            status: 'migrated',
-            newId: createdProduct.id || createdProduct._id
-          });
-          
-        } catch (error) {
-          console.error(`❌ ProductAPI: Failed to migrate product "${localProduct.name}":`, error.message);
-          results.errors++;
-          results.details.push({
-            id: localProduct.id || localProduct._id,
-            name: localProduct.name,
-            status: 'error',
-            error: error.message
-          });
-        }
-      }
-      
-      console.log('🎉 ProductAPI: Migration completed!');
-      console.log(`📊 ProductAPI: Migration Results:`);
-      console.log(`   ✅ Migrated: ${results.migrated} products`);
-      console.log(`   ⏭️ Skipped: ${results.skipped} products (already in Neon)`);
-      console.log(`   ❌ Errors: ${results.errors} products`);
-      
-      // Update localStorage backup with fresh Neon data
-      if (results.migrated > 0) {
-        try {
-          console.log('🔄 ProductAPI: Updating localStorage backup with fresh Neon data...');
-          const freshNeonProducts = await productApi.getAllProducts();
-          saveProductsBackup(freshNeonProducts);
-          console.log('✅ ProductAPI: localStorage backup updated with migrated products');
-        } catch (backupError) {
-          console.warn('⚠️ ProductAPI: Failed to update localStorage backup after migration');
-        }
-      }
-      
-      return results;
-    } catch (error) {
-      console.error('❌ ProductAPI: Migration failed:', error);
-      throw error;
-    }
-  },
-
-  // Sync localStorage with Neon database (bidirectional)
-  syncLocalStorageWithNeon: async () => {
-    try {
-      console.log('🔄 ProductAPI: Starting bidirectional sync between localStorage and Neon database...');
-      
-      // First, migrate any localStorage-only products to Neon
-      const migrationResults = await productApi.migrateLocalProductsToNeon();
-      
-      // Then, ensure localStorage has all Neon products
-      console.log('🌐 ProductAPI: Fetching all products from Neon database for sync...');
-      const neonProducts = await productApi.getAllProducts();
-      
-      console.log(`📦 ProductAPI: Updating localStorage with ${neonProducts.length} products from Neon database`);
-      saveProductsBackup(neonProducts);
-      
-      console.log('✅ ProductAPI: Sync completed successfully');
-      return {
-        migration: migrationResults,
-        neonProductCount: neonProducts.length,
-        syncCompleted: true
-      };
-    } catch (error) {
-      console.error('❌ ProductAPI: Sync failed:', error);
-      throw error;
-    }
-  },
-
-  // Verify data consistency between localStorage and Neon database
-  verifyDataConsistency: async () => {
-    try {
-      console.log('🔍 ProductAPI: Verifying data consistency between localStorage and Neon database...');
-      
-      const localProducts = getStoredProducts();
-      const neonProducts = await apiRequest('/products');
-      
-      const report = {
-        localCount: localProducts.length,
-        neonCount: neonProducts.length,
-        onlyInLocal: [],
-        onlyInNeon: [],
-        consistent: true
-      };
-      
-      // Find products only in localStorage
-      for (const localProduct of localProducts) {
-        const localId = localProduct.id || localProduct._id;
-        const existsInNeon = neonProducts.find(p => {
-          const neonId = p.id || p._id;
-          return neonId === localId || String(neonId) === String(localId);
-        });
-        
-        if (!existsInNeon) {
-          report.onlyInLocal.push({
-            id: localId,
-            name: localProduct.name
-          });
-          report.consistent = false;
-        }
-      }
-      
-      // Find products only in Neon
-      for (const neonProduct of neonProducts) {
-        const neonId = neonProduct.id || neonProduct._id;
-        const existsInLocal = localProducts.find(p => {
-          const localId = p.id || p._id;
-          return localId === neonId || String(localId) === String(neonId);
-        });
-        
-        if (!existsInLocal) {
-          report.onlyInNeon.push({
-            id: neonId,
-            name: neonProduct.name
-          });
-          report.consistent = false;
-        }
-      }
-      
-      console.log('📊 ProductAPI: Data Consistency Report:');
-      console.log(`   📦 localStorage: ${report.localCount} products`);
-      console.log(`   🗄️ Neon database: ${report.neonCount} products`);
-      console.log(`   🔍 Only in localStorage: ${report.onlyInLocal.length} products`);
-      console.log(`   🔍 Only in Neon: ${report.onlyInNeon.length} products`);
-      console.log(`   ✅ Consistent: ${report.consistent}`);
-      
-      return report;
-    } catch (error) {
-      console.error('❌ ProductAPI: Consistency check failed:', error);
       throw error;
     }
   },
@@ -771,9 +725,9 @@ export const updateProduct = productApi.updateProduct;
 export const editProduct = productApi.editProduct;
 export const patchProduct = productApi.patchProduct;
 export const bulkEditProducts = productApi.bulkEditProducts;
-export const migrateLocalProductsToNeon = productApi.migrateLocalProductsToNeon;
-export const syncLocalStorageWithNeon = productApi.syncLocalStorageWithNeon;
-export const verifyDataConsistency = productApi.verifyDataConsistency;
+export const syncProductIdsToNeonDatabase = productApi.syncProductIdsToNeonDatabase;
+export const checkProductSyncStatus = productApi.checkProductSyncStatus;
+export const autoSyncProductIds = productApi.autoSyncProductIds;
 export const deleteProduct = productApi.deleteProduct;
 
 export default productApi;

@@ -1221,6 +1221,182 @@ const ColorRadioContainer = styled.div`
   margin-top: 0.5rem;
 `;
 
+const ColorImageSection = styled.div`
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+  }
+`;
+
+const ColorImageTitle = styled.h3`
+  margin: 0 0 1.5rem 0;
+  color: #1a202c;
+  font-size: 1.125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin: 0 0 1rem 0;
+  }
+`;
+
+const ColorImageGrid = styled.div`
+  display: grid;
+  gap: 1.5rem;
+  
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
+`;
+
+const ColorImageItem = styled.div`
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #3ABEF9;
+    box-shadow: 0 2px 8px rgba(58, 190, 249, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
+`;
+
+const ColorImageHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+`;
+
+const ColorImageLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: #1a202c;
+  font-size: 0.875rem;
+`;
+
+const ColorImageUploadButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: #3ABEF9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+  }
+`;
+
+const ColorImageGallery = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 0.5rem;
+  }
+`;
+
+const ColorImagePreview = styled.div`
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #3ABEF9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(58, 190, 249, 0.2);
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const ColorImageRemoveButton = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+  }
+`;
+
+const ColorImagePlaceholder = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  
+  span:first-child {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+`;
+
 const ColorRadioOption = styled.label`
   display: flex;
   align-items: center;
@@ -2092,6 +2268,7 @@ const AdminPage = () => {
     description: '',
     image: '',
     gallery: [],
+    colorImages: {}, // New field for color-specific images
     featured: false,
     bestSeller: false,
     colors: [],
@@ -2767,10 +2944,14 @@ const AdminPage = () => {
     const isSelected = currentColors.some(c => c.name === colorOption.name);
 
     if (isSelected) {
-      // Remove color
+      // Remove color and its associated images
+      const updatedColorImages = { ...productData.colorImages };
+      delete updatedColorImages[colorOption.name];
+      
       setProductData({
         ...productData,
-        colors: currentColors.filter(c => c.name !== colorOption.name)
+        colors: currentColors.filter(c => c.name !== colorOption.name),
+        colorImages: updatedColorImages
       });
     } else {
       // Add color
@@ -2779,6 +2960,46 @@ const AdminPage = () => {
         colors: [...currentColors, colorOption]
       });
     }
+  };
+
+  // Handle color-specific image upload
+  const handleColorImageUpload = (colorName, files) => {
+    const fileArray = Array.from(files);
+    if (fileArray.length > 0) {
+      const newColorImages = [];
+
+      fileArray.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          newColorImages.push(reader.result);
+          if (newColorImages.length === fileArray.length) {
+            setProductData({
+              ...productData,
+              colorImages: {
+                ...productData.colorImages,
+                [colorName]: [...(productData.colorImages[colorName] || []), ...newColorImages]
+              }
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  // Remove color-specific image
+  const removeColorImage = (colorName, imageIndex) => {
+    const updatedColorImages = { ...productData.colorImages };
+    if (updatedColorImages[colorName]) {
+      updatedColorImages[colorName] = updatedColorImages[colorName].filter((_, index) => index !== imageIndex);
+      if (updatedColorImages[colorName].length === 0) {
+        delete updatedColorImages[colorName];
+      }
+    }
+    setProductData({
+      ...productData,
+      colorImages: updatedColorImages
+    });
   };
 
   // Handle form submission
@@ -2853,6 +3074,7 @@ const AdminPage = () => {
       features: Array.isArray(product.features) ? product.features : [],
       lensTypes: Array.isArray(product.lensTypes) ? product.lensTypes : [],
       gallery: Array.isArray(product.gallery) ? product.gallery : [],
+      colorImages: product.colorImages || {},
       discount: product.discount || { hasDiscount: false, discountPercentage: 0 }
     };
     
@@ -3596,8 +3818,70 @@ const AdminPage = () => {
                             </ColorRadioContainer>
                           </FormGroup>
 
-
-
+                          {/* Color-Specific Images Section */}
+                          {Array.isArray(productData.colors) && productData.colors.length > 0 && (
+                            <ColorImageSection>
+                              <ColorImageTitle>
+                                🎨 Color-Specific Images
+                              </ColorImageTitle>
+                              <p style={{ 
+                                margin: '0 0 1.5rem 0', 
+                                color: '#64748b', 
+                                fontSize: '0.875rem',
+                                lineHeight: '1.5'
+                              }}>
+                                Upload specific images for each color variant. These images will be shown when customers select different colors.
+                              </p>
+                              <ColorImageGrid>
+                                {productData.colors.map((color) => (
+                                  <ColorImageItem key={color.name}>
+                                    <ColorImageHeader>
+                                      <ColorImageLabel>
+                                        <ColorSwatch color={color.hex} />
+                                        {color.name}
+                                      </ColorImageLabel>
+                                      <ColorImageUploadButton
+                                        type="button"
+                                        onClick={() => {
+                                          const input = document.createElement('input');
+                                          input.type = 'file';
+                                          input.accept = 'image/*';
+                                          input.multiple = true;
+                                          input.onchange = (e) => handleColorImageUpload(color.name, e.target.files);
+                                          input.click();
+                                        }}
+                                      >
+                                        <FiUpload />
+                                        Add Images
+                                      </ColorImageUploadButton>
+                                    </ColorImageHeader>
+                                    
+                                    {productData.colorImages[color.name] && productData.colorImages[color.name].length > 0 ? (
+                                      <ColorImageGallery>
+                                        {productData.colorImages[color.name].map((image, index) => (
+                                          <ColorImagePreview key={index}>
+                                            <img src={image} alt={`${color.name} variant ${index + 1}`} />
+                                            <ColorImageRemoveButton
+                                              type="button"
+                                              onClick={() => removeColorImage(color.name, index)}
+                                              title="Remove image"
+                                            >
+                                              ×
+                                            </ColorImageRemoveButton>
+                                          </ColorImagePreview>
+                                        ))}
+                                      </ColorImageGallery>
+                                    ) : (
+                                      <ColorImagePlaceholder>
+                                        <span>📷</span>
+                                        <span>No images uploaded for {color.name} yet. Click "Add Images" to upload photos for this color variant.</span>
+                                      </ColorImagePlaceholder>
+                                    )}
+                                  </ColorImageItem>
+                                ))}
+                              </ColorImageGrid>
+                            </ColorImageSection>
+                          )}
 
                           {/* Frame Color */}
                           <FormGroup>
@@ -4398,7 +4682,70 @@ const AdminPage = () => {
                       </ColorRadioContainer>
                     </FormGroup>
 
-
+                    {/* Color-Specific Images Section */}
+                    {Array.isArray(productData.colors) && productData.colors.length > 0 && (
+                      <ColorImageSection>
+                        <ColorImageTitle>
+                          🎨 Color-Specific Images
+                        </ColorImageTitle>
+                        <p style={{ 
+                          margin: '0 0 1.5rem 0', 
+                          color: '#64748b', 
+                          fontSize: '0.875rem',
+                          lineHeight: '1.5'
+                        }}>
+                          Upload specific images for each color variant. These images will be shown when customers select different colors.
+                        </p>
+                        <ColorImageGrid>
+                          {productData.colors.map((color) => (
+                            <ColorImageItem key={color.name}>
+                              <ColorImageHeader>
+                                <ColorImageLabel>
+                                  <ColorSwatch color={color.hex} />
+                                  {color.name}
+                                </ColorImageLabel>
+                                <ColorImageUploadButton
+                                  type="button"
+                                  onClick={() => {
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.accept = 'image/*';
+                                    input.multiple = true;
+                                    input.onchange = (e) => handleColorImageUpload(color.name, e.target.files);
+                                    input.click();
+                                  }}
+                                >
+                                  <FiUpload />
+                                  Add Images
+                                </ColorImageUploadButton>
+                              </ColorImageHeader>
+                              
+                              {productData.colorImages[color.name] && productData.colorImages[color.name].length > 0 ? (
+                                <ColorImageGallery>
+                                  {productData.colorImages[color.name].map((image, index) => (
+                                    <ColorImagePreview key={index}>
+                                      <img src={image} alt={`${color.name} variant ${index + 1}`} />
+                                      <ColorImageRemoveButton
+                                        type="button"
+                                        onClick={() => removeColorImage(color.name, index)}
+                                        title="Remove image"
+                                      >
+                                        ×
+                                      </ColorImageRemoveButton>
+                                    </ColorImagePreview>
+                                  ))}
+                                </ColorImageGallery>
+                              ) : (
+                                <ColorImagePlaceholder>
+                                  <span>📷</span>
+                                  <span>No images uploaded for {color.name} yet. Click "Add Images" to upload photos for this color variant.</span>
+                                </ColorImagePlaceholder>
+                              )}
+                            </ColorImageItem>
+                          ))}
+                        </ColorImageGrid>
+                      </ColorImageSection>
+                    )}
 
                     {/* Frame Color */}
                     <FormGroup>

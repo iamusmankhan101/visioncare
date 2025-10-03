@@ -354,10 +354,25 @@ const productApi = {
         });
         
         if (productIndex !== -1) {
-          productsArray[productIndex] = { ...productsArray[productIndex], ...productData };
+          const originalProduct = productsArray[productIndex];
+          const updatedProduct = { ...originalProduct, ...productData };
+          
+          // Debug problematic fields in localStorage fallback
+          console.log('🔍 ProductAPI: localStorage fallback - Problematic fields:');
+          console.log('  - Original style:', originalProduct.style);
+          console.log('  - New style:', productData.style);
+          console.log('  - Updated style:', updatedProduct.style);
+          console.log('  - Original gender:', originalProduct.gender);
+          console.log('  - New gender:', productData.gender);
+          console.log('  - Updated gender:', updatedProduct.gender);
+          console.log('  - Original status:', originalProduct.status);
+          console.log('  - New status:', productData.status);
+          console.log('  - Updated status:', updatedProduct.status);
+          
+          productsArray[productIndex] = updatedProduct;
           saveProductsBackup(productsArray);
           console.log('📦 ProductAPI: Product updated in localStorage backup');
-          return productsArray[productIndex];
+          return updatedProduct;
         } else {
           console.warn('⚠️ ProductAPI: Product not found in localStorage backup');
         }

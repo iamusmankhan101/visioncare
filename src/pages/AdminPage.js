@@ -2926,6 +2926,16 @@ const AdminPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     console.log(`🔄 AdminPage: Input changed - ${name}: "${value}"`);
+    
+    // Special debugging for problematic fields
+    if (['style', 'gender', 'status'].includes(name)) {
+      console.log(`🔍 AdminPage: PROBLEMATIC FIELD UPDATE - ${name}:`, {
+        oldValue: productData[name],
+        newValue: value,
+        fieldName: name
+      });
+    }
+    
     setProductData({
       ...productData,
       [name]: name === 'price' ? parseFloat(value) : value
@@ -3168,6 +3178,16 @@ const AdminPage = () => {
     };
     
     console.log('✏️ AdminPage: Setting edit data:', editData);
+    
+    // Debug problematic fields during edit loading
+    console.log('🔍 AdminPage: EDIT LOADING - Problematic fields check:');
+    console.log('  - Original product.style:', product.style);
+    console.log('  - Original product.gender:', product.gender);
+    console.log('  - Original product.status:', product.status);
+    console.log('  - EditData style:', editData.style);
+    console.log('  - EditData gender:', editData.gender);
+    console.log('  - EditData status:', editData.status);
+    
     setProductData(editData);
     setActiveTab('edit-product');
   };

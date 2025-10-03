@@ -3226,7 +3226,7 @@ const AdminPage = () => {
   };
 
   // Handle delete product - MOVED INSIDE COMPONENT
-  const handleDeleteProduct = async (productId) => {
+  const handleDeleteProduct = (productId) => {
     console.log('🗑️ AdminPage: Delete button clicked for product ID:', productId);
     console.log('🗑️ AdminPage: Product ID type:', typeof productId);
     
@@ -3240,13 +3240,13 @@ const AdminPage = () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         console.log('🗑️ AdminPage: User confirmed deletion, proceeding...');
-        console.log('🗑️ AdminPage: Dispatching deleteProductAsync with ID:', productId);
+        console.log('🗑️ AdminPage: Dispatching deleteProduct with ID:', productId);
         
-        const result = await dispatch(deleteProductAsync(productId)).unwrap();
+        const result = dispatch(deleteProduct(productId));
         console.log('✅ AdminPage: Delete operation completed:', result);
         
         // Handle different success messages based on result
-        if (result.message && result.message.includes('was not in database')) {
+        if (result.payload && result.payload.message && result.payload.message.includes('was not in database')) {
           setSuccessMessage('Product removed successfully! (It was not found in the database)');
         } else {
           setSuccessMessage('Product deleted successfully!');
@@ -3309,10 +3309,15 @@ const AdminPage = () => {
         throw new Error('Product name and price are required.');
       }
 
-      // Ensure price is a number
+      // Ensure price is a number and fix undefined fields
       const updatedProduct = {
         ...productData,
-        price: parseFloat(productData.price)
+        price: parseFloat(productData.price),
+        // Ensure problematic fields have proper defaults if they're undefined
+        style: productData.style || '',
+        frameColor: productData.frameColor || '',
+        lensTypes: Array.isArray(productData.lensTypes) ? productData.lensTypes : [],
+        discount: productData.discount || { hasDiscount: false, discountPercentage: 0 }
       };
       
       const productId = updatedProduct.id || updatedProduct._id;

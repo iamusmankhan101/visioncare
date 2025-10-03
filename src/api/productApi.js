@@ -110,7 +110,9 @@ const getStoredProducts = () => {
   try {
     const stored = localStorage.getItem('eyewear_products_backup');
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Ensure we always return an array
+      return Array.isArray(parsed) ? parsed : [];
     }
     return sampleProducts.map((product, index) => ({
       ...product,
@@ -252,8 +254,14 @@ const productApi = {
       
       // Save to localStorage
       const existingProducts = getStoredProducts();
-      existingProducts.push(fallbackProduct);
-      saveProductsBackup(existingProducts);
+      console.log('🔍 ProductAPI: existingProducts type:', typeof existingProducts);
+      console.log('🔍 ProductAPI: existingProducts is array:', Array.isArray(existingProducts));
+      console.log('🔍 ProductAPI: existingProducts:', existingProducts);
+      
+      // Ensure existingProducts is an array
+      const productsArray = Array.isArray(existingProducts) ? existingProducts : [];
+      productsArray.push(fallbackProduct);
+      saveProductsBackup(productsArray);
       
       console.log('📦 ProductAPI: Product saved to localStorage as fallback');
       return fallbackProduct;
@@ -293,7 +301,9 @@ const productApi = {
       try {
         console.warn('🔄 ProductAPI: API update failed, attempting localStorage fallback');
         const products = getStoredProducts();
-        const productIndex = products.findIndex(p => {
+        // Ensure products is an array
+        const productsArray = Array.isArray(products) ? products : [];
+        const productIndex = productsArray.findIndex(p => {
           const productId = p.id || p._id;
           return productId === id || 
                  String(productId) === String(id) || 
@@ -301,10 +311,10 @@ const productApi = {
         });
         
         if (productIndex !== -1) {
-          products[productIndex] = { ...products[productIndex], ...productData };
-          saveProductsBackup(products);
+          productsArray[productIndex] = { ...productsArray[productIndex], ...productData };
+          saveProductsBackup(productsArray);
           console.log('📦 ProductAPI: Product updated in localStorage backup');
-          return products[productIndex];
+          return productsArray[productIndex];
         } else {
           console.warn('⚠️ ProductAPI: Product not found in localStorage backup');
         }
@@ -350,14 +360,16 @@ const productApi = {
         // Try to remove from localStorage backup as cleanup
         try {
           const products = getStoredProducts();
-          const filteredProducts = products.filter(p => {
+          // Ensure products is an array
+          const productsArray = Array.isArray(products) ? products : [];
+          const filteredProducts = productsArray.filter(p => {
             const productId = p.id || p._id;
             return productId !== id && 
                    String(productId) !== String(id) && 
                    productId !== String(id);
           });
           
-          if (filteredProducts.length < products.length) {
+          if (filteredProducts.length < productsArray.length) {
             saveProductsBackup(filteredProducts);
             console.log('📦 ProductAPI: Product also removed from localStorage backup');
           }
@@ -373,14 +385,16 @@ const productApi = {
       try {
         console.warn('🔄 ProductAPI: API delete failed, attempting localStorage fallback');
         const products = getStoredProducts();
-        const filteredProducts = products.filter(p => {
+        // Ensure products is an array
+        const productsArray = Array.isArray(products) ? products : [];
+        const filteredProducts = productsArray.filter(p => {
           const productId = p.id || p._id;
           return productId !== id && 
                  String(productId) !== String(id) && 
                  productId !== String(id);
         });
         
-        if (filteredProducts.length < products.length) {
+        if (filteredProducts.length < productsArray.length) {
           saveProductsBackup(filteredProducts);
           console.log('📦 ProductAPI: Product removed from localStorage backup');
           return { message: 'Product deleted from local storage (API unavailable)' };

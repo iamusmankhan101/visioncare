@@ -2822,6 +2822,13 @@ const AdminPage = () => {
 
   // Available options for form selects - Updated to match URL parameters
   const categories = ['sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
+  
+  // Eyewear categories (excluding contact lenses and lens-only products)
+  const eyewearCategories = [
+    'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses',
+    'Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 
+    'Fashion Glasses', 'fashion-glasses', 'prescription-glasses', 'Prescription Glasses'
+  ];
   const materials = ['Metal', 'Plastic', 'Titanium', 'Acetate', 'Wood', 'Other'];
   const shapes = ['Round', 'Square', 'Rectangle', 'Cat Eye', 'Aviator', 'Oval', 'Geometric', 'Other'];
   const rimOptions = ['Full Rim', 'Semi-Rimless', 'Rimless', 'Half Rim'];
@@ -5007,7 +5014,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category)
+                          eyewearCategories.includes(p.category)
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Total Eyewear</StatLabel>
@@ -5015,7 +5022,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category) && p.featured
+                          eyewearCategories.includes(p.category) && p.featured
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Featured</StatLabel>
@@ -5023,7 +5030,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category) && p.bestSeller
+                          eyewearCategories.includes(p.category) && p.bestSeller
                         ).length : 0}
                       </StatValue>
                       <StatLabel>Best Sellers</StatLabel>
@@ -5031,7 +5038,7 @@ const AdminPage = () => {
                     <StatCard>
                       <StatValue>
                         {products ? products.filter(p => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(p.category) && p.status === 'In Stock'
+                          eyewearCategories.includes(p.category) && p.status === 'In Stock'
                         ).length : 0}
                       </StatValue>
                       <StatLabel>In Stock</StatLabel>
@@ -5046,9 +5053,16 @@ const AdminPage = () => {
                       </div>
                     ) : products && products.length > 0 ? (
                       (() => {
+                        // Debug: Log all product categories to help identify missing ones
+                        const allCategories = [...new Set(products.map(p => p.category))];
+                        console.log('🔍 All product categories found:', allCategories);
+                        console.log('🔍 Eyewear categories filter:', eyewearCategories);
+                        
                         const eyewearProducts = products.filter(product => 
-                          ['Sunglasses', 'Eyeglasses', 'Reading Glasses', 'Computer Glasses', 'Sports Glasses', 'Fashion Glasses', 'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'fashion-glasses'].includes(product.category)
+                          eyewearCategories.includes(product.category)
                         );
+                        
+                        console.log('🔍 Filtered eyewear products:', eyewearProducts.length, 'out of', products.length, 'total products');
                         
                         return eyewearProducts.length > 0 ? (
                           eyewearProducts.map(product => (

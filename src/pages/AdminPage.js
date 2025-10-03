@@ -3326,7 +3326,7 @@ const AdminPage = () => {
   };
 
   // Handle update product submission - MOVED INSIDE COMPONENT
-  const handleUpdateSubmit = (e) => {
+  const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -3444,20 +3444,25 @@ const AdminPage = () => {
       console.log('    - createdAt:', updatedProduct.createdAt);
       console.log('    - updatedAt:', updatedProduct.updatedAt);
 
-      // Dispatch synchronous action to update product in Redux store
-      const result = dispatch(updateProduct({
-        id: productId,
-        ...updatedProduct
-      }));
-
-      console.log('✅ AdminPage: Product updated successfully');
-      console.log('✅ AdminPage: Update result:', result);
+      // Update product in Neon database directly
+      console.log('🔗 AdminPage: Updating product in Neon database...');
+      const neonResult = await productApi.updateProduct(productId, updatedProduct);
+      console.log('✅ AdminPage: Neon database updated successfully:', neonResult);
       
-      // Debug: Check if the problematic fields were actually saved
-      console.log('🔍 AdminPage: POST-UPDATE - Verifying saved fields:');
-      console.log('  - Saved style:', result.payload?.style);
-      console.log('  - Saved gender:', result.payload?.gender);
-      console.log('  - Saved status:', result.payload?.status);
+      // Also update Redux store for immediate UI feedback
+      const reduxResult = dispatch(updateProduct({
+        id: productId,
+        ...neonResult
+      }));
+      console.log('✅ AdminPage: Redux store updated:', reduxResult);
+      
+      // Debug: Check if the problematic fields were actually saved in Neon
+      console.log('🔍 AdminPage: POST-UPDATE - Verifying Neon database saved fields:');
+      console.log('  - Saved style:', neonResult.style);
+      console.log('  - Saved gender:', neonResult.gender);
+      console.log('  - Saved status:', neonResult.status);
+      console.log('  - Saved material:', neonResult.material);
+      console.log('  - Saved frameColor:', neonResult.frameColor);
       
       // Show success message
       setSuccessMessage('Product updated successfully!');

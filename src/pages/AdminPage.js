@@ -1180,8 +1180,48 @@ const ContentArea = styled.div`
   }
   
   @media (max-width: 480px) {
-    padding: 0.75rem;
-    margin: 0 0.25rem 1rem 0.25rem;
+    padding: 0 0.25rem;
+    margin-bottom: 1rem;
+    
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+`;
+
+const ContentHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #1a202c;
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0 0.5rem;
+    margin-bottom: 1.5rem;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0 0.25rem;
+    margin-bottom: 1rem;
+    
+    h2 {
+      font-size: 1.25rem;
+    }
   }
 `;
 
@@ -2945,7 +2985,7 @@ const AdminPage = () => {
 
     if (isSelected) {
       // Remove color and its associated images
-      const updatedColorImages = { ...productData.colorImages };
+      const updatedColorImages = { ...(productData.colorImages || {}) };
       delete updatedColorImages[colorOption.name];
       
       setProductData({
@@ -2976,8 +3016,8 @@ const AdminPage = () => {
             setProductData({
               ...productData,
               colorImages: {
-                ...productData.colorImages,
-                [colorName]: [...(productData.colorImages[colorName] || []), ...newColorImages]
+                ...(productData.colorImages || {}),
+                [colorName]: [...((productData.colorImages && productData.colorImages[colorName]) || []), ...newColorImages]
               }
             });
           }
@@ -2989,7 +3029,7 @@ const AdminPage = () => {
 
   // Remove color-specific image
   const removeColorImage = (colorName, imageIndex) => {
-    const updatedColorImages = { ...productData.colorImages };
+    const updatedColorImages = { ...(productData.colorImages || {}) };
     if (updatedColorImages[colorName]) {
       updatedColorImages[colorName] = updatedColorImages[colorName].filter((_, index) => index !== imageIndex);
       if (updatedColorImages[colorName].length === 0) {
@@ -3856,7 +3896,7 @@ const AdminPage = () => {
                                       </ColorImageUploadButton>
                                     </ColorImageHeader>
                                     
-                                    {productData.colorImages[color.name] && productData.colorImages[color.name].length > 0 ? (
+                                    {productData.colorImages && productData.colorImages[color.name] && productData.colorImages[color.name].length > 0 ? (
                                       <ColorImageGallery>
                                         {productData.colorImages[color.name].map((image, index) => (
                                           <ColorImagePreview key={index}>
@@ -4720,7 +4760,7 @@ const AdminPage = () => {
                                 </ColorImageUploadButton>
                               </ColorImageHeader>
                               
-                              {productData.colorImages[color.name] && productData.colorImages[color.name].length > 0 ? (
+                              {productData.colorImages && productData.colorImages[color.name] && productData.colorImages[color.name].length > 0 ? (
                                 <ColorImageGallery>
                                   {productData.colorImages[color.name].map((image, index) => (
                                     <ColorImagePreview key={index}>

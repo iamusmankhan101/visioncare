@@ -276,12 +276,36 @@ const productApi = {
       console.log('✏️ ProductAPI: Product data:', productData);
       console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${id}`);
       
+      // Debug specific fields that users report aren't updating
+      console.log('🔍 ProductAPI: Debugging specific fields being sent:');
+      console.log('  - gender:', productData.gender);
+      console.log('  - material:', productData.material);
+      console.log('  - shape:', productData.shape);
+      console.log('  - style:', productData.style);
+      console.log('  - frameColor:', productData.frameColor);
+      console.log('  - lensTypes:', productData.lensTypes);
+      console.log('  - discount:', productData.discount);
+      console.log('  - status:', productData.status);
+      console.log('  - description:', productData.description);
+      
       const updatedProduct = await apiRequest(`/products/${id}`, {
         method: 'PUT',
         body: JSON.stringify(productData),
       });
       
       console.log('✅ ProductAPI: Product updated successfully:', updatedProduct);
+      
+      // Debug what the backend returned
+      console.log('🔍 ProductAPI: Verifying returned fields:');
+      console.log('  - gender:', updatedProduct.gender);
+      console.log('  - material:', updatedProduct.material);
+      console.log('  - shape:', updatedProduct.shape);
+      console.log('  - style:', updatedProduct.style);
+      console.log('  - frameColor:', updatedProduct.frameColor);
+      console.log('  - lensTypes:', updatedProduct.lensTypes);
+      console.log('  - discount:', updatedProduct.discount);
+      console.log('  - status:', updatedProduct.status);
+      console.log('  - description:', updatedProduct.description);
       
       // Update localStorage backup
       try {

@@ -3256,6 +3256,18 @@ const AdminPage = () => {
       const productId = updatedProduct.id || updatedProduct._id;
       console.log('✏️ AdminPage: Updating product with ID:', productId);
       console.log('✏️ AdminPage: Updated product data:', updatedProduct);
+      
+      // Debug specific fields that aren't updating
+      console.log('🔍 AdminPage: Debugging specific fields:');
+      console.log('  - gender:', updatedProduct.gender);
+      console.log('  - material:', updatedProduct.material);
+      console.log('  - shape:', updatedProduct.shape);
+      console.log('  - style:', updatedProduct.style);
+      console.log('  - frameColor:', updatedProduct.frameColor);
+      console.log('  - lensTypes:', updatedProduct.lensTypes);
+      console.log('  - discount:', updatedProduct.discount);
+      console.log('  - status:', updatedProduct.status);
+      console.log('  - description:', updatedProduct.description);
 
       // Dispatch async action to update product in API and Redux store
       const result = await dispatch(updateProductAsync({

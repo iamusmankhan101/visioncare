@@ -3197,9 +3197,15 @@ const AdminPage = () => {
     // Debug problematic fields during edit loading
     console.log('🔍 AdminPage: EDIT LOADING - Problematic fields check:');
     console.log('  - Original product.style:', product.style);
+    console.log('  - Original product.frameColor:', product.frameColor);
+    console.log('  - Original product.lensTypes:', product.lensTypes);
+    console.log('  - Original product.discount:', product.discount);
     console.log('  - Original product.gender:', product.gender);
     console.log('  - Original product.status:', product.status);
     console.log('  - EditData style:', editData.style);
+    console.log('  - EditData frameColor:', editData.frameColor);
+    console.log('  - EditData lensTypes:', editData.lensTypes);
+    console.log('  - EditData discount:', editData.discount);
     console.log('  - EditData gender:', editData.gender);
     console.log('  - EditData status:', editData.status);
     
@@ -3209,6 +3215,9 @@ const AdminPage = () => {
     setTimeout(() => {
       console.log('🔍 AdminPage: ProductData after setState (async check):');
       console.log('  - productData.style:', productData.style);
+      console.log('  - productData.frameColor:', productData.frameColor);
+      console.log('  - productData.lensTypes:', productData.lensTypes);
+      console.log('  - productData.discount:', productData.discount);
       console.log('  - productData.gender:', productData.gender);
       console.log('  - productData.status:', productData.status);
     }, 100);

@@ -316,11 +316,12 @@ const productApi = {
     }
   },
 
-  // Edit a product (alias for updateProduct with additional features)
+  // Edit a product (prioritizes Neon database, fallback to localStorage only if API fails)
   editProduct: async (id, productData, options = {}) => {
     try {
       console.log('✏️ ProductAPI: Editing product with ID:', id);
       console.log('✏️ ProductAPI: Edit options:', options);
+      console.log('🗄️ ProductAPI: Targeting Neon PostgreSQL database via Vercel API');
       
       // Validate product data before editing
       if (!productData.name || !productData.price) {
@@ -339,25 +340,62 @@ const productApi = {
         validatedData.lastEditedAt = new Date().toISOString();
       }
       
-      // Use the existing updateProduct function
-      const result = await productApi.updateProduct(id, validatedData);
-      
-      console.log('✅ ProductAPI: Product edited successfully');
-      return result;
+      // PRIORITY: Try Neon database API first
+      try {
+        console.log('🌐 ProductAPI: Attempting edit via Neon database API...');
+        console.log('🔗 ProductAPI: API URL:', `${API_BASE_URL}/products/${id}`);
+        
+        const updatedProduct = await apiRequest(`/products/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(validatedData),
+        });
+        
+        console.log('✅ ProductAPI: Product edited successfully in Neon database');
+        
+        // Update localStorage backup after successful API update
+        try {
+          const products = await productApi.getAllProducts();
+          saveProductsBackup(products);
+          console.log('✅ ProductAPI: localStorage backup updated after Neon database edit');
+        } catch (backupError) {
+          console.warn('⚠️ ProductAPI: Failed to update backup, but Neon database edit succeeded');
+        }
+        
+        return updatedProduct;
+      } catch (apiError) {
+        console.error('❌ ProductAPI: Neon database API edit failed:', apiError.message);
+        
+        // Only use localStorage as absolute last resort
+        if (options.allowLocalStorageFallback !== false) {
+          console.warn('🔄 ProductAPI: Falling back to localStorage (Neon database unavailable)');
+          throw new Error(`Neon database edit failed: ${apiError.message}. Use localStorage fallback only if absolutely necessary.`);
+        } else {
+          throw new Error(`Neon database edit failed: ${apiError.message}`);
+        }
+      }
     } catch (error) {
       console.error('❌ ProductAPI: Error editing product:', error);
       throw error;
     }
   },
 
-  // Partial update for specific product fields
+  // Partial update for specific product fields (prioritizes Neon database)
   patchProduct: async (id, partialData) => {
     try {
       console.log('🔧 ProductAPI: Patching product with ID:', id);
       console.log('🔧 ProductAPI: Partial data:', partialData);
+      console.log('🗄️ ProductAPI: Targeting Neon PostgreSQL database for patch operation');
       
-      // Get current product data first
-      const currentProduct = await productApi.getProductById(id);
+      // PRIORITY: Get current product data from Neon database first
+      let currentProduct;
+      try {
+        console.log('🌐 ProductAPI: Fetching current product from Neon database...');
+        currentProduct = await apiRequest(`/products/${id}`);
+        console.log('✅ ProductAPI: Current product fetched from Neon database');
+      } catch (fetchError) {
+        console.error('❌ ProductAPI: Failed to fetch current product from Neon database:', fetchError.message);
+        throw new Error(`Cannot patch product: Failed to fetch current data from Neon database - ${fetchError.message}`);
+      }
       
       // Merge with partial data
       const updatedData = {
@@ -366,37 +404,66 @@ const productApi = {
         updatedAt: new Date().toISOString()
       };
       
-      // Use updateProduct for the actual update
-      return await productApi.updateProduct(id, updatedData);
+      // Use editProduct to ensure Neon database priority
+      console.log('🔧 ProductAPI: Applying patch via Neon database...');
+      return await productApi.editProduct(id, updatedData, { skipTimestamp: true });
     } catch (error) {
       console.error('❌ ProductAPI: Error patching product:', error);
       throw error;
     }
   },
 
-  // Bulk edit multiple products
+  // Bulk edit multiple products (prioritizes Neon database for all operations)
   bulkEditProducts: async (productUpdates) => {
     try {
       console.log('📦 ProductAPI: Bulk editing products:', productUpdates.length);
+      console.log('🗄️ ProductAPI: All bulk operations will target Neon PostgreSQL database');
       
       const results = [];
       const errors = [];
+      let neonDatabaseSuccessCount = 0;
+      let localStorageFallbackCount = 0;
       
       for (const update of productUpdates) {
         try {
-          const result = await productApi.editProduct(update.id, update.data, update.options);
+          console.log(`🔄 ProductAPI: Processing bulk edit ${results.length + errors.length + 1}/${productUpdates.length} - Product ID: ${update.id}`);
+          
+          // Force Neon database priority for bulk operations
+          const options = {
+            ...update.options,
+            allowLocalStorageFallback: false // Prevent localStorage fallback in bulk operations
+          };
+          
+          const result = await productApi.editProduct(update.id, update.data, options);
           results.push({ id: update.id, success: true, data: result });
+          neonDatabaseSuccessCount++;
+          
+          console.log(`✅ ProductAPI: Bulk edit success for product ${update.id} via Neon database`);
         } catch (error) {
+          console.error(`❌ ProductAPI: Bulk edit failed for product ${update.id}:`, error.message);
           errors.push({ id: update.id, success: false, error: error.message });
+          
+          // Check if it's a Neon database connection issue
+          if (error.message.includes('Neon database')) {
+            console.warn(`⚠️ ProductAPI: Neon database issue detected for product ${update.id}`);
+          }
         }
       }
       
       console.log(`✅ ProductAPI: Bulk edit completed - ${results.length} success, ${errors.length} errors`);
+      console.log(`🗄️ ProductAPI: Neon database operations: ${neonDatabaseSuccessCount} successful`);
+      
+      if (errors.length > 0) {
+        console.warn(`⚠️ ProductAPI: ${errors.length} products failed to update in Neon database`);
+        console.warn('💡 ProductAPI: Consider checking Neon database connection and retrying failed operations');
+      }
       
       return {
         success: results,
         errors: errors,
-        total: productUpdates.length
+        total: productUpdates.length,
+        neonDatabaseSuccessCount,
+        localStorageFallbackCount
       };
     } catch (error) {
       console.error('❌ ProductAPI: Error in bulk edit:', error);

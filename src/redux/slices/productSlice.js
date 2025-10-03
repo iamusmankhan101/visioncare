@@ -48,19 +48,36 @@ export const updateProductAsync = createAsyncThunk(
       return await productApi.updateProduct(id, productData);
     } catch (error) {
       const errorMessage = error?.message || error?.error || error || 'Unknown error occurred';
+      console.log('🔍 Redux: Update error details:', {
+        message: errorMessage,
+        fullError: error,
+        errorType: typeof error,
+        errorName: error?.name
+      });
       
       // If product not found (404), try to create it instead
-      if (errorMessage.includes('Product not found') || errorMessage.includes('404')) {
-        console.warn('🔄 Redux: Product not found for update, attempting to create instead');
+      const isNotFoundError = errorMessage.includes('Product not found') || 
+                             errorMessage.includes('404') ||
+                             error?.status === 404 ||
+                             (error?.response && error.response.status === 404);
+      
+      if (isNotFoundError) {
+        console.warn('🔄 Redux: Product not found for update (404), attempting to create instead');
+        console.log('🔄 Redux: Original product ID:', id);
+        console.log('🔄 Redux: Product data for creation:', productData);
+        
         try {
           // Remove the ID from productData since we're creating a new product
           const { id: _, ...createData } = productData;
+          console.log('🔄 Redux: Creating product with data:', createData);
+          
           const newProduct = await productApi.createProduct(createData);
-          console.log('✅ Redux: Product created successfully instead of updated');
+          console.log('✅ Redux: Product created successfully instead of updated:', newProduct);
           return newProduct;
         } catch (createError) {
           console.error('❌ Redux: Failed to create product after update failed:', createError);
-          return rejectWithValue(`Update failed (product not found) and create also failed: ${createError.message}`);
+          const createErrorMessage = createError?.message || createError?.error || createError || 'Unknown create error';
+          return rejectWithValue(`Update failed (product not found) and create also failed: ${createErrorMessage}`);
         }
       }
       

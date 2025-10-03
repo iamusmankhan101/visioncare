@@ -3158,7 +3158,7 @@ const AdminPage = () => {
       category: product.category || '',
       material: product.material || '',
       shape: product.shape || '',
-      style: product.style || '',
+      style: product.style || '', // Keep empty string for "Select Style" option
       frameColor: product.frameColor || '',
       description: product.description || '',
       image: product.image || '',
@@ -3189,6 +3189,15 @@ const AdminPage = () => {
     console.log('  - EditData status:', editData.status);
     
     setProductData(editData);
+    
+    // Debug: Check if productData was set correctly
+    setTimeout(() => {
+      console.log('🔍 AdminPage: ProductData after setState (async check):');
+      console.log('  - productData.style:', productData.style);
+      console.log('  - productData.gender:', productData.gender);
+      console.log('  - productData.status:', productData.status);
+    }, 100);
+    
     setActiveTab('edit-product');
   };
 
@@ -3297,6 +3306,12 @@ const AdminPage = () => {
 
       console.log('✅ AdminPage: Product updated successfully');
       console.log('✅ AdminPage: Update result:', result);
+      
+      // Debug: Check if the problematic fields were actually saved
+      console.log('🔍 AdminPage: POST-UPDATE - Verifying saved fields:');
+      console.log('  - Saved style:', result.style);
+      console.log('  - Saved gender:', result.gender);
+      console.log('  - Saved status:', result.status);
       
       // Show success message
       setSuccessMessage('Product updated successfully!');

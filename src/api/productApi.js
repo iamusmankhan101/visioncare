@@ -4,13 +4,12 @@ const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
   // Debug environment variables
-  console.log('🔍 Environment Variables Check:');
+  console.log('Environment Variables Check:');
   console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
   console.log('REACT_APP_ORDER_API_URL:', process.env.REACT_APP_ORDER_API_URL);
   console.log('PGDATABASE:', process.env.PGDATABASE);
   console.log('Current hostname:', hostname);
-  console.log('🎯 Target Database: Neon PostgreSQL');
-  console.log('🔗 Will use API URL for Neon database operations');
+  console.log('Target Database: Neon PostgreSQL');
   
   // Use environment variable if available (from Vercel)
   const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
@@ -111,9 +110,7 @@ const getStoredProducts = () => {
   try {
     const stored = localStorage.getItem('eyewear_products_backup');
     if (stored) {
-      const parsed = JSON.parse(stored);
-      // Ensure we always return an array
-      return Array.isArray(parsed) ? parsed : [];
+      return JSON.parse(stored);
     }
     return sampleProducts.map((product, index) => ({
       ...product,
@@ -128,54 +125,12 @@ const getStoredProducts = () => {
   }
 };
 
-// Save products to localStorage as backup (with size optimization)
+// Save products to localStorage as backup
 const saveProductsBackup = (products) => {
   try {
-    // Create a lightweight version without large image data for localStorage
-    const lightweightProducts = products.map(product => {
-      const { image, gallery, colorImages, ...lightProduct } = product;
-      return {
-        ...lightProduct,
-        // Keep only essential image info, not the full base64 data
-        hasImage: !!image,
-        hasGallery: !!(gallery && gallery.length > 0),
-        hasColorImages: !!(colorImages && Object.keys(colorImages).length > 0)
-      };
-    });
-    
-    localStorage.setItem('eyewear_products_backup', JSON.stringify(lightweightProducts));
-    console.log(`📦 Products backup saved to localStorage (${lightweightProducts.length} products, optimized size)`);
+    localStorage.setItem('eyewear_products_backup', JSON.stringify(products));
   } catch (error) {
-    if (error.name === 'QuotaExceededError') {
-      console.warn('⚠️ LocalStorage quota exceeded, clearing old backup and trying with minimal data');
-      try {
-        // Clear the old backup and try with even more minimal data
-        localStorage.removeItem('eyewear_products_backup');
-        
-        // Keep only essential product info
-        const minimalProducts = products.map(product => ({
-          id: product.id,
-          _id: product._id,
-          name: product.name,
-          price: product.price,
-          category: product.category,
-          material: product.material,
-          shape: product.shape,
-          style: product.style,
-          gender: product.gender,
-          status: product.status,
-          description: product.description
-        }));
-        
-        localStorage.setItem('eyewear_products_backup', JSON.stringify(minimalProducts));
-        console.log(`📦 Minimal products backup saved (${minimalProducts.length} products)`);
-      } catch (retryError) {
-        console.error('❌ Failed to save even minimal backup:', retryError);
-        // Don't throw error - continue without localStorage backup
-      }
-    } else {
-      console.error('❌ Error saving products backup:', error);
-    }
+    console.error('Error saving products backup:', error);
   }
 };
 
@@ -297,14 +252,8 @@ const productApi = {
       
       // Save to localStorage
       const existingProducts = getStoredProducts();
-      console.log('🔍 ProductAPI: existingProducts type:', typeof existingProducts);
-      console.log('🔍 ProductAPI: existingProducts is array:', Array.isArray(existingProducts));
-      console.log('🔍 ProductAPI: existingProducts:', existingProducts);
-      
-      // Ensure existingProducts is an array
-      const productsArray = Array.isArray(existingProducts) ? existingProducts : [];
-      productsArray.push(fallbackProduct);
-      saveProductsBackup(productsArray);
+      existingProducts.push(fallbackProduct);
+      saveProductsBackup(existingProducts);
       
       console.log('📦 ProductAPI: Product saved to localStorage as fallback');
       return fallbackProduct;
@@ -319,42 +268,12 @@ const productApi = {
       console.log('✏️ ProductAPI: Product data:', productData);
       console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${id}`);
       
-      // Debug specific fields that users report aren't updating
-      console.log('🔍 ProductAPI: Debugging specific fields being sent:');
-      console.log('  - gender:', productData.gender);
-      console.log('  - material:', productData.material);
-      console.log('  - shape:', productData.shape);
-      console.log('  - style:', productData.style);
-      console.log('  - frameColor:', productData.frameColor);
-      console.log('  - lensTypes:', productData.lensTypes);
-      console.log('  - discount:', productData.discount);
-      console.log('  - status:', productData.status);
-      console.log('  - description:', productData.description);
-      
-      console.log('🔗 ProductAPI: Making PUT request to Neon database...');
-      console.log('🔗 ProductAPI: Full URL:', `${API_BASE_URL}/products/${id}`);
-      console.log('🔗 ProductAPI: Request body:', JSON.stringify(productData, null, 2));
-      
       const updatedProduct = await apiRequest(`/products/${id}`, {
         method: 'PUT',
         body: JSON.stringify(productData),
       });
       
-      console.log('✅ ProductAPI: Neon database responded successfully!');
-      
       console.log('✅ ProductAPI: Product updated successfully:', updatedProduct);
-      
-      // Debug what the backend returned
-      console.log('🔍 ProductAPI: Verifying returned fields:');
-      console.log('  - gender:', updatedProduct.gender);
-      console.log('  - material:', updatedProduct.material);
-      console.log('  - shape:', updatedProduct.shape);
-      console.log('  - style:', updatedProduct.style);
-      console.log('  - frameColor:', updatedProduct.frameColor);
-      console.log('  - lensTypes:', updatedProduct.lensTypes);
-      console.log('  - discount:', updatedProduct.discount);
-      console.log('  - status:', updatedProduct.status);
-      console.log('  - description:', updatedProduct.description);
       
       // Update localStorage backup
       try {
@@ -369,113 +288,31 @@ const productApi = {
     } catch (error) {
       console.error(`❌ ProductAPI: Error updating product ${id}:`, error);
       console.error(`❌ ProductAPI: Full error details:`, error.message);
-      console.error(`❌ ProductAPI: Error object:`, {
-        name: error.name,
-        message: error.message,
-        status: error.status,
-        response: error.response
-      });
       
-      // Check if this is a "Product not found" error (404)
-      const isNotFoundError = error.message.includes('Product not found') || 
-                             error.message.includes('404') ||
-                             error.status === 404;
-      
-      if (isNotFoundError) {
-        console.error('❌ ProductAPI: Product not found (404) in Neon database');
-        console.error('❌ ProductAPI: Product ID:', id, 'does not exist in Neon database');
-        console.error('❌ ProductAPI: This product needs to be created in Neon database first');
-        throw new Error(`Product with ID ${id} not found in Neon database. Cannot update non-existent product.`);
-      }
-      
-      // For other errors, don't use localStorage fallback - force Neon database usage
-      console.error('❌ ProductAPI: Neon database update failed');
-      console.error('❌ ProductAPI: Error details:', error.message);
-      console.error('❌ ProductAPI: Not using localStorage fallback - must use Neon database');
-      console.error('❌ ProductAPI: Please check Neon database connection and API endpoint');
-      
-      // If all fallbacks failed, re-throw the original error
-      console.error(`❌ ProductAPI: All update attempts failed, re-throwing error:`, error.message);
-      throw error;
-    }
-  },
-
-
-  // Load products from Neon database and update local storage
-  loadProductsFromNeon: async () => {
-    try {
-      console.log('🔄 ProductAPI: Loading products from Neon database...');
-      
-      // Get products from Neon database
-      const neonProducts = await apiRequest('/products');
-      console.log(`✅ ProductAPI: Loaded ${neonProducts.length} products from Neon database`);
-      
-      // Update localStorage backup with Neon products
-      saveProductsBackup(neonProducts);
-      console.log('✅ ProductAPI: Updated localStorage with Neon products');
-      
-      return neonProducts;
-    } catch (error) {
-      console.error('❌ ProductAPI: Failed to load products from Neon:', error);
-      throw error;
-    }
-  },
-
-  // Sync local products to Neon database
-  syncLocalProductsToNeon: async () => {
-    try {
-      console.log('🔄 ProductAPI: Starting sync of local products to Neon database...');
-      
-      // Get all local products
-      const localProducts = getStoredProducts();
-      console.log(`📦 ProductAPI: Found ${localProducts.length} local products to sync`);
-      
-      if (localProducts.length === 0) {
-        console.log('✅ ProductAPI: No local products to sync');
-        return { synced: 0, errors: 0 };
-      }
-      
-      let syncedCount = 0;
-      let errorCount = 0;
-      const errors = [];
-      
-      for (const product of localProducts) {
-        try {
-          console.log(`🔄 ProductAPI: Syncing product: ${product.name} (ID: ${product.id})`);
-          
-          // Remove the local ID and let Neon assign a new one
-          const { id, _id, ...productDataForNeon } = product;
-          
-          // Create product in Neon database
-          const createdProduct = await apiRequest('/products', {
-            method: 'POST',
-            body: JSON.stringify(productDataForNeon),
-          });
-          
-          // Handle different API response structures
-          const neonId = createdProduct?.id || createdProduct?._id || createdProduct?.data?.id || 'unknown';
-          console.log(`✅ ProductAPI: Synced product: ${product.name} → Neon ID: ${neonId}`);
-          console.log('🔍 ProductAPI: Full API response:', createdProduct);
-          syncedCount++;
-          
-        } catch (error) {
-          console.error(`❌ ProductAPI: Failed to sync product: ${product.name}`, error.message);
-          errors.push({ product: product.name, error: error.message });
-          errorCount++;
+      // If API fails, try to update localStorage backup as fallback
+      try {
+        console.warn('🔄 ProductAPI: API update failed, attempting localStorage fallback');
+        const products = getStoredProducts();
+        const productIndex = products.findIndex(p => {
+          const productId = p.id || p._id;
+          return productId === id || 
+                 String(productId) === String(id) || 
+                 productId === String(id);
+        });
+        
+        if (productIndex !== -1) {
+          products[productIndex] = { ...products[productIndex], ...productData };
+          saveProductsBackup(products);
+          console.log('📦 ProductAPI: Product updated in localStorage backup');
+          return products[productIndex];
+        } else {
+          console.warn('⚠️ ProductAPI: Product not found in localStorage backup');
         }
+      } catch (fallbackError) {
+        console.error('❌ ProductAPI: Fallback update also failed:', fallbackError.message);
       }
       
-      console.log(`🎯 ProductAPI: Sync completed - ${syncedCount} synced, ${errorCount} errors`);
-      
-      if (errors.length > 0) {
-        console.log('❌ ProductAPI: Sync errors:', errors);
-      }
-      
-      return { synced: syncedCount, errors: errorCount, errorDetails: errors };
-      
-    } catch (error) {
-      console.error('❌ ProductAPI: Sync operation failed:', error);
-      throw error;
+      throw new Error(`Failed to update product: ${error.message}`);
     }
   },
 
@@ -513,16 +350,14 @@ const productApi = {
         // Try to remove from localStorage backup as cleanup
         try {
           const products = getStoredProducts();
-          // Ensure products is an array
-          const productsArray = Array.isArray(products) ? products : [];
-          const filteredProducts = productsArray.filter(p => {
+          const filteredProducts = products.filter(p => {
             const productId = p.id || p._id;
             return productId !== id && 
                    String(productId) !== String(id) && 
                    productId !== String(id);
           });
           
-          if (filteredProducts.length < productsArray.length) {
+          if (filteredProducts.length < products.length) {
             saveProductsBackup(filteredProducts);
             console.log('📦 ProductAPI: Product also removed from localStorage backup');
           }
@@ -538,16 +373,14 @@ const productApi = {
       try {
         console.warn('🔄 ProductAPI: API delete failed, attempting localStorage fallback');
         const products = getStoredProducts();
-        // Ensure products is an array
-        const productsArray = Array.isArray(products) ? products : [];
-        const filteredProducts = productsArray.filter(p => {
+        const filteredProducts = products.filter(p => {
           const productId = p.id || p._id;
           return productId !== id && 
                  String(productId) !== String(id) && 
                  productId !== String(id);
         });
         
-        if (filteredProducts.length < productsArray.length) {
+        if (filteredProducts.length < products.length) {
           saveProductsBackup(filteredProducts);
           console.log('📦 ProductAPI: Product removed from localStorage backup');
           return { message: 'Product deleted from local storage (API unavailable)' };
@@ -570,8 +403,5 @@ export const getProductById = productApi.getProductById;
 export const createProduct = productApi.createProduct;
 export const updateProduct = productApi.updateProduct;
 export const deleteProduct = productApi.deleteProduct;
-export const syncLocalProductsToNeon = productApi.syncLocalProductsToNeon;
-export const loadProductsFromNeon = productApi.loadProductsFromNeon;
-
 
 export default productApi;

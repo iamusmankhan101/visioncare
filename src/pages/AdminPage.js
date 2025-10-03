@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { fetchProducts, addProduct, updateProduct, deleteProduct } from '../redux/slices/productSlice';
+import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync, deleteProductAsync } from '../redux/slices/productSlice';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
 import AdminHeader from '../components/admin/AdminHeader';
 import { getAllOrders, getOrderStats } from '../services/orderService';
-import productApi, { getAllProducts, syncLocalProductsToNeon, loadProductsFromNeon } from '../api/productApi';
 import { useAuth } from '../context/AuthContext';
 
 // Modern Dashboard Styled Components
@@ -2305,55 +2304,34 @@ const AdminPage = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   
-  // Default product state - used for initialization and reset - ALL FIELDS CONNECTED TO NEON
+  // Default product state - used for initialization and reset
   const defaultProductData = {
-    // Core product fields
-    id: null,
     name: '',
     price: '',
-    original_price: null,
-    
-    // Category and classification
     category: '',
-    type: '',
-    gender: 'Unisex',
-    
-    // Physical properties
     material: '',
     shape: '',
     style: '',
-    rim: '',
     frameColor: '',
-    brand: '',
-    
-    // Product status and description
-    status: 'In Stock',
     description: '',
-    
-    // Arrays and complex fields
+    image: '',
+    gallery: [],
+    colorImages: {}, // New field for color-specific images
+    featured: false,
+    bestSeller: false,
     colors: [],
     sizes: [],
     features: [],
     lensTypes: [],
-    gallery: [],
-    
-    // Image fields
-    image: '',
-    colorImages: {},
-    
-    // Boolean flags
-    featured: false,
-    bestSeller: false,
-    
-    // Discount object
+    status: 'In Stock',
+    rim: '',
+    brand: '',
+    gender: 'Unisex',
+    type: '',
     discount: {
       hasDiscount: false,
       discountPercentage: 0
-    },
-    
-    // Metadata
-    createdAt: null,
-    updatedAt: null
+    }
   };
   
   const [productData, setProductData] = useState(defaultProductData);
@@ -2948,35 +2926,11 @@ const AdminPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     console.log(`🔄 AdminPage: Input changed - ${name}: "${value}"`);
-    
-    // Special debugging for problematic fields
-    if (['style', 'gender', 'status'].includes(name)) {
-      console.log(`🔍 AdminPage: PROBLEMATIC FIELD UPDATE - ${name}:`, {
-        oldValue: productData[name],
-        newValue: value,
-        fieldName: name
-      });
-    }
-    
-    const newProductData = {
+    setProductData({
       ...productData,
       [name]: name === 'price' ? parseFloat(value) : value
-    };
-    
-    setProductData(newProductData);
-    console.log('🔄 AdminPage: Updated productData:', newProductData);
-    
-    // Special debugging for problematic fields - show actual values
-    if (['style', 'gender', 'status'].includes(name)) {
-      console.log(`🔍 AdminPage: AFTER UPDATE - ${name} field:`, {
-        actualValue: newProductData[name],
-        allProblematicFields: {
-          style: newProductData.style,
-          gender: newProductData.gender,
-          status: newProductData.status
-        }
-      });
-    }
+    });
+    console.log('🔄 AdminPage: Updated productData:', { ...productData, [name]: name === 'price' ? parseFloat(value) : value });
   };
 
   // Handle feature checkbox changes
@@ -3188,88 +3142,38 @@ const AdminPage = () => {
     const editData = {
       ...defaultProductData, // Start with default values
       ...product, // Override with product data
-      
-      // Core product fields
-      id: product.id || product._id,
-      name: product.name || '',
       price: product.price ? product.price.toString() : '', // Convert price to string for form input
-      original_price: product.original_price || null,
-      
-      // Category and classification
+      // Ensure all fields have proper defaults
+      name: product.name || '',
       category: product.category || '',
-      type: product.type || '',
-      gender: product.gender || 'Unisex',
-      
-      // Physical properties
       material: product.material || '',
       shape: product.shape || '',
       style: product.style || '',
-      rim: product.rim || '',
       frameColor: product.frameColor || '',
-      brand: product.brand || '',
-      
-      // Product status and description
-      status: product.status || 'In Stock',
       description: product.description || '',
-      
-      // Arrays and complex fields
+      image: product.image || '',
+      status: product.status || 'In Stock',
+      rim: product.rim || '',
+      brand: product.brand || '',
+      gender: product.gender || 'Unisex',
+      featured: Boolean(product.featured),
+      bestSeller: Boolean(product.bestSeller),
       colors: Array.isArray(product.colors) ? product.colors : [],
       sizes: Array.isArray(product.sizes) ? product.sizes : [],
       features: Array.isArray(product.features) ? product.features : [],
       lensTypes: Array.isArray(product.lensTypes) ? product.lensTypes : [],
       gallery: Array.isArray(product.gallery) ? product.gallery : [],
-      
-      // Image fields
-      image: product.image || '',
       colorImages: product.colorImages || {},
-      
-      // Boolean flags
-      featured: Boolean(product.featured),
-      bestSeller: Boolean(product.bestSeller),
-      
-      // Discount object
-      discount: product.discount || { hasDiscount: false, discountPercentage: 0 },
-      
-      // Metadata
-      createdAt: product.createdAt || new Date().toISOString(),
-      updatedAt: product.updatedAt || new Date().toISOString()
+      discount: product.discount || { hasDiscount: false, discountPercentage: 0 }
     };
     
     console.log('✏️ AdminPage: Setting edit data:', editData);
-    
-    // Debug problematic fields during edit loading
-    console.log('🔍 AdminPage: EDIT LOADING - Problematic fields check:');
-    console.log('  - Original product.style:', product.style);
-    console.log('  - Original product.frameColor:', product.frameColor);
-    console.log('  - Original product.lensTypes:', product.lensTypes);
-    console.log('  - Original product.discount:', product.discount);
-    console.log('  - Original product.gender:', product.gender);
-    console.log('  - Original product.status:', product.status);
-    console.log('  - EditData style:', editData.style);
-    console.log('  - EditData frameColor:', editData.frameColor);
-    console.log('  - EditData lensTypes:', editData.lensTypes);
-    console.log('  - EditData discount:', editData.discount);
-    console.log('  - EditData gender:', editData.gender);
-    console.log('  - EditData status:', editData.status);
-    
     setProductData(editData);
-    
-    // Debug: Check if productData was set correctly
-    setTimeout(() => {
-      console.log('🔍 AdminPage: ProductData after setState (async check):');
-      console.log('  - productData.style:', productData.style);
-      console.log('  - productData.frameColor:', productData.frameColor);
-      console.log('  - productData.lensTypes:', productData.lensTypes);
-      console.log('  - productData.discount:', productData.discount);
-      console.log('  - productData.gender:', productData.gender);
-      console.log('  - productData.status:', productData.status);
-    }, 100);
-    
     setActiveTab('edit-product');
   };
 
   // Handle delete product - MOVED INSIDE COMPONENT
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     console.log('🗑️ AdminPage: Delete button clicked for product ID:', productId);
     console.log('🗑️ AdminPage: Product ID type:', typeof productId);
     
@@ -3283,13 +3187,13 @@ const AdminPage = () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         console.log('🗑️ AdminPage: User confirmed deletion, proceeding...');
-        console.log('🗑️ AdminPage: Dispatching deleteProduct with ID:', productId);
+        console.log('🗑️ AdminPage: Dispatching deleteProductAsync with ID:', productId);
         
-        const result = dispatch(deleteProduct(productId));
+        const result = await dispatch(deleteProductAsync(productId)).unwrap();
         console.log('✅ AdminPage: Delete operation completed:', result);
         
         // Handle different success messages based on result
-        if (result.payload && result.payload.message && result.payload.message.includes('was not in database')) {
+        if (result.message && result.message.includes('was not in database')) {
           setSuccessMessage('Product removed successfully! (It was not found in the database)');
         } else {
           setSuccessMessage('Product deleted successfully!');
@@ -3334,15 +3238,6 @@ const AdminPage = () => {
       console.log('✏️ AdminPage: Submitting product update');
       console.log('✏️ AdminPage: Current productData:', productData);
       
-      // CRITICAL DEBUG: Check if problematic fields are in productData before update
-      console.log('🚨 AdminPage: CRITICAL CHECK - Fields before update:');
-      console.log('  - productData.style:', productData.style);
-      console.log('  - productData.gender:', productData.gender);
-      console.log('  - productData.status:', productData.status);
-      console.log('  - typeof productData.style:', typeof productData.style);
-      console.log('  - typeof productData.gender:', typeof productData.gender);
-      console.log('  - typeof productData.status:', typeof productData.status);
-      
       // Validate required fields
       if (!productData.id && !productData._id) {
         throw new Error('Product ID is missing. Cannot update product.');
@@ -3352,117 +3247,24 @@ const AdminPage = () => {
         throw new Error('Product name and price are required.');
       }
 
-      // Ensure ALL fields are properly formatted for Neon database
+      // Ensure price is a number
       const updatedProduct = {
         ...productData,
-        // Core product fields
-        id: productData.id || productData._id,
-        name: productData.name || '',
-        price: parseFloat(productData.price) || 0,
-        original_price: productData.original_price || null,
-        
-        // Category and classification
-        category: productData.category || '',
-        type: productData.type || '',
-        gender: productData.gender || 'Unisex',
-        
-        // Physical properties
-        material: productData.material || '',
-        shape: productData.shape || '',
-        style: productData.style || '',
-        rim: productData.rim || '',
-        frameColor: productData.frameColor || '',
-        brand: productData.brand || '',
-        
-        // Product status and description
-        status: productData.status || 'In Stock',
-        description: productData.description || '',
-        
-        // Arrays and complex fields
-        colors: Array.isArray(productData.colors) ? productData.colors : [],
-        sizes: Array.isArray(productData.sizes) ? productData.sizes : [],
-        features: Array.isArray(productData.features) ? productData.features : [],
-        lensTypes: Array.isArray(productData.lensTypes) ? productData.lensTypes : [],
-        gallery: Array.isArray(productData.gallery) ? productData.gallery : [],
-        
-        // Image fields
-        image: productData.image || '',
-        colorImages: productData.colorImages || {},
-        
-        // Boolean flags
-        featured: Boolean(productData.featured),
-        bestSeller: Boolean(productData.bestSeller),
-        
-        // Discount object
-        discount: productData.discount || { hasDiscount: false, discountPercentage: 0 },
-        
-        // Metadata
-        createdAt: productData.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        price: parseFloat(productData.price)
       };
       
       const productId = updatedProduct.id || updatedProduct._id;
       console.log('✏️ AdminPage: Updating product with ID:', productId);
       console.log('✏️ AdminPage: Updated product data:', updatedProduct);
-      
-      // Debug ALL fields being sent to Neon database
-      console.log('🔍 AdminPage: ALL FIELDS being sent to Neon database:');
-      console.log('  📋 Core Fields:');
-      console.log('    - id:', updatedProduct.id);
-      console.log('    - name:', updatedProduct.name);
-      console.log('    - price:', updatedProduct.price);
-      console.log('    - original_price:', updatedProduct.original_price);
-      console.log('  📂 Classification:');
-      console.log('    - category:', updatedProduct.category);
-      console.log('    - type:', updatedProduct.type);
-      console.log('    - gender:', updatedProduct.gender);
-      console.log('  🔧 Physical Properties:');
-      console.log('    - material:', updatedProduct.material);
-      console.log('    - shape:', updatedProduct.shape);
-      console.log('    - style:', updatedProduct.style);
-      console.log('    - rim:', updatedProduct.rim);
-      console.log('    - frameColor:', updatedProduct.frameColor);
-      console.log('    - brand:', updatedProduct.brand);
-      console.log('  📝 Status & Description:');
-      console.log('    - status:', updatedProduct.status);
-      console.log('    - description:', updatedProduct.description);
-      console.log('  📊 Arrays & Complex:');
-      console.log('    - colors:', updatedProduct.colors);
-      console.log('    - sizes:', updatedProduct.sizes);
-      console.log('    - features:', updatedProduct.features);
-      console.log('    - lensTypes:', updatedProduct.lensTypes);
-      console.log('    - gallery:', updatedProduct.gallery);
-      console.log('  🖼️ Images:');
-      console.log('    - image:', updatedProduct.image ? 'Present' : 'None');
-      console.log('    - colorImages:', Object.keys(updatedProduct.colorImages).length, 'color images');
-      console.log('  🏷️ Flags:');
-      console.log('    - featured:', updatedProduct.featured);
-      console.log('    - bestSeller:', updatedProduct.bestSeller);
-      console.log('  💰 Discount:');
-      console.log('    - discount:', updatedProduct.discount);
-      console.log('  📅 Metadata:');
-      console.log('    - createdAt:', updatedProduct.createdAt);
-      console.log('    - updatedAt:', updatedProduct.updatedAt);
 
-      // Update product in Neon database directly
-      console.log('🔗 AdminPage: Updating product in Neon database...');
-      const neonResult = await productApi.updateProduct(productId, updatedProduct);
-      console.log('✅ AdminPage: Neon database updated successfully:', neonResult);
-      
-      // Also update Redux store for immediate UI feedback
-      const reduxResult = dispatch(updateProduct({
+      // Dispatch async action to update product in API and Redux store
+      const result = await dispatch(updateProductAsync({
         id: productId,
-        ...neonResult
-      }));
-      console.log('✅ AdminPage: Redux store updated:', reduxResult);
-      
-      // Debug: Check if the problematic fields were actually saved in Neon
-      console.log('🔍 AdminPage: POST-UPDATE - Verifying Neon database saved fields:');
-      console.log('  - Saved style:', neonResult.style);
-      console.log('  - Saved gender:', neonResult.gender);
-      console.log('  - Saved status:', neonResult.status);
-      console.log('  - Saved material:', neonResult.material);
-      console.log('  - Saved frameColor:', neonResult.frameColor);
+        productData: updatedProduct
+      })).unwrap();
+
+      console.log('✅ AdminPage: Product updated successfully');
+      console.log('✅ AdminPage: Update result:', result);
       
       // Show success message
       setSuccessMessage('Product updated successfully!');
@@ -3472,7 +3274,6 @@ const AdminPage = () => {
       setPreviewUrl('');
       
       // Refresh the product list to ensure UI is updated
-      console.log('🔄 AdminPage: Refreshing product list after update...');
       dispatch(fetchProducts());
 
       // Reset form and go back to manage products
@@ -3482,12 +3283,6 @@ const AdminPage = () => {
       }, 2000);
     } catch (error) {
       console.error('❌ AdminPage: Failed to update product:', error);
-      console.error('❌ AdminPage: Error details:', {
-        message: error?.message,
-        error: error?.error,
-        fullError: error
-      });
-      
       const errorMessage = error?.message || error?.error || error || 'Unknown error occurred';
       setSuccessMessage('Error updating product: ' + errorMessage);
       setTimeout(() => setSuccessMessage(''), 5000);
@@ -3496,64 +3291,6 @@ const AdminPage = () => {
     }
   };
 
-
-  // Load products from Neon database
-  const handleLoadFromNeon = async () => {
-    if (window.confirm('This will replace your current product list with products from the Neon database. Continue?')) {
-      try {
-        setIsLoading(true);
-        setSuccessMessage('Loading products from Neon database...');
-        
-        console.log('🔄 AdminPage: Loading products from Neon database...');
-        await loadProductsFromNeon();
-        
-        // Refresh the product list
-        dispatch(fetchProducts());
-        
-        setSuccessMessage('✅ Products loaded from Neon database successfully!');
-        setTimeout(() => setSuccessMessage(''), 3000);
-      } catch (error) {
-        console.error('❌ AdminPage: Load from Neon failed:', error);
-        setSuccessMessage('Load failed: ' + error.message);
-        setTimeout(() => setSuccessMessage(''), 5000);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  // Sync local products to Neon database
-  const handleSyncToNeon = async () => {
-    if (window.confirm('This will sync all local products to the Neon database. This may take a few minutes. Continue?')) {
-      try {
-        setIsLoading(true);
-        setSuccessMessage('Syncing products to Neon database...');
-        
-        console.log('🚀 AdminPage: Starting sync to Neon database...');
-        const result = await syncLocalProductsToNeon();
-        
-        console.log('✅ AdminPage: Sync completed:', result);
-        setSuccessMessage(`Sync completed! ${result.synced} products synced to Neon database. Loading updated products...`);
-        
-        // Load products from Neon database to get the new IDs
-        console.log('🔄 AdminPage: Loading products from Neon database...');
-        await loadProductsFromNeon();
-        
-        // Refresh the product list to show the new Neon products with correct IDs
-        dispatch(fetchProducts());
-        
-        setSuccessMessage(`✅ Sync completed! ${result.synced} products synced and loaded from Neon database.`);
-        
-        setTimeout(() => setSuccessMessage(''), 5000);
-      } catch (error) {
-        console.error('❌ AdminPage: Sync failed:', error);
-        setSuccessMessage('Sync failed: ' + error.message);
-        setTimeout(() => setSuccessMessage(''), 5000);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
 
   // Update existing products with random style values
   const handleUpdateExistingProductsWithStyles = () => {
@@ -4726,54 +4463,6 @@ const AdminPage = () => {
                   {successMessage && (
                     <SuccessMessage>{successMessage}</SuccessMessage>
                   )}
-
-                  {/* Neon Database Controls */}
-                  <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#0369a1' }}>🗄️ Neon Database Controls</h4>
-                        <p style={{ margin: '0', fontSize: '0.875rem', color: '#0369a1' }}>
-                          Sync local products to Neon database or load products from Neon with correct IDs.
-                        </p>
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          onClick={handleLoadFromNeon}
-                          disabled={isLoading}
-                          style={{
-                            padding: '0.75rem 1rem',
-                            background: '#10b981',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: isLoading ? 'not-allowed' : 'pointer',
-                            fontWeight: '500',
-                            opacity: isLoading ? 0.6 : 1,
-                            fontSize: '0.875rem'
-                          }}
-                        >
-                          {isLoading ? 'Loading...' : 'Load from Neon'}
-                        </button>
-                        <button
-                          onClick={handleSyncToNeon}
-                          disabled={isLoading}
-                          style={{
-                            padding: '0.75rem 1rem',
-                            background: '#0ea5e9',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: isLoading ? 'not-allowed' : 'pointer',
-                            fontWeight: '500',
-                            opacity: isLoading ? 0.6 : 1,
-                            fontSize: '0.875rem'
-                          }}
-                        >
-                          {isLoading ? 'Syncing...' : 'Sync to Neon'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
 
                   <ProductList>
                     {isProductsLoading ? (

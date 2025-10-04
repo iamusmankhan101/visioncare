@@ -434,16 +434,26 @@ const productApi = {
       console.log('✏️ ProductAPI: ID type:', typeof id);
       console.log('✏️ ProductAPI: Product data:', productData);
       
-      // Smart ID resolution - try to find the correct Neon database ID
+      // Smart ID resolution - always try to verify the ID exists in Neon database
       let resolvedId = id;
-      if (String(id).startsWith('local_') || String(id).includes('temp_') || String(id).length > 15) {
-        console.log('🔍 ProductAPI: Detected temporary ID, attempting to resolve...');
+      
+      // First, check if the current ID exists in Neon database
+      try {
+        console.log('🔍 ProductAPI: Verifying ID exists in Neon database...');
+        await apiRequest(`/products/${id}`);
+        console.log('✅ ProductAPI: ID is valid in Neon database:', id);
+        resolvedId = id;
+      } catch (verifyError) {
+        console.warn('⚠️ ProductAPI: ID not found in Neon database, attempting to resolve by name...');
+        
+        // Try to find the product by name in Neon database
         const neonId = await productApi.resolveProductId(id, productData.name);
         if (neonId) {
           resolvedId = neonId;
           console.log(`✅ ProductAPI: Resolved ID from ${id} to ${resolvedId}`);
         } else {
-          console.warn('⚠️ ProductAPI: Could not resolve ID, product may need to be created in Neon database');
+          console.error('❌ ProductAPI: Could not resolve product ID. Product may not exist in Neon database.');
+          throw new Error(`Product with ID ${id} not found in Neon database and could not be resolved by name "${productData.name}". Please refresh the product list to sync with database.`);
         }
       }
       

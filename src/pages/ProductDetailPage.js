@@ -1972,6 +1972,12 @@ const ProductDetailPage = () => {
                 <SpecLabel>Shape:</SpecLabel>
                 <SpecValue>{product?.shape || 'Classic'}</SpecValue>
               </SpecRow>
+              {product?.frameColor && (
+                <SpecRow>
+                  <SpecLabel>Frame Color:</SpecLabel>
+                  <SpecValue>{product.frameColor}</SpecValue>
+                </SpecRow>
+              )}
               <SpecRow>
                 <SpecLabel>Rim Type:</SpecLabel>
                 <SpecValue>{product?.rim || 'Full Rim'}</SpecValue>
@@ -2157,6 +2163,12 @@ const ProductDetailPage = () => {
             <ProductDescription>
               {product?.description || 'Stylish and comfortable eyeglasses perfect for everyday wear.'}
             </ProductDescription>
+            
+            {product?.frameColor && (
+              <div style={{ marginBottom: '1rem' }}>
+                <ColorLabel>Frame Color: {product.frameColor}</ColorLabel>
+              </div>
+            )}
             
             {product?.colors && product.colors.length > 0 && (
               <div>

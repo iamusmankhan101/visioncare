@@ -3366,6 +3366,65 @@ const AdminPage = () => {
     }
   };
 
+  // Quick sync localStorage IDs with Neon database IDs
+  const handleQuickIdSync = async () => {
+    setIsLoading(true);
+    try {
+      console.log('🔄 AdminPage: Starting quick ID sync...');
+      setSuccessMessage('🔄 Syncing localStorage IDs with Neon database...');
+
+      // Step 1: Get products from Neon database
+      const neonProducts = await productApi.getAllProducts();
+      console.log('📊 Neon products:', neonProducts.length);
+
+      // Step 2: Get products from localStorage
+      const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+      console.log('📦 Local products:', localProducts.length);
+
+      let syncedCount = 0;
+      let updatedProducts = [];
+
+      // Step 3: Match products by name and update IDs
+      for (const localProduct of localProducts) {
+        const matchingNeonProduct = neonProducts.find(neonProduct => 
+          neonProduct.name?.toLowerCase().trim() === localProduct.name?.toLowerCase().trim()
+        );
+
+        if (matchingNeonProduct) {
+          // Update local product with Neon database ID
+          const updatedProduct = {
+            ...localProduct,
+            id: matchingNeonProduct.id
+          };
+          updatedProducts.push(updatedProduct);
+          syncedCount++;
+          console.log(`✅ Synced: "${localProduct.name}" - Local ID ${localProduct.id} → Neon ID ${matchingNeonProduct.id}`);
+        } else {
+          // Keep original product if no match found
+          updatedProducts.push(localProduct);
+          console.warn(`⚠️ No match found for: "${localProduct.name}" (ID: ${localProduct.id})`);
+        }
+      }
+
+      // Step 4: Update localStorage with synced IDs
+      localStorage.setItem('products', JSON.stringify(updatedProducts));
+      localStorage.setItem('productBackup', JSON.stringify(updatedProducts));
+
+      // Step 5: Refresh Redux store
+      await dispatch(fetchProducts());
+
+      setSuccessMessage(`✅ Quick sync completed! ${syncedCount} product IDs synced with Neon database.`);
+      console.log('✅ AdminPage: Quick ID sync completed');
+
+    } catch (error) {
+      console.error('❌ AdminPage: Quick sync failed:', error);
+      setSuccessMessage(`❌ Quick sync failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setSuccessMessage(''), 5000);
+    }
+  };
+
   // Check sync status
   const handleCheckSyncStatus = async () => {
     setIsLoading(true);
@@ -4697,6 +4756,25 @@ Type "DELETE ALL" to confirm:`;
                         disabled={isLoading}
                       >
                         🔗 Sync IDs
+                      </button>
+                      
+                      <button
+                        onClick={handleQuickIdSync}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#8b5cf6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                        disabled={isLoading}
+                      >
+                        ⚡ Quick Sync
                       </button>
                       
                       <button

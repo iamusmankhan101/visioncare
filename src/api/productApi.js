@@ -460,8 +460,9 @@ const productApi = {
       const API_BASE_URL = getApiBaseUrl();
       console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${resolvedId}`);
       
-      // Try to update with resolved ID
+      // Try to update with resolved ID - try multiple API formats
       try {
+        console.log('🔄 ProductAPI: Attempting update with URL path format...');
         const updatedProduct = await apiRequest(`/products/${resolvedId}`, {
           method: 'PUT',
           body: JSON.stringify(productData),
@@ -480,15 +481,37 @@ const productApi = {
         
         return updatedProduct;
       } catch (updateError) {
-        // If update fails with 404, the product doesn't exist in database
+        // If URL path format fails, try query parameter format
         if (updateError.message.includes('Product not found') || updateError.message.includes('404')) {
-          console.error('❌ ProductAPI: Product not found in database. Cannot update non-existent product.');
-          console.error('❌ ProductAPI: Product ID:', resolvedId);
-          console.error('❌ ProductAPI: This may indicate the product was deleted or the ID is incorrect.');
+          console.warn('⚠️ ProductAPI: URL path format failed, trying query parameter format...');
           
-          // DO NOT create a new product automatically - this causes duplicates!
-          // Instead, throw a clear error that the product doesn't exist
-          throw new Error(`Product with ID ${resolvedId} not found in database. Cannot update non-existent product. Please refresh the product list and try again.`);
+          try {
+            const updatedProduct = await apiRequest(`/products?id=${resolvedId}`, {
+              method: 'PUT',
+              body: JSON.stringify(productData),
+            });
+            
+            console.log('✅ ProductAPI: Product updated successfully with query format:', updatedProduct);
+            
+            // Update localStorage backup
+            try {
+              const products = await productApi.getAllProducts();
+              saveProductsBackup(products);
+              console.log('✅ ProductAPI: Backup updated after update');
+            } catch (backupError) {
+              console.warn('⚠️ ProductAPI: Failed to update backup after updating product:', backupError.message);
+            }
+            
+            return updatedProduct;
+          } catch (queryError) {
+            console.error('❌ ProductAPI: Both URL formats failed. Product not found in database.');
+            console.error('❌ ProductAPI: Product ID:', resolvedId);
+            console.error('❌ ProductAPI: This may indicate the product was deleted or the ID is incorrect.');
+            
+            // DO NOT create a new product automatically - this causes duplicates!
+            // Instead, throw a clear error that the product doesn't exist
+            throw new Error(`Product with ID ${resolvedId} not found in database. Cannot update non-existent product. Please refresh the product list and try again.`);
+          }
         } else {
           throw updateError;
         }

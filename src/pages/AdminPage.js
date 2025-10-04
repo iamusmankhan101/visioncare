@@ -3375,21 +3375,38 @@ const AdminPage = () => {
       setSuccessMessage('🔄 Syncing localStorage IDs with Neon database...');
 
       // Step 1: Get products from Neon database
-      const neonProducts = await productApi.getAllProducts();
+      const neonResponse = await productApi.getAllProducts();
+      const neonProducts = Array.isArray(neonResponse) ? neonResponse : (neonResponse?.products || []);
       console.log('📊 Neon products:', neonProducts.length);
+      console.log('📊 Neon product names:', neonProducts.map(p => `"${p.name}" (ID: ${p.id})`));
 
       // Step 2: Get products from localStorage
       const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
       console.log('📦 Local products:', localProducts.length);
+      console.log('📦 Local product names:', localProducts.map(p => `"${p.name}" (ID: ${p.id})`));
+
+      if (neonProducts.length === 0) {
+        setSuccessMessage('⚠️ No products found in Neon database. Please add products first.');
+        return;
+      }
+
+      if (localProducts.length === 0) {
+        setSuccessMessage('⚠️ No products found in localStorage. Fetching from Neon database...');
+        await dispatch(fetchProducts());
+        return;
+      }
 
       let syncedCount = 0;
       let updatedProducts = [];
 
-      // Step 3: Match products by name and update IDs
+      // Step 3: Match products by name and update IDs (more flexible matching)
       for (const localProduct of localProducts) {
-        const matchingNeonProduct = neonProducts.find(neonProduct => 
-          neonProduct.name?.toLowerCase().trim() === localProduct.name?.toLowerCase().trim()
-        );
+        const localName = localProduct.name?.toLowerCase().trim().replace(/\s+/g, ' ');
+        
+        const matchingNeonProduct = neonProducts.find(neonProduct => {
+          const neonName = neonProduct.name?.toLowerCase().trim().replace(/\s+/g, ' ');
+          return neonName === localName;
+        });
 
         if (matchingNeonProduct) {
           // Update local product with Neon database ID
@@ -3404,25 +3421,40 @@ const AdminPage = () => {
           // Keep original product if no match found
           updatedProducts.push(localProduct);
           console.warn(`⚠️ No match found for: "${localProduct.name}" (ID: ${localProduct.id})`);
+          
+          // Try partial matching for debugging
+          const partialMatches = neonProducts.filter(neonProduct => 
+            neonProduct.name?.toLowerCase().includes(localName.split(' ')[0]) ||
+            localName.includes(neonProduct.name?.toLowerCase().split(' ')[0] || '')
+          );
+          if (partialMatches.length > 0) {
+            console.log(`🔍 Possible matches for "${localProduct.name}":`, partialMatches.map(p => p.name));
+          }
         }
       }
 
       // Step 4: Update localStorage with synced IDs
-      localStorage.setItem('products', JSON.stringify(updatedProducts));
-      localStorage.setItem('productBackup', JSON.stringify(updatedProducts));
-
-      // Step 5: Refresh Redux store
-      await dispatch(fetchProducts());
+      if (syncedCount > 0) {
+        localStorage.setItem('products', JSON.stringify(updatedProducts));
+        localStorage.setItem('productBackup', JSON.stringify(updatedProducts));
+        
+        // Step 5: Refresh Redux store
+        await dispatch(fetchProducts());
+      }
 
       setSuccessMessage(`✅ Quick sync completed! ${syncedCount} product IDs synced with Neon database.`);
       console.log('✅ AdminPage: Quick ID sync completed');
+
+      if (syncedCount === 0) {
+        setSuccessMessage('⚠️ No products were synced. Check console for product name comparisons.');
+      }
 
     } catch (error) {
       console.error('❌ AdminPage: Quick sync failed:', error);
       setSuccessMessage(`❌ Quick sync failed: ${error.message}`);
     } finally {
       setIsLoading(false);
-      setTimeout(() => setSuccessMessage(''), 5000);
+      setTimeout(() => setSuccessMessage(''), 8000);
     }
   };
 

@@ -2940,6 +2940,15 @@ const AdminPage = () => {
     if (name === 'gender' || name === 'style' || name === 'status') {
       console.log(`✅ AdminPage: ${name} field updated successfully to: "${processedValue}"`);
       console.log(`✅ AdminPage: Current ${name} value in state:`, updatedData[name]);
+      
+      // Show immediate visual feedback
+      setSuccessMessage(`✅ ${name.charAt(0).toUpperCase() + name.slice(1)} updated to: ${processedValue}`);
+      setTimeout(() => setSuccessMessage(''), 2000);
+    }
+    
+    // Debug colors array changes
+    if (name === 'colors') {
+      console.log(`🎨 AdminPage: Colors updated:`, updatedData.colors);
     }
   };
 
@@ -3047,17 +3056,27 @@ const AdminPage = () => {
       const updatedColorImages = { ...(productData.colorImages || {}) };
       delete updatedColorImages[colorOption.name];
       
-      setProductData({
+      const updatedData = {
         ...productData,
         colors: currentColors.filter(c => c.name !== colorOption.name),
         colorImages: updatedColorImages
-      });
+      };
+      
+      setProductData(updatedData);
+      console.log(`🎨 AdminPage: Color "${colorOption.name}" removed. Total colors:`, updatedData.colors.length);
+      setSuccessMessage(`❌ Color "${colorOption.name}" removed`);
+      setTimeout(() => setSuccessMessage(''), 2000);
     } else {
       // Add color
-      setProductData({
+      const updatedData = {
         ...productData,
         colors: [...currentColors, colorOption]
-      });
+      };
+      
+      setProductData(updatedData);
+      console.log(`🎨 AdminPage: Color "${colorOption.name}" added. Total colors:`, updatedData.colors.length);
+      setSuccessMessage(`✅ Color "${colorOption.name}" added`);
+      setTimeout(() => setSuccessMessage(''), 2000);
     }
   };
 

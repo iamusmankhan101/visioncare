@@ -2164,22 +2164,9 @@ const ProductDetailPage = () => {
               {product?.description || 'Stylish and comfortable eyeglasses perfect for everyday wear.'}
             </ProductDescription>
             
-            {/* Debug product data */}
-            {console.log('🔍 ProductDetail DEBUG - Product data:', product)}
-            {console.log('🔍 ProductDetail DEBUG - frameColor:', product?.frameColor)}
-            {console.log('🔍 ProductDetail DEBUG - sizes:', product?.sizes)}
-            {console.log('🔍 ProductDetail DEBUG - colors:', product?.colors)}
-            
             {product?.frameColor && (
               <div style={{ marginBottom: '1rem' }}>
                 <ColorLabel>Frame Color: {product.frameColor}</ColorLabel>
-              </div>
-            )}
-            
-            {/* Show frameColor debug info */}
-            {!product?.frameColor && (
-              <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#f0f0f0', fontSize: '0.8rem' }}>
-                🔍 DEBUG: No frameColor found. Product frameColor: {JSON.stringify(product?.frameColor)}
               </div>
             )}
             
@@ -2217,8 +2204,6 @@ const ProductDetailPage = () => {
                 }
               }
               
-              console.log('🔍 ProductDetail DEBUG - Processed sizes:', sizesArray);
-              
               return sizesArray && sizesArray.length > 0 ? (
                 <div>
                   <SizeLabel>Size: {selectedSize}</SizeLabel>
@@ -2234,11 +2219,7 @@ const ProductDetailPage = () => {
                     ))}
                   </SizeOptions>
                 </div>
-              ) : (
-                <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#f0f0f0', fontSize: '0.8rem' }}>
-                  🔍 DEBUG: No sizes found. Product sizes: {JSON.stringify(product?.sizes)}
-                </div>
-              );
+              ) : null;
             })()}
             
             <FreeShippingBadge>

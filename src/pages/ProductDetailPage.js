@@ -2164,9 +2164,22 @@ const ProductDetailPage = () => {
               {product?.description || 'Stylish and comfortable eyeglasses perfect for everyday wear.'}
             </ProductDescription>
             
+            {/* Debug product data */}
+            {console.log('🔍 ProductDetail DEBUG - Product data:', product)}
+            {console.log('🔍 ProductDetail DEBUG - frameColor:', product?.frameColor)}
+            {console.log('🔍 ProductDetail DEBUG - sizes:', product?.sizes)}
+            {console.log('🔍 ProductDetail DEBUG - colors:', product?.colors)}
+            
             {product?.frameColor && (
               <div style={{ marginBottom: '1rem' }}>
                 <ColorLabel>Frame Color: {product.frameColor}</ColorLabel>
+              </div>
+            )}
+            
+            {/* Show frameColor debug info */}
+            {!product?.frameColor && (
+              <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#f0f0f0', fontSize: '0.8rem' }}>
+                🔍 DEBUG: No frameColor found. Product frameColor: {JSON.stringify(product?.frameColor)}
               </div>
             )}
             
@@ -2187,22 +2200,46 @@ const ProductDetailPage = () => {
               </div>
             )}
             
-            {product?.sizes && product.sizes.length > 0 && (
-              <div>
-                <SizeLabel>Size: {selectedSize}</SizeLabel>
-                <SizeOptions>
-                  {(Array.isArray(product?.sizes) ? product.sizes : []).map((size) => (
-                    <SizeOption
-                      key={size}
-                      selected={selectedSize === size}
-                      onClick={() => setSelectedSize(size)}
-                    >
-                      {size}
-                    </SizeOption>
-                  ))}
-                </SizeOptions>
-              </div>
-            )}
+            {/* Handle sizes - check if it's a JSON string or array */}
+            {(() => {
+              let sizesArray = [];
+              
+              if (product?.sizes) {
+                if (typeof product.sizes === 'string') {
+                  try {
+                    sizesArray = JSON.parse(product.sizes);
+                  } catch (e) {
+                    // If not JSON, treat as comma-separated string
+                    sizesArray = product.sizes.split(',').map(s => s.trim());
+                  }
+                } else if (Array.isArray(product.sizes)) {
+                  sizesArray = product.sizes;
+                }
+              }
+              
+              console.log('🔍 ProductDetail DEBUG - Processed sizes:', sizesArray);
+              
+              return sizesArray && sizesArray.length > 0 ? (
+                <div>
+                  <SizeLabel>Size: {selectedSize}</SizeLabel>
+                  <SizeOptions>
+                    {sizesArray.map((size) => (
+                      <SizeOption
+                        key={size}
+                        selected={selectedSize === size}
+                        onClick={() => setSelectedSize(size)}
+                      >
+                        {size}
+                      </SizeOption>
+                    ))}
+                  </SizeOptions>
+                </div>
+              ) : (
+                <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#f0f0f0', fontSize: '0.8rem' }}>
+                  🔍 DEBUG: No sizes found. Product sizes: {JSON.stringify(product?.sizes)}
+                </div>
+              );
+            })()}
             
             <FreeShippingBadge>
               <span className="icon">🚚</span>

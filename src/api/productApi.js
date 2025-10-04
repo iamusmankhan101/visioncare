@@ -29,30 +29,16 @@ const getApiBaseUrl = () => {
     return deployedApiUrl;
   }
   
-  // For localhost development, try local product server first
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    const localApiUrl = 'http://localhost:5004/api';
-    console.log('Using local product server:', localApiUrl);
-    return localApiUrl;
-  }
-  
-  // If accessing via IP address (mobile accessing desktop), use the same IP for API
-  if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-    const ipApiUrl = `http://${hostname}:5004/api`;
-    console.log('Using IP-based API URL for mobile access:', ipApiUrl);
-    return ipApiUrl;
-  }
-  
-  // Fallback to Vercel API with Neon database
+  // Always use Vercel API with Neon database
   const vercelApiUrl = process.env.REACT_APP_PRODUCTS_API_URL || 'https://vision-care-hmn4.vercel.app/api';
   console.log('Using Vercel API with Neon database:', vercelApiUrl);
   return vercelApiUrl;
 };
 
-const API_BASE_URL = getApiBaseUrl();
-
 // Helper function to handle API requests
 const apiRequest = async (endpoint, options = {}) => {
+  // Get API base URL dynamically for each request
+  const API_BASE_URL = getApiBaseUrl();
   const url = `${API_BASE_URL}${endpoint}`;
   
   const config = {
@@ -847,9 +833,9 @@ const productApi = {
     try {
       console.log('🗑️ ProductAPI: Attempting to delete product with ID:', id);
       console.log('🗑️ ProductAPI: ID type:', typeof id);
-      console.log('🔗 ProductAPI: Delete URL:', `${API_BASE_URL}/products/${id}`);
+      console.log('🔗 ProductAPI: Delete URL:', `${API_BASE_URL}/products?id=${id}`);
       
-      const result = await apiRequest(`/products/${id}`, {
+      const result = await apiRequest(`/products?id=${id}`, {
         method: 'DELETE',
       });
       
@@ -1116,7 +1102,7 @@ const productApi = {
           try {
             console.log(`🗑️ ProductAPI: Deleting product ${i + 1}/${neonProducts.length} - "${product.name}" (ID: ${product.id})`);
             
-            await apiRequest(`/products/${product.id}`, {
+            await apiRequest(`/products?id=${product.id}`, {
               method: 'DELETE'
             });
             

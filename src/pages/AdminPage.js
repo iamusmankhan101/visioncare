@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync, deleteProductAsync } from '../redux/slices/productSlice';
 import { syncProductIdsWithNeonDatabase, checkProductSyncStatus, deleteAllProducts } from '../api/productApi';
+import productApi from '../api/productApi';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';

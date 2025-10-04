@@ -3305,6 +3305,8 @@ const AdminPage = () => {
       console.log('🔍 AdminPage: Submitting - gender:', updatedProduct.gender);
       console.log('🔍 AdminPage: Submitting - style:', updatedProduct.style);
       console.log('🔍 AdminPage: Submitting - status:', updatedProduct.status);
+      console.log('🔍 AdminPage: Submitting - frameColor:', updatedProduct.frameColor);
+      console.log('🔍 AdminPage: Submitting - sizes:', updatedProduct.sizes);
 
       // Dispatch async action to update product in API and Redux store
       const result = await dispatch(updateProductAsync({

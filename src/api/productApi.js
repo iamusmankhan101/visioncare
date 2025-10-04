@@ -924,7 +924,7 @@ const productApi = {
       // Get all products from Neon database
       let neonProducts = [];
       try {
-        neonProducts = await productApi.getAllProducts();
+        neonProducts = await getAllProducts();
         console.log(`🌐 ProductAPI: Found ${neonProducts.length} products in Neon database`);
       } catch (error) {
         console.error('❌ ProductAPI: Failed to fetch products from Neon database:', error.message);
@@ -971,7 +971,7 @@ const productApi = {
             delete productDataForNeon.id;
             delete productDataForNeon._id;
             
-            const newNeonProduct = await productApi.createProduct(productDataForNeon);
+            const newNeonProduct = await createProduct(productDataForNeon);
             
             // Update local product with new Neon ID
             localProducts[i] = { ...localProduct, id: newNeonProduct.id };
@@ -1026,7 +1026,7 @@ const productApi = {
       console.log('🔍 ProductAPI: Checking product sync status...');
       
       const localProducts = getStoredProducts();
-      const neonProducts = await productApi.getAllProducts();
+      const neonProducts = await getAllProducts();
       
       const syncStatus = {
         localCount: localProducts.length,

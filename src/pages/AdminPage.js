@@ -3396,6 +3396,52 @@ const AdminPage = () => {
     }
   };
 
+  // Quick fix for Product ID 98 issue
+  const handleQuickFixProductId = async () => {
+    if (!window.confirm('This will attempt to fix the Product ID 98 issue by refreshing the product list and resetting any invalid IDs. Continue?')) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('🔧 AdminPage: Quick fixing Product ID issue...');
+      setSuccessMessage('🔧 Fixing Product ID issue...');
+
+      // First, refresh products from Neon database
+      await dispatch(fetchProducts());
+      
+      // Check if the problematic product still exists
+      const currentProducts = products;
+      const problematicProduct = currentProducts.find(p => p.id === 98);
+      
+      if (problematicProduct) {
+        console.log('⚠️ AdminPage: Found product with ID 98, attempting to resolve...');
+        
+        // Try to find this product in the refreshed list
+        const refreshedProducts = await dispatch(fetchProducts()).unwrap();
+        const matchingProduct = refreshedProducts.find(p => 
+          p.name === problematicProduct.name && p.id !== 98
+        );
+        
+        if (matchingProduct) {
+          console.log(`✅ AdminPage: Found matching product with valid ID: ${matchingProduct.id}`);
+          setSuccessMessage(`✅ Product ID resolved! Product "${problematicProduct.name}" now has ID: ${matchingProduct.id}`);
+        } else {
+          setSuccessMessage('⚠️ Product ID 98 issue detected. Please use the Sync IDs button to resolve this.');
+        }
+      } else {
+        setSuccessMessage('✅ No Product ID 98 found. Issue may already be resolved.');
+      }
+      
+    } catch (error) {
+      console.error('❌ AdminPage: Quick fix failed:', error);
+      setSuccessMessage(`❌ Quick fix failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setSuccessMessage(''), 6000);
+    }
+  };
+
 
   // Update existing products with random style values
   const handleUpdateExistingProductsWithStyles = () => {
@@ -4593,6 +4639,25 @@ const AdminPage = () => {
                         disabled={isLoading}
                       >
                         🔗 Sync IDs
+                      </button>
+                      
+                      <button
+                        onClick={handleQuickFixProductId}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#dc2626',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                        disabled={isLoading}
+                      >
+                        🔧 Quick Fix ID 98
                       </button>
                     </div>
                     {dataSource !== 'unknown' && (

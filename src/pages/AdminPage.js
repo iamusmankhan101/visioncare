@@ -2325,10 +2325,10 @@ const AdminPage = () => {
     sizes: [],
     features: [],
     lensTypes: [],
-    status: 'In Stock',
+    status: 'in-stock',
     rim: '',
     brand: '',
-    gender: 'Unisex',
+    gender: '',
     type: '',
     discount: {
       hasDiscount: false,
@@ -4494,6 +4494,7 @@ Type "DELETE ALL" to confirm:`;
                                 value={productData.gender}
                                 onChange={handleInputChange}
                               >
+                                <option value="">Select Gender</option>
                                 {genders.map(gender => (
                                   <option key={gender} value={gender}>
                                     {gender.charAt(0).toUpperCase() + gender.slice(1)}
@@ -4827,6 +4828,31 @@ Type "DELETE ALL" to confirm:`;
                         disabled={isLoading}
                       >
                         ⚡ Quick Sync
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          console.log('🔍 DEBUG: Current productData:', productData);
+                          console.log('🔍 DEBUG: Style:', productData.style);
+                          console.log('🔍 DEBUG: Gender:', productData.gender);
+                          console.log('🔍 DEBUG: Status:', productData.status);
+                          console.log('🔍 DEBUG: Colors:', productData.colors);
+                          alert(`Style: ${productData.style || 'Not set'}\nGender: ${productData.gender || 'Not set'}\nStatus: ${productData.status || 'Not set'}\nColors: ${productData.colors?.length || 0} selected`);
+                        }}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                      >
+                        🔍 Debug State
                       </button>
                       
                       <button

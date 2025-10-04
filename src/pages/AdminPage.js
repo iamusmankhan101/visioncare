@@ -2337,6 +2337,33 @@ const AdminPage = () => {
   const [productData, setProductData] = useState(defaultProductData);
   const fileInputRef = useRef(null);
 
+  // Options arrays for form fields
+  const categories = ['sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
+  const materials = ['acetate', 'metal', 'titanium', 'plastic', 'wood', 'carbon-fiber', 'stainless-steel', 'aluminum'];
+  const shapes = ['round', 'square', 'oval', 'cat-eye', 'aviator', 'wayfarer', 'rectangular', 'geometric'];
+  const genders = ['male', 'female', 'unisex', 'kids'];
+  const styleOptions = ['Classic', 'Eco Friendly', 'Artsy', 'Retro', 'Street Style', 'Bold'];
+  const rimOptions = ['full-rim', 'semi-rimless', 'rimless'];
+  const statusOptions = ['in-stock', 'out-of-stock', 'discontinued', 'pre-order'];
+  const typeOptions = ['', 'reading', 'computer', 'polarized', 'aviator', 'sports', 'fashion'];
+  const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'One Size'];
+  const featureOptions = ['uv-protection', 'polarized', 'anti-glare', 'scratch-resistant', 'lightweight', 'flexible'];
+  const lensTypeOptions = ['Standard', 'Blue Light Blocking', 'Progressive', 'Photochromic', 'Polarized'];
+  const colorOptions = [
+    { name: 'Black', hex: '#000000' },
+    { name: 'Brown', hex: '#8B4513' },
+    { name: 'Gold', hex: '#FFD700' },
+    { name: 'Silver', hex: '#C0C0C0' },
+    { name: 'Blue', hex: '#0066CC' },
+    { name: 'Red', hex: '#CC0000' },
+    { name: 'Green', hex: '#00CC00' },
+    { name: 'Purple', hex: '#6600CC' },
+    { name: 'Pink', hex: '#FF69B4' },
+    { name: 'Clear', hex: '#FFFFFF' },
+    { name: 'Tortoiseshell', hex: '#8B4513' },
+    { name: 'Gray', hex: '#808080' }
+  ];
+
 
   // Calculate real statistics from products data
   const calculateStats = () => {
@@ -2820,9 +2847,6 @@ const AdminPage = () => {
     return { orderData: data, maxRevenue, maxOrders, hasAnyData };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
 
-  // Available options for form selects - Updated to match URL parameters
-  const categories = ['sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
-  
   // Eyewear categories (excluding contact lenses and lens-only products)
   const eyewearCategories = [
     'sunglasses', 'eyeglasses', 'reading-glasses', 'computer-glasses', 'sports-glasses',
@@ -2861,37 +2885,6 @@ const AdminPage = () => {
            category.includes('eyewear') ||
            eyewearCategories.includes(product.category);
   };
-  const materials = ['Metal', 'Plastic', 'Titanium', 'Acetate', 'Wood', 'Other'];
-  const shapes = ['Round', 'Square', 'Rectangle', 'Cat Eye', 'Aviator', 'Oval', 'Geometric', 'Other'];
-  const rimOptions = ['Full Rim', 'Semi-Rimless', 'Rimless', 'Half Rim'];
-  const colorOptions = [
-    { name: 'Black', hex: '#000000' },
-    { name: 'Brown', hex: '#8B4513' },
-    { name: 'Tortoise', hex: '#D2691E' },
-    { name: 'Silver', hex: '#C0C0C0' },
-    { name: 'Gold', hex: '#FFD700' },
-    { name: 'Gunmetal', hex: '#708090' },
-    { name: 'Navy', hex: '#1B2951' },
-    { name: 'Clear', hex: '#F8F8FF' },
-    { name: 'Burgundy', hex: '#722F37' },
-    { name: 'Rose Gold', hex: '#E8B4A0' },
-    { name: 'Copper', hex: '#B87333' },
-    { name: 'Charcoal', hex: '#36454F' }
-  ];
-  const featureOptions = [
-    'lightweight', 'prescription-ready', 'polarized', 'uv-protection',
-    'blue-light-filtering', 'anti-glare', 'scratch-resistant', 'water-resistant',
-    'adjustable-nose-pads', 'spring-hinges', 'durable', 'impact-resistant',
-    'hypoallergenic', 'flexible', 'foldable'
-  ];
-
-  // Add these new options arrays
-  const genders = ['Men', 'Women', 'Unisex'];
-  const typeOptions = ['', 'reading', 'computer', 'polarized', 'aviator', 'sports', 'fashion'];
-  const lensTypeOptions = ['Non-Prescription', 'Prescription', 'Progressive', 'Bifocal', 'Reading', 'Blue-Light'];
-  const sizeOptions = ['Small', 'Medium', 'Large', '138mm', '140mm', '142mm'];
-  const statusOptions = ['In Stock', 'Out of Stock', 'Coming Soon'];
-  const styleOptions = ['Classic', 'Eco Friendly', 'Artsy', 'Retro', 'Street Style', 'Bold'];
 
   // File upload state
   const [selectedFile, setSelectedFile] = useState(null);
@@ -2926,11 +2919,26 @@ const AdminPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     console.log(`🔄 AdminPage: Input changed - ${name}: "${value}"`);
-    setProductData({
+    
+    // Special handling for specific fields
+    let processedValue = value;
+    if (name === 'price') {
+      processedValue = parseFloat(value);
+    }
+    
+    const updatedData = {
       ...productData,
-      [name]: name === 'price' ? parseFloat(value) : value
-    });
-    console.log('🔄 AdminPage: Updated productData:', { ...productData, [name]: name === 'price' ? parseFloat(value) : value });
+      [name]: processedValue
+    };
+    
+    setProductData(updatedData);
+    console.log('🔄 AdminPage: Updated productData:', updatedData);
+    
+    // Debug specific fields that were having issues
+    if (name === 'gender' || name === 'style' || name === 'status') {
+      console.log(`✅ AdminPage: ${name} field updated successfully to: "${processedValue}"`);
+      console.log(`✅ AdminPage: Current ${name} value in state:`, updatedData[name]);
+    }
   };
 
   // Handle feature checkbox changes
@@ -3168,6 +3176,10 @@ const AdminPage = () => {
     };
     
     console.log('✏️ AdminPage: Setting edit data:', editData);
+    console.log('🔍 AdminPage: Edit data - gender:', editData.gender);
+    console.log('🔍 AdminPage: Edit data - style:', editData.style);
+    console.log('🔍 AdminPage: Edit data - status:', editData.status);
+    
     setProductData(editData);
     setActiveTab('edit-product');
   };
@@ -3256,6 +3268,11 @@ const AdminPage = () => {
       const productId = updatedProduct.id || updatedProduct._id;
       console.log('✏️ AdminPage: Updating product with ID:', productId);
       console.log('✏️ AdminPage: Updated product data:', updatedProduct);
+      
+      // Debug the specific fields that were having issues
+      console.log('🔍 AdminPage: Submitting - gender:', updatedProduct.gender);
+      console.log('🔍 AdminPage: Submitting - style:', updatedProduct.style);
+      console.log('🔍 AdminPage: Submitting - status:', updatedProduct.status);
 
       // Dispatch async action to update product in API and Redux store
       const result = await dispatch(updateProductAsync({
@@ -3284,7 +3301,19 @@ const AdminPage = () => {
     } catch (error) {
       console.error('❌ AdminPage: Failed to update product:', error);
       const errorMessage = error?.message || error?.error || error || 'Unknown error occurred';
-      setSuccessMessage('Error updating product: ' + errorMessage);
+      
+      // If it's a "product not found" error, suggest refreshing the product list
+      if (errorMessage.includes('not found in database')) {
+        setSuccessMessage('Error: Product not found in database. The product may have been deleted. Refreshing product list...');
+        // Automatically refresh the product list to sync with database
+        setTimeout(() => {
+          dispatch(fetchProducts());
+          setActiveTab('manage-products');
+        }, 2000);
+      } else {
+        setSuccessMessage('Error updating product: ' + errorMessage);
+      }
+      
       setTimeout(() => setSuccessMessage(''), 5000);
     } finally {
       setIsLoading(false);
@@ -4723,10 +4752,11 @@ const AdminPage = () => {
                         value={productData.gender || 'Unisex'}
                         onChange={handleInputChange}
                       >
-                        <option value="Unisex">Unisex</option>
-                        <option value="Men">Men</option>
-                        <option value="Women">Women</option>
-                        <option value="Kids">Kids</option>
+                        {genders.map(gender => (
+                          <option key={gender} value={gender}>
+                            {gender}
+                          </option>
+                        ))}
                       </Select>
                     </FormGroup>
 

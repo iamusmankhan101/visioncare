@@ -125,12 +125,130 @@ const getStoredProducts = () => {
   }
 };
 
-// Save products to localStorage as backup
-const saveProductsBackup = (products) => {
+// Check localStorage quota and cleanup if needed
+const checkAndCleanupStorage = () => {
   try {
-    localStorage.setItem('eyewear_products_backup', JSON.stringify(products));
+    // Test if we can write to localStorage
+    const testKey = 'quota_test';
+    const testData = 'x'.repeat(1024); // 1KB test
+    localStorage.setItem(testKey, testData);
+    localStorage.removeItem(testKey);
+    return true;
   } catch (error) {
-    console.error('Error saving products backup:', error);
+    console.warn('🧹 localStorage quota issue detected, cleaning up...');
+    
+    // Remove old backups and non-essential data
+    const keysToClean = [
+      'eyewear_products_backup_old',
+      'eyewear_products_backup_v1',
+      'eyewear_products_backup_v2',
+      'temp_products',
+      'cached_products',
+      'product_images_cache'
+    ];
+    
+    keysToClean.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Removed ${key} from localStorage`);
+      } catch (e) {
+        // Ignore errors
+      }
+    });
+    
+    return false;
+  }
+};
+
+// Compress product data for storage (remove heavy fields)
+const compressProductsForBackup = (products) => {
+  return products.map(product => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    category: product.category,
+    brand: product.brand,
+    material: product.material,
+    shape: product.shape,
+    color: product.color,
+    size: product.size,
+    inStock: product.inStock,
+    // Remove heavy fields like images, descriptions, etc.
+    // Keep only essential data for basic functionality
+  }));
+};
+
+// Throttle backup operations to prevent excessive saves
+let lastBackupTime = 0;
+const BACKUP_THROTTLE_MS = 5000; // Only backup once every 5 seconds
+
+// Save products to localStorage as backup with quota management
+const saveProductsBackup = (products, forceBackup = false) => {
+  // Throttle backups unless forced
+  const now = Date.now();
+  if (!forceBackup && (now - lastBackupTime) < BACKUP_THROTTLE_MS) {
+    console.log('⏳ Backup throttled, skipping (last backup was recent)');
+    return;
+  }
+  
+  lastBackupTime = now;
+  try {
+    // Check if we have space first
+    if (!checkAndCleanupStorage()) {
+      console.warn('⚠️ localStorage cleanup failed, skipping backup to prevent quota error');
+      return;
+    }
+    
+    // Compress products to save space
+    const compressedProducts = compressProductsForBackup(products);
+    
+    // Limit backup size (max 100 products to prevent quota issues)
+    const limitedProducts = compressedProducts.slice(0, 100);
+    
+    // Try to save with size limit
+    const backupData = JSON.stringify(limitedProducts);
+    
+    // Check size before saving (max ~2MB for safety)
+    if (backupData.length > 2 * 1024 * 1024) {
+      console.warn('⚠️ Backup data too large, reducing further...');
+      const reducedProducts = limitedProducts.slice(0, 50);
+      localStorage.setItem('eyewear_products_backup', JSON.stringify(reducedProducts));
+      console.log(`📦 Saved ${reducedProducts.length} compressed products to backup (size reduced)`);
+    } else {
+      localStorage.setItem('eyewear_products_backup', backupData);
+      console.log(`📦 Saved ${limitedProducts.length} compressed products to backup`);
+    }
+    
+  } catch (error) {
+    if (error.name === 'QuotaExceededError') {
+      console.error('💾 localStorage quota exceeded, attempting emergency cleanup...');
+      
+      // Emergency cleanup - remove the backup entirely and try with minimal data
+      try {
+        localStorage.removeItem('eyewear_products_backup');
+        
+        // Save only first 20 products with minimal data
+        const emergencyBackup = products.slice(0, 20).map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          category: p.category
+        }));
+        
+        localStorage.setItem('eyewear_products_backup', JSON.stringify(emergencyBackup));
+        console.log(`🚨 Emergency backup saved with ${emergencyBackup.length} minimal products`);
+      } catch (emergencyError) {
+        console.error('🚨 Emergency backup also failed, disabling backup system');
+        // Disable backup system by removing the key entirely
+        try {
+          localStorage.removeItem('eyewear_products_backup');
+        } catch (e) {
+          // Final fallback - ignore all localStorage operations
+        }
+      }
+    } else {
+      console.error('Error saving products backup:', error);
+    }
   }
 };
 
@@ -169,15 +287,15 @@ const productApi = {
         console.log(`✅ Successfully fetched ${products.length} products from Neon database`);
         console.log('📊 Products:', products.map(p => `${p.name} ($${p.price})`).join(', '));
         
-        // Save as backup for offline use
-        saveProductsBackup(products);
+        // Save as backup for offline use (forced since this is initial load)
+        saveProductsBackup(products, true);
         return products;
       } else if (Array.isArray(response)) {
         // Handle direct array response
         console.log(`✅ Successfully fetched ${response.length} products from Neon database`);
         console.log('📊 Products:', response.map(p => `${p.name} ($${p.price})`).join(', '));
         
-        saveProductsBackup(response);
+        saveProductsBackup(response, true);
         return response;
       } else {
         console.warn('⚠️ Unexpected API response format:', response);
@@ -346,39 +464,15 @@ const productApi = {
         
         return updatedProduct;
       } catch (updateError) {
-        // If update fails with 404, the product doesn't exist in Neon database
+        // If update fails with 404, the product doesn't exist in database
         if (updateError.message.includes('Product not found') || updateError.message.includes('404')) {
-          console.warn('⚠️ ProductAPI: Product not found in Neon database, creating new product...');
+          console.error('❌ ProductAPI: Product not found in database. Cannot update non-existent product.');
+          console.error('❌ ProductAPI: Product ID:', resolvedId);
+          console.error('❌ ProductAPI: This may indicate the product was deleted or the ID is incorrect.');
           
-          // Create the product in Neon database instead of updating
-          try {
-            const newProduct = await productApi.createProduct(productData);
-            console.log(`✅ ProductAPI: Product created in Neon database with new ID: ${newProduct.id}`);
-            
-            // Update localStorage to replace the old product with the new one
-            try {
-              const products = getStoredProducts();
-              const productIndex = products.findIndex(p => {
-                const productId = p.id || p._id;
-                return productId === id || 
-                       String(productId) === String(id) || 
-                       productId === String(id);
-              });
-              
-              if (productIndex !== -1) {
-                products[productIndex] = newProduct;
-                saveProductsBackup(products);
-                console.log('✅ ProductAPI: localStorage updated with new Neon database product');
-              }
-            } catch (localUpdateError) {
-              console.warn('⚠️ ProductAPI: Failed to update localStorage with new product');
-            }
-            
-            return newProduct;
-          } catch (createError) {
-            console.error('❌ ProductAPI: Failed to create product in Neon database:', createError.message);
-            throw updateError; // Throw original update error
-          }
+          // DO NOT create a new product automatically - this causes duplicates!
+          // Instead, throw a clear error that the product doesn't exist
+          throw new Error(`Product with ID ${resolvedId} not found in database. Cannot update non-existent product. Please refresh the product list and try again.`);
         } else {
           throw updateError;
         }

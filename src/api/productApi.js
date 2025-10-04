@@ -95,9 +95,10 @@ const apiRequest = async (endpoint, options = {}) => {
     
     // Check if it's a network error
     if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+      const currentApiUrl = getApiBaseUrl();
       console.error(`❌ Network Error: Cannot connect to backend server`);
-      console.error(`❌ Make sure the Vercel API is accessible at ${API_BASE_URL}`);
-      console.error(`❌ Vercel API URL: ${API_BASE_URL}`);
+      console.error(`❌ Make sure the Vercel API is accessible at ${currentApiUrl}`);
+      console.error(`❌ Vercel API URL: ${currentApiUrl}`);
       console.error(`❌ Check Vercel deployment status and function logs`);
     }
     
@@ -257,6 +258,7 @@ const productApi = {
   testConnection: async () => {
     try {
       console.log('🔍 Testing API connection...');
+      const API_BASE_URL = getApiBaseUrl();
       const response = await fetch(`${API_BASE_URL}/health`);
       if (response.ok) {
         const data = await response.json();
@@ -276,6 +278,7 @@ const productApi = {
   getAllProducts: async () => {
     try {
       console.log('🔍 Attempting to fetch products from Neon database...');
+      const API_BASE_URL = getApiBaseUrl();
       console.log(`🔗 API URL: ${API_BASE_URL}/products`);
       console.log('🗄️ Database: Neon PostgreSQL from Vercel backend database');
       
@@ -306,7 +309,8 @@ const productApi = {
       console.error('🔍 Full error:', error);
       
       console.warn('🗄️ Neon database connection error via Vercel');
-      console.warn('🔗 API URL:', API_BASE_URL);
+      const currentApiUrl = getApiBaseUrl();
+      console.warn('🔗 API URL:', currentApiUrl);
       console.warn('💡 Check Vercel deployment and Neon database connection');
       // Fallback to localStorage backup
       const backupProducts = getStoredProducts();
@@ -336,6 +340,7 @@ const productApi = {
   createProduct: async (productData) => {
     try {
       console.log('🚀 ProductAPI: Creating product...', productData.name);
+      const API_BASE_URL = getApiBaseUrl();
       console.log('🔗 API URL:', `${API_BASE_URL}/products`);
       console.log('📦 Product Data:', productData);
       
@@ -442,6 +447,7 @@ const productApi = {
         }
       }
       
+      const API_BASE_URL = getApiBaseUrl();
       console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${resolvedId}`);
       
       // Try to update with resolved ID
@@ -535,6 +541,7 @@ const productApi = {
       // PRIORITY: Try Neon database API first
       try {
         console.log('🌐 ProductAPI: Attempting edit via Neon database API...');
+        const API_BASE_URL = getApiBaseUrl();
         console.log('🔗 ProductAPI: API URL:', `${API_BASE_URL}/products/${id}`);
         
         const updatedProduct = await apiRequest(`/products/${id}`, {

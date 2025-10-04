@@ -3398,7 +3398,7 @@ const AdminPage = () => {
 
   // Quick fix for Product ID 98 issue
   const handleQuickFixProductId = async () => {
-    if (!window.confirm('This will attempt to fix the Product ID 98 issue by refreshing the product list and resetting any invalid IDs. Continue?')) {
+    if (!window.confirm('This will attempt to fix the Product ID 98 issue by clearing the problematic product from local storage. Continue?')) {
       return;
     }
 
@@ -3407,30 +3407,29 @@ const AdminPage = () => {
       console.log('🔧 AdminPage: Quick fixing Product ID issue...');
       setSuccessMessage('🔧 Fixing Product ID issue...');
 
-      // First, refresh products from Neon database
-      await dispatch(fetchProducts());
+      // Get products from localStorage
+      const storedProducts = JSON.parse(localStorage.getItem('products') || '[]');
+      console.log('📦 Found products in localStorage:', storedProducts.length);
       
-      // Check if the problematic product still exists
-      const currentProducts = products;
-      const problematicProduct = currentProducts.find(p => p.id === 98);
+      // Find and remove product with ID 98
+      const filteredProducts = storedProducts.filter(p => p.id !== 98 && p.id !== '98');
+      const removedCount = storedProducts.length - filteredProducts.length;
       
-      if (problematicProduct) {
-        console.log('⚠️ AdminPage: Found product with ID 98, attempting to resolve...');
+      if (removedCount > 0) {
+        // Update localStorage
+        localStorage.setItem('products', JSON.stringify(filteredProducts));
+        console.log(`🗑️ Removed ${removedCount} products with ID 98 from localStorage`);
         
-        // Try to find this product in the refreshed list
-        const refreshedProducts = await dispatch(fetchProducts()).unwrap();
-        const matchingProduct = refreshedProducts.find(p => 
-          p.name === problematicProduct.name && p.id !== 98
-        );
+        // Refresh Redux store
+        await dispatch(fetchProducts());
         
-        if (matchingProduct) {
-          console.log(`✅ AdminPage: Found matching product with valid ID: ${matchingProduct.id}`);
-          setSuccessMessage(`✅ Product ID resolved! Product "${problematicProduct.name}" now has ID: ${matchingProduct.id}`);
-        } else {
-          setSuccessMessage('⚠️ Product ID 98 issue detected. Please use the Sync IDs button to resolve this.');
-        }
+        setSuccessMessage(`✅ Fixed! Removed ${removedCount} problematic products. Try updating again.`);
       } else {
-        setSuccessMessage('✅ No Product ID 98 found. Issue may already be resolved.');
+        console.log('ℹ️ No products with ID 98 found in localStorage');
+        
+        // Just refresh the product list
+        await dispatch(fetchProducts());
+        setSuccessMessage('✅ Product list refreshed. Try updating again.');
       }
       
     } catch (error) {

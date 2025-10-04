@@ -905,6 +905,170 @@ const productApi = {
       
       throw new Error(`Failed to delete product: ${error.message}`);
     }
+  },
+
+  // Sync all product IDs with Neon database
+  syncProductIdsWithNeonDatabase: async () => {
+    try {
+      console.log('🔄 ProductAPI: Starting product ID sync with Neon database...');
+      
+      // Get all products from local storage
+      const localProducts = getStoredProducts();
+      console.log(`📦 ProductAPI: Found ${localProducts.length} products in local storage`);
+      
+      if (localProducts.length === 0) {
+        console.log('ℹ️ ProductAPI: No local products to sync');
+        return { synced: 0, created: 0, errors: 0, results: [] };
+      }
+
+      // Get all products from Neon database
+      let neonProducts = [];
+      try {
+        neonProducts = await productApi.getAllProducts();
+        console.log(`🌐 ProductAPI: Found ${neonProducts.length} products in Neon database`);
+      } catch (error) {
+        console.error('❌ ProductAPI: Failed to fetch products from Neon database:', error.message);
+        throw new Error('Cannot sync: Neon database is not accessible');
+      }
+
+      const syncResults = [];
+      let syncedCount = 0;
+      let createdCount = 0;
+      let errorCount = 0;
+
+      // Process each local product
+      for (let i = 0; i < localProducts.length; i++) {
+        const localProduct = localProducts[i];
+        const localId = localProduct.id || localProduct._id;
+        
+        console.log(`🔍 ProductAPI: Processing product ${i + 1}/${localProducts.length} - "${localProduct.name}" (ID: ${localId})`);
+
+        try {
+          // Try to find matching product in Neon database by name first
+          const matchingNeonProduct = neonProducts.find(np => 
+            np.name && localProduct.name && 
+            np.name.toLowerCase().trim() === localProduct.name.toLowerCase().trim()
+          );
+
+          if (matchingNeonProduct) {
+            // Product exists in Neon, update local ID to match
+            console.log(`✅ ProductAPI: Found matching product in Neon database (ID: ${matchingNeonProduct.id})`);
+            localProducts[i] = { ...localProduct, id: matchingNeonProduct.id };
+            syncResults.push({
+              localId: localId,
+              neonId: matchingNeonProduct.id,
+              name: localProduct.name,
+              action: 'synced',
+              status: 'success'
+            });
+            syncedCount++;
+          } else {
+            // Product doesn't exist in Neon, create it
+            console.log(`➕ ProductAPI: Creating new product in Neon database: "${localProduct.name}"`);
+            
+            // Remove local-specific fields before creating
+            const productDataForNeon = { ...localProduct };
+            delete productDataForNeon.id;
+            delete productDataForNeon._id;
+            
+            const newNeonProduct = await productApi.createProduct(productDataForNeon);
+            
+            // Update local product with new Neon ID
+            localProducts[i] = { ...localProduct, id: newNeonProduct.id };
+            syncResults.push({
+              localId: localId,
+              neonId: newNeonProduct.id,
+              name: localProduct.name,
+              action: 'created',
+              status: 'success'
+            });
+            createdCount++;
+            console.log(`✅ ProductAPI: Created product in Neon database (new ID: ${newNeonProduct.id})`);
+          }
+        } catch (error) {
+          console.error(`❌ ProductAPI: Failed to sync product "${localProduct.name}":`, error.message);
+          syncResults.push({
+            localId: localId,
+            neonId: null,
+            name: localProduct.name,
+            action: 'error',
+            status: 'failed',
+            error: error.message
+          });
+          errorCount++;
+        }
+      }
+
+      // Save updated products back to local storage
+      saveProductsBackup(localProducts);
+      console.log('💾 ProductAPI: Updated local storage with synced IDs');
+
+      const summary = {
+        synced: syncedCount,
+        created: createdCount,
+        errors: errorCount,
+        total: localProducts.length,
+        results: syncResults
+      };
+
+      console.log('🎉 ProductAPI: Sync completed!', summary);
+      return summary;
+
+    } catch (error) {
+      console.error('❌ ProductAPI: Product ID sync failed:', error.message);
+      throw error;
+    }
+  },
+
+  // Check sync status between local and Neon database
+  checkProductSyncStatus: async () => {
+    try {
+      console.log('🔍 ProductAPI: Checking product sync status...');
+      
+      const localProducts = getStoredProducts();
+      const neonProducts = await productApi.getAllProducts();
+      
+      const syncStatus = {
+        localCount: localProducts.length,
+        neonCount: neonProducts.length,
+        needsSync: false,
+        issues: []
+      };
+
+      // Check for products with invalid IDs
+      const invalidIdProducts = localProducts.filter(p => {
+        const id = p.id || p._id;
+        return !id || String(id).startsWith('local_') || String(id).includes('temp_');
+      });
+
+      if (invalidIdProducts.length > 0) {
+        syncStatus.needsSync = true;
+        syncStatus.issues.push(`${invalidIdProducts.length} products have invalid/temporary IDs`);
+      }
+
+      // Check for products that don't exist in Neon
+      const missingInNeon = [];
+      for (const localProduct of localProducts) {
+        const localId = localProduct.id || localProduct._id;
+        const existsInNeon = neonProducts.some(np => np.id === localId);
+        
+        if (!existsInNeon && localId && !String(localId).startsWith('local_')) {
+          missingInNeon.push(localProduct);
+        }
+      }
+
+      if (missingInNeon.length > 0) {
+        syncStatus.needsSync = true;
+        syncStatus.issues.push(`${missingInNeon.length} products exist locally but not in Neon database`);
+      }
+
+      console.log('📊 ProductAPI: Sync status check completed:', syncStatus);
+      return syncStatus;
+
+    } catch (error) {
+      console.error('❌ ProductAPI: Failed to check sync status:', error.message);
+      throw error;
+    }
   }
 };
 
@@ -918,9 +1082,8 @@ export const updateProduct = productApi.updateProduct;
 export const editProduct = productApi.editProduct;
 export const patchProduct = productApi.patchProduct;
 export const bulkEditProducts = productApi.bulkEditProducts;
-export const syncProductIdsToNeonDatabase = productApi.syncProductIdsToNeonDatabase;
+export const syncProductIdsWithNeonDatabase = productApi.syncProductIdsWithNeonDatabase;
 export const checkProductSyncStatus = productApi.checkProductSyncStatus;
-export const autoSyncProductIds = productApi.autoSyncProductIds;
 export const deleteProduct = productApi.deleteProduct;
 
 export default productApi;

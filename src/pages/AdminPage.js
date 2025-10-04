@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync, deleteProductAsync } from '../redux/slices/productSlice';
+import { syncProductIdsWithNeonDatabase, checkProductSyncStatus } from '../api/productApi';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
@@ -3321,6 +3322,80 @@ const AdminPage = () => {
     }
   };
 
+  // Sync product IDs with Neon database
+  const handleSyncProductIds = async () => {
+    if (!window.confirm('This will sync all product IDs with the Neon database. Products that don\'t exist in Neon will be created. Continue?')) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('🔄 AdminPage: Starting product ID sync...');
+      setSuccessMessage('🔄 Syncing product IDs with Neon database...');
+
+      const syncResult = await syncProductIdsWithNeonDatabase();
+      
+      console.log('✅ AdminPage: Sync completed:', syncResult);
+      
+      // Refresh the product list to show updated IDs
+      await dispatch(fetchProducts());
+      
+      // Show detailed results
+      const { synced, created, errors, total } = syncResult;
+      let message = `✅ Sync completed! `;
+      
+      if (synced > 0) message += `${synced} products synced, `;
+      if (created > 0) message += `${created} products created in Neon, `;
+      if (errors > 0) message += `${errors} errors occurred, `;
+      
+      message += `${total} total products processed.`;
+      
+      if (errors > 0) {
+        message += ` Check console for error details.`;
+        console.warn('⚠️ AdminPage: Sync errors:', syncResult.results.filter(r => r.status === 'failed'));
+      }
+      
+      setSuccessMessage(message);
+      
+    } catch (error) {
+      console.error('❌ AdminPage: Sync failed:', error);
+      setSuccessMessage(`❌ Sync failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setSuccessMessage(''), 8000); // Longer timeout for detailed message
+    }
+  };
+
+  // Check sync status
+  const handleCheckSyncStatus = async () => {
+    setIsLoading(true);
+    try {
+      console.log('🔍 AdminPage: Checking sync status...');
+      setSuccessMessage('🔍 Checking sync status...');
+
+      const status = await checkProductSyncStatus();
+      
+      console.log('📊 AdminPage: Sync status:', status);
+      
+      let message = `📊 Sync Status: ${status.localCount} local, ${status.neonCount} in Neon. `;
+      
+      if (status.needsSync) {
+        message += `⚠️ Sync needed: ${status.issues.join(', ')}`;
+      } else {
+        message += `✅ All products are in sync!`;
+      }
+      
+      setSuccessMessage(message);
+      
+    } catch (error) {
+      console.error('❌ AdminPage: Status check failed:', error);
+      setSuccessMessage(`❌ Status check failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setSuccessMessage(''), 6000);
+    }
+  };
+
 
   // Update existing products with random style values
   const handleUpdateExistingProductsWithStyles = () => {
@@ -4480,6 +4555,44 @@ const AdminPage = () => {
                         disabled={isLoading}
                       >
                         🔄 Refresh List
+                      </button>
+                      
+                      <button
+                        onClick={handleCheckSyncStatus}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#10b981',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                        disabled={isLoading}
+                      >
+                        📊 Check Sync
+                      </button>
+                      
+                      <button
+                        onClick={handleSyncProductIds}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#f59e0b',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                        disabled={isLoading}
+                      >
+                        🔗 Sync IDs
                       </button>
                     </div>
                     {dataSource !== 'unknown' && (

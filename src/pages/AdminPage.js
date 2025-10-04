@@ -3304,11 +3304,12 @@ const AdminPage = () => {
       
       // If it's a "product not found" error, suggest refreshing the product list
       if (errorMessage.includes('not found in database')) {
-        setSuccessMessage('Error: Product not found in database. The product may have been deleted. Refreshing product list...');
+        setSuccessMessage('⚠️ Product not found in database. This may happen if the product was deleted or database was reset. Refreshing product list...');
         // Automatically refresh the product list to sync with database
         setTimeout(() => {
           dispatch(fetchProducts());
           setActiveTab('manage-products');
+          setSuccessMessage('✅ Product list refreshed. Please try updating again.');
         }, 2000);
       } else {
         setSuccessMessage('Error updating product: ' + errorMessage);
@@ -4449,7 +4450,38 @@ const AdminPage = () => {
               {activeTab === 'manage-products' && (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h2>Manage Products</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <h2>Manage Products</h2>
+                      <button
+                        onClick={() => {
+                          setIsLoading(true);
+                          dispatch(fetchProducts()).then(() => {
+                            setIsLoading(false);
+                            setSuccessMessage('✅ Product list refreshed successfully!');
+                            setTimeout(() => setSuccessMessage(''), 3000);
+                          }).catch(() => {
+                            setIsLoading(false);
+                            setSuccessMessage('❌ Failed to refresh product list');
+                            setTimeout(() => setSuccessMessage(''), 3000);
+                          });
+                        }}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                        disabled={isLoading}
+                      >
+                        🔄 Refresh List
+                      </button>
+                    </div>
                     {dataSource !== 'unknown' && (
                       <div style={{
                         padding: '0.5rem 1rem',

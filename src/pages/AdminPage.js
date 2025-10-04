@@ -2325,7 +2325,7 @@ const AdminPage = () => {
     sizes: [],
     features: [],
     lensTypes: [],
-    status: 'in-stock',
+    status: '',
     rim: '',
     brand: '',
     gender: '',
@@ -4360,6 +4360,7 @@ Type "DELETE ALL" to confirm:`;
                               value={productData.status}
                               onChange={handleInputChange}
                             >
+                              <option value="">Select Status</option>
                               {statusOptions.map(status => (
                                 <option key={status} value={status}>
                                   {status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
@@ -4437,6 +4438,7 @@ Type "DELETE ALL" to confirm:`;
                                 onChange={handleInputChange}
                                 required
                               >
+                                <option value="">Select Category</option>
                                 {categories.map(category => (
                                   <option key={category} value={category}>
                                     {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}

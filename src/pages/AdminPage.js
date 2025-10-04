@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addProduct, updateProduct, deleteProduct, fetchProducts, createProductAsync, updateProductAsync, deleteProductAsync } from '../redux/slices/productSlice';
-import { syncProductIdsWithNeonDatabase, checkProductSyncStatus } from '../api/productApi';
+import { syncProductIdsWithNeonDatabase, checkProductSyncStatus, deleteAllProducts } from '../api/productApi';
 import { FiUpload, FiX, FiEdit, FiTrash2, FiEye, FiPlus, FiMinus, FiChevronDown, FiHome, FiPackage, FiUsers, FiSettings, FiLogOut, FiSearch, FiBell, FiUser, FiShoppingBag, FiTrendingUp, FiDollarSign, FiMenu, FiChevronLeft, FiChevronRight, FiBarChart2 } from 'react-icons/fi';
 import OrderManagement from '../components/admin/OrderManagement';
 import OrderDashboard from '../components/admin/OrderDashboard';
@@ -3441,6 +3441,65 @@ const AdminPage = () => {
     }
   };
 
+  // Delete all products from Neon database and local storage
+  const handleDeleteAllProducts = async () => {
+    const confirmMessage = `⚠️ DANGER: This will permanently delete ALL products from:
+    
+• Neon Database (${products.length} products)
+• Local Storage
+• All cached data
+
+This action CANNOT be undone!
+
+Type "DELETE ALL" to confirm:`;
+
+    const userInput = prompt(confirmMessage);
+    
+    if (userInput !== 'DELETE ALL') {
+      setSuccessMessage('❌ Deletion cancelled - confirmation text did not match');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log('🗑️ AdminPage: Starting complete product deletion...');
+      setSuccessMessage('🗑️ Deleting all products from Neon database and local storage...');
+
+      const deleteResult = await deleteAllProducts();
+      
+      console.log('✅ AdminPage: Deletion completed:', deleteResult);
+      
+      // Refresh the product list to show empty state
+      await dispatch(fetchProducts());
+      
+      // Show detailed results
+      const { neonDeleted, neonErrors, localCleared, totalErrors } = deleteResult;
+      let message = `🎉 Deletion completed! `;
+      
+      if (neonDeleted > 0) message += `${neonDeleted} products deleted from Neon, `;
+      if (localCleared) message += `local storage cleared, `;
+      if (neonErrors > 0) message += `${neonErrors} deletion errors, `;
+      if (totalErrors > 0) message += `${totalErrors} total errors occurred.`;
+      
+      if (totalErrors === 0) {
+        message = `🎉 SUCCESS! All products deleted. ${neonDeleted} removed from Neon database, local storage cleared.`;
+      } else {
+        message += ` Check console for error details.`;
+        console.warn('⚠️ AdminPage: Deletion errors:', deleteResult.errors);
+      }
+      
+      setSuccessMessage(message);
+      
+    } catch (error) {
+      console.error('❌ AdminPage: Complete deletion failed:', error);
+      setSuccessMessage(`❌ Deletion failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setSuccessMessage(''), 10000); // Longer timeout for important message
+    }
+  };
+
 
   // Update existing products with random style values
   const handleUpdateExistingProductsWithStyles = () => {
@@ -4657,6 +4716,26 @@ const AdminPage = () => {
                         disabled={isLoading}
                       >
                         🔧 Quick Fix ID 98
+                      </button>
+                      
+                      <button
+                        onClick={handleDeleteAllProducts}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#7c2d12',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          marginLeft: '1rem'
+                        }}
+                        disabled={isLoading}
+                      >
+                        🗑️ Delete All Products
                       </button>
                     </div>
                     {dataSource !== 'unknown' && (

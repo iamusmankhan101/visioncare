@@ -1069,6 +1069,115 @@ const productApi = {
       console.error('❌ ProductAPI: Failed to check sync status:', error.message);
       throw error;
     }
+  },
+
+  // Delete all products from Neon database and local storage
+  deleteAllProducts: async () => {
+    try {
+      console.log('🗑️ ProductAPI: Starting complete product deletion...');
+      
+      const results = {
+        neonDeleted: 0,
+        neonErrors: 0,
+        localCleared: false,
+        errors: []
+      };
+
+      // Step 1: Get all products from Neon database
+      let neonProducts = [];
+      try {
+        neonProducts = await getAllProducts();
+        console.log(`🌐 ProductAPI: Found ${neonProducts.length} products in Neon database`);
+      } catch (error) {
+        console.error('❌ ProductAPI: Failed to fetch products from Neon database:', error.message);
+        results.errors.push(`Failed to fetch Neon products: ${error.message}`);
+      }
+
+      // Step 2: Delete each product from Neon database
+      if (neonProducts.length > 0) {
+        console.log('🗑️ ProductAPI: Deleting products from Neon database...');
+        
+        for (let i = 0; i < neonProducts.length; i++) {
+          const product = neonProducts[i];
+          try {
+            console.log(`🗑️ ProductAPI: Deleting product ${i + 1}/${neonProducts.length} - "${product.name}" (ID: ${product.id})`);
+            
+            await apiRequest(`/products/${product.id}`, {
+              method: 'DELETE'
+            });
+            
+            results.neonDeleted++;
+            console.log(`✅ ProductAPI: Deleted product "${product.name}" from Neon database`);
+            
+          } catch (error) {
+            console.error(`❌ ProductAPI: Failed to delete product "${product.name}":`, error.message);
+            results.neonErrors++;
+            results.errors.push(`Failed to delete "${product.name}": ${error.message}`);
+          }
+        }
+      }
+
+      // Step 3: Clear all local storage
+      try {
+        console.log('🧹 ProductAPI: Clearing local storage...');
+        
+        // Remove all product-related data from localStorage
+        localStorage.removeItem('products');
+        localStorage.removeItem('productBackup');
+        localStorage.removeItem('product_cache');
+        localStorage.removeItem('lastProductSync');
+        
+        // Clear any other product-related keys
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.includes('product') || key.includes('Product'))) {
+            keysToRemove.push(key);
+          }
+        }
+        
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        results.localCleared = true;
+        console.log('✅ ProductAPI: Local storage cleared successfully');
+        
+      } catch (error) {
+        console.error('❌ ProductAPI: Failed to clear local storage:', error.message);
+        results.errors.push(`Failed to clear local storage: ${error.message}`);
+      }
+
+      // Step 4: Clear any cached data
+      try {
+        // Clear any cached product data
+        if (typeof window !== 'undefined' && window.caches) {
+          const cacheNames = await caches.keys();
+          for (const cacheName of cacheNames) {
+            if (cacheName.includes('product')) {
+              await caches.delete(cacheName);
+              console.log(`🧹 ProductAPI: Cleared cache: ${cacheName}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ ProductAPI: Cache clearing failed (non-critical):', error.message);
+      }
+
+      const summary = {
+        success: results.neonErrors === 0 && results.localCleared,
+        neonDeleted: results.neonDeleted,
+        neonErrors: results.neonErrors,
+        localCleared: results.localCleared,
+        totalErrors: results.errors.length,
+        errors: results.errors
+      };
+
+      console.log('🎉 ProductAPI: Complete deletion finished!', summary);
+      return summary;
+
+    } catch (error) {
+      console.error('❌ ProductAPI: Complete product deletion failed:', error.message);
+      throw error;
+    }
   }
 };
 
@@ -1084,6 +1193,7 @@ export const patchProduct = productApi.patchProduct;
 export const bulkEditProducts = productApi.bulkEditProducts;
 export const syncProductIdsWithNeonDatabase = productApi.syncProductIdsWithNeonDatabase;
 export const checkProductSyncStatus = productApi.checkProductSyncStatus;
+export const deleteAllProducts = productApi.deleteAllProducts;
 export const deleteProduct = productApi.deleteProduct;
 
 export default productApi;

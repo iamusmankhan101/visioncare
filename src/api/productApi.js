@@ -9,43 +9,28 @@ const getApiBaseUrl = () => {
   console.log('Current hostname:', hostname);
   console.log('Window location:', window.location.href);
   
-  // PRIORITY 1: For localhost development, ALWAYS use local server
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    const localApiUrl = 'http://localhost:5004/api';
-    console.log('🏠 FORCING local product server:', localApiUrl);
-    console.log('🔧 Local server should be running on port 5004');
-    return localApiUrl;
-  }
-
-  // PRIORITY 2: If accessing via IP address (mobile accessing desktop), use the same IP for API
-  if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-    const ipApiUrl = `http://${hostname}:5004/api`;
-    console.log('📱 Using IP-based API URL for mobile access:', ipApiUrl);
-    return ipApiUrl;
+  // Use environment variable if available (from Vercel)
+  const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
+  if (envApiUrl) {
+    console.log('☁️ Using environment API:', envApiUrl);
+    return envApiUrl;
   }
   
-  // PRIORITY 3: Check if we're in deployed environment
+  // Check if we're in deployed environment
   const isDeployedEnvironment = !hostname.includes('localhost') && 
                                !hostname.includes('127.0.0.1') && 
                                !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
   
   if (isDeployedEnvironment) {
-    // Use environment variable if available (from Vercel)
-    const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
-    if (envApiUrl) {
-      console.log('☁️ Using environment API for production:', envApiUrl);
-      return envApiUrl;
-    }
-    
     // Use same domain for deployed environment
     const deployedApiUrl = `${window.location.protocol}//${window.location.host}/api`;
     console.log('🌐 Using same-domain API for deployment:', deployedApiUrl);
     return deployedApiUrl;
   }
   
-  // PRIORITY 4: Fallback to Vercel API
+  // Always use Vercel API for development and fallback
   const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
-  console.log('🔄 Fallback to Vercel API:', vercelApiUrl);
+  console.log('☁️ Using Vercel API:', vercelApiUrl);
   return vercelApiUrl;
 };
 

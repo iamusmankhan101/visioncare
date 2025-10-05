@@ -194,7 +194,7 @@ async function handleGet(req, res) {
       
       return res.json({
         success: true,
-        data: result,
+        products: result,
         count: result.length,
         category
       });
@@ -205,7 +205,7 @@ async function handleGet(req, res) {
     
     return res.json({
       success: true,
-      data: result,
+      products: result,
       count: result.length,
       source: 'neon'
     });

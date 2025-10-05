@@ -2294,6 +2294,12 @@ const AdminPage = () => {
   };
   const { items: products, status, error } = useSelector(state => state.products);
   const isProductsLoading = status === 'loading';
+  
+  // Debug Redux state
+  console.log('🔍 Redux Debug - Products count:', products?.length || 0);
+  console.log('🔍 Redux Debug - Status:', status);
+  console.log('🔍 Redux Debug - Error:', error);
+  console.log('🔍 Redux Debug - Products:', products);
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const [isLoading, setIsLoading] = useState(false);
@@ -3164,11 +3170,16 @@ const AdminPage = () => {
       console.log('🔍 AdminPage: Final - framecolor:', formattedProduct.framecolor);
 
       // Dispatch async action to add product to API and Redux store
+      console.log('🚀 Dispatching createProductAsync with data:', formattedProduct);
       const result = await dispatch(createProductAsync(formattedProduct)).unwrap();
-      console.log('✅ Product created:', result.name);
+      console.log('✅ Product created successfully:', result);
+      console.log('✅ Product name:', result?.name);
+      console.log('✅ Product ID:', result?.id);
 
       // Refresh the product list to show the new product
-      dispatch(fetchProducts());
+      console.log('🔄 Refreshing product list...');
+      await dispatch(fetchProducts());
+      console.log('✅ Product list refreshed');
 
       // Show success message
       setSuccessMessage('Product added successfully!');

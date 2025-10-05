@@ -86,6 +86,9 @@ const apiRequest = async (endpoint, options = {}) => {
     } else if (data.success && data.product) {
       console.log(`📊 Single Product Retrieved`);
       return data.product; // Return single product
+    } else if (data.success && data.data) {
+      console.log(`📊 Single Product Created/Updated`);
+      return data.data; // Return the data field for POST/PUT responses
     } else if (Array.isArray(data)) {
       console.log(`📊 Data Count: ${data.length} items`);
       return data; // Already an array

@@ -29,7 +29,21 @@ const getApiBaseUrl = () => {
     return deployedApiUrl;
   }
   
-  // Always use Vercel API with Neon database
+  // For localhost development, try local product server first
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    const localApiUrl = 'http://localhost:5004/api';
+    console.log('Using local product server:', localApiUrl);
+    return localApiUrl;
+  }
+
+  // If accessing via IP address (mobile accessing desktop), use the same IP for API
+  if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    const ipApiUrl = `http://${hostname}:5004/api`;
+    console.log('Using IP-based API URL for mobile access:', ipApiUrl);
+    return ipApiUrl;
+  }
+  
+  // Fallback to Vercel API with Neon database
   const vercelApiUrl = process.env.REACT_APP_PRODUCTS_API_URL || 'https://vision-care-hmn4.vercel.app/api';
   console.log('Using Vercel API with Neon database:', vercelApiUrl);
   return vercelApiUrl;

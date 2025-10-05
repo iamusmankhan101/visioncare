@@ -33,18 +33,23 @@ const db = new sqlite3.Database(dbPath);
 const initializeDatabase = () => {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
-      // Create products table
+      // Create products table with all required columns
       db.run(`
         CREATE TABLE IF NOT EXISTS products (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
           price REAL NOT NULL,
+          original_price REAL,
           category TEXT,
           brand TEXT,
           material TEXT,
           shape TEXT,
           style TEXT,
           frameColor TEXT,
+          color TEXT,
+          rim TEXT,
+          gender TEXT,
+          type TEXT,
           description TEXT,
           image TEXT,
           gallery TEXT, -- JSON string for gallery images
@@ -148,26 +153,39 @@ app.get('/api/products/:id', (req, res) => {
 app.post('/api/products', (req, res) => {
   console.log('📦 POST /api/products - Creating new product');
   console.log('Product data:', req.body.name);
+  console.log('🔍 Raw request body keys:', Object.keys(req.body));
   
-  const productData = serializeProduct(req.body);
+  // Handle field name variations
+  const normalizedBody = {
+    ...req.body,
+    frameColor: req.body.frameColor || req.body.framecolor, // Handle both naming conventions
+    lensTypes: req.body.lensTypes || req.body.lenstypes,
+    colorImages: req.body.colorImages || req.body.colorimages
+  };
+  
+  const productData = serializeProduct(normalizedBody);
   
   const {
-    name, price, category, brand, material, shape, style, frameColor,
-    description, image, gallery, colors, features, lensTypes,
+    name, price, original_price, category, brand, material, shape, style, frameColor,
+    color, rim, gender, type, description, image, gallery, colors, features, lensTypes,
     sizes, discount, status, featured, bestSeller
   } = productData;
   
+  console.log('🔍 Creating product with data:', {
+    name, price, original_price, category, gender, style, frameColor, color
+  });
+  
   const sql = `
     INSERT INTO products (
-      name, price, category, brand, material, shape, style, frameColor,
-      description, image, gallery, colors, features, lensTypes,
+      name, price, original_price, category, brand, material, shape, style, frameColor,
+      color, rim, gender, type, description, image, gallery, colors, features, lensTypes,
       sizes, discount, status, featured, bestSeller
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   
   const params = [
-    name, price, category, brand, material, shape, style, frameColor,
-    description, image, gallery, colors, features, lensTypes,
+    name, price, original_price, category, brand, material, shape, style, frameColor,
+    color, rim, gender, type, description, image, gallery, colors, features, lensTypes,
     sizes, discount, status || 'In Stock', featured ? 1 : 0, bestSeller ? 1 : 0
   ];
   
@@ -199,23 +217,23 @@ app.put('/api/products/:id', (req, res) => {
   const productData = serializeProduct(req.body);
   
   const {
-    name, price, category, material, shape, style, frameColor,
-    description, image, gallery, colors, features, lensTypes,
+    name, price, original_price, category, brand, material, shape, style, frameColor,
+    color, rim, gender, type, description, image, gallery, colors, features, lensTypes,
     sizes, discount, status, featured, bestSeller
   } = productData;
   
   const sql = `
     UPDATE products SET
-      name = ?, price = ?, category = ?, material = ?, shape = ?, style = ?,
-      frameColor = ?, description = ?, image = ?, gallery = ?, colors = ?,
+      name = ?, price = ?, original_price = ?, category = ?, brand = ?, material = ?, shape = ?, style = ?,
+      frameColor = ?, color = ?, rim = ?, gender = ?, type = ?, description = ?, image = ?, gallery = ?, colors = ?,
       features = ?, lensTypes = ?, sizes = ?, discount = ?, status = ?,
       featured = ?, bestSeller = ?, updatedAt = CURRENT_TIMESTAMP
     WHERE id = ?
   `;
   
   const params = [
-    name, price, category, material, shape, style, frameColor,
-    description, image, gallery, colors, features, lensTypes,
+    name, price, original_price, category, brand, material, shape, style, frameColor,
+    color, rim, gender, type, description, image, gallery, colors, features, lensTypes,
     sizes, discount, status || 'In Stock', featured ? 1 : 0, bestSeller ? 1 : 0, id
   ];
   

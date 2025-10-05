@@ -48,8 +48,12 @@ async function initializeDatabase() {
 
     // Add missing columns if they don't exist (for existing tables)
     try {
-      // Add the missing 'color' column first - this is critical
+      console.log('🔧 Adding missing columns to existing products table...');
+      
+      // Add ALL potentially missing columns
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price DECIMAL(10,2)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS color VARCHAR(100)`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS size VARCHAR(50)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS framecolor VARCHAR(100)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS style VARCHAR(100)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS rim VARCHAR(100)`;
@@ -61,9 +65,10 @@ async function initializeDatabase() {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS lenstypes TEXT`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS discount DECIMAL(5,2)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS colorimages TEXT`;
-      console.log('✅ Database schema updated successfully');
+      
+      console.log('✅ Database schema updated successfully - all columns added');
     } catch (alterError) {
-      console.log('Note: Some columns may already exist:', alterError.message);
+      console.error('⚠️ Some columns may already exist or failed to add:', alterError.message);
     }
 
     // Ensure comments table exists
@@ -317,6 +322,48 @@ async function handlePost(req, res) {
     // Check for specific database errors
     if (error.message.includes('column') && error.message.includes('does not exist')) {
       console.error('🔧 Database column missing:', error.message);
+      
+      // Try to fix the missing column immediately
+      try {
+        const columnMatch = error.message.match(/column "(\w+)"/);
+        if (columnMatch) {
+          const missingColumn = columnMatch[1];
+          console.log(`🔧 Attempting to add missing column: ${missingColumn}`);
+          
+          // Add the missing column based on common column types
+          const columnDefinitions = {
+            'size': 'VARCHAR(50)',
+            'color': 'VARCHAR(100)',
+            'original_price': 'DECIMAL(10,2)',
+            'framecolor': 'VARCHAR(100)',
+            'style': 'VARCHAR(100)',
+            'rim': 'VARCHAR(100)',
+            'gender': 'VARCHAR(50)',
+            'type': 'VARCHAR(100)',
+            'featured': 'BOOLEAN DEFAULT false',
+            'bestseller': 'BOOLEAN DEFAULT false',
+            'sizes': 'TEXT',
+            'lenstypes': 'TEXT',
+            'discount': 'DECIMAL(5,2)',
+            'colorimages': 'TEXT'
+          };
+          
+          const columnType = columnDefinitions[missingColumn] || 'TEXT';
+          const alterQuery = `ALTER TABLE products ADD COLUMN IF NOT EXISTS ${missingColumn} ${columnType}`;
+          await sql.unsafe(alterQuery);
+          console.log(`✅ Successfully added missing column: ${missingColumn}`);
+          
+          return res.status(500).json({
+            success: false,
+            error: 'Database schema fixed',
+            message: `Missing column "${missingColumn}" has been added. Please try your request again.`,
+            details: 'The database schema has been automatically updated.'
+          });
+        }
+      } catch (fixError) {
+        console.error('❌ Failed to fix missing column:', fixError.message);
+      }
+      
       return res.status(500).json({
         success: false,
         error: 'Database schema error',

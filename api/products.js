@@ -165,9 +165,21 @@ async function handleGet(req, res) {
           error: 'Product not found'
         });
       }
+      // Transform database field names to frontend-expected field names
+      const transformedProduct = {
+        ...result[0],
+        frameColor: result[0].framecolor, // Map framecolor to frameColor
+        lensTypes: result[0].lenstypes,   // Map lenstypes to lensTypes
+        colorImages: result[0].colorimages, // Map colorimages to colorImages
+        // Parse JSON fields if they exist
+        sizes: result[0].sizes ? (typeof result[0].sizes === 'string' ? JSON.parse(result[0].sizes) : result[0].sizes) : null,
+        gallery: result[0].gallery ? (typeof result[0].gallery === 'string' ? JSON.parse(result[0].gallery) : result[0].gallery) : null,
+        features: result[0].features ? (typeof result[0].features === 'string' ? JSON.parse(result[0].features) : result[0].features) : null,
+      };
+      
       return res.json({
         success: true,
-        data: result[0]
+        data: transformedProduct
       });
     }
     
@@ -181,10 +193,22 @@ async function handleGet(req, res) {
         ORDER BY created_at DESC
       `;
       
+      // Transform database field names to frontend-expected field names
+      const transformedProducts = result.map(product => ({
+        ...product,
+        frameColor: product.framecolor, // Map framecolor to frameColor
+        lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
+        colorImages: product.colorimages, // Map colorimages to colorImages
+        // Parse JSON fields if they exist
+        sizes: product.sizes ? (typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes) : null,
+        gallery: product.gallery ? (typeof product.gallery === 'string' ? JSON.parse(product.gallery) : product.gallery) : null,
+        features: product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : null,
+      }));
+      
       return res.json({
         success: true,
-        data: result,
-        count: result.length,
+        data: transformedProducts,
+        count: transformedProducts.length,
         query: search
       });
     }
@@ -197,10 +221,22 @@ async function handleGet(req, res) {
         ORDER BY created_at DESC
       `;
       
+      // Transform database field names to frontend-expected field names
+      const transformedProducts = result.map(product => ({
+        ...product,
+        frameColor: product.framecolor, // Map framecolor to frameColor
+        lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
+        colorImages: product.colorimages, // Map colorimages to colorImages
+        // Parse JSON fields if they exist
+        sizes: product.sizes ? (typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes) : null,
+        gallery: product.gallery ? (typeof product.gallery === 'string' ? JSON.parse(product.gallery) : product.gallery) : null,
+        features: product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : null,
+      }));
+      
       return res.json({
         success: true,
-        products: result,
-        count: result.length,
+        products: transformedProducts,
+        count: transformedProducts.length,
         category
       });
     }
@@ -208,10 +244,22 @@ async function handleGet(req, res) {
     // Get all products
     const result = await sql`SELECT * FROM products ORDER BY created_at DESC`;
     
+    // Transform database field names to frontend-expected field names
+    const transformedProducts = result.map(product => ({
+      ...product,
+      frameColor: product.framecolor, // Map framecolor to frameColor
+      lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
+      colorImages: product.colorimages, // Map colorimages to colorImages
+      // Parse JSON fields if they exist
+      sizes: product.sizes ? (typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes) : null,
+      gallery: product.gallery ? (typeof product.gallery === 'string' ? JSON.parse(product.gallery) : product.gallery) : null,
+      features: product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : null,
+    }));
+    
     return res.json({
       success: true,
-      products: result,
-      count: result.length,
+      products: transformedProducts,
+      count: transformedProducts.length,
       source: 'neon'
     });
     
@@ -318,9 +366,21 @@ async function handlePost(req, res) {
     
     console.log('✅ Product created successfully:', result[0].name);
     
+    // Transform database field names to frontend-expected field names
+    const transformedProduct = {
+      ...result[0],
+      frameColor: result[0].framecolor, // Map framecolor to frameColor
+      lensTypes: result[0].lenstypes,   // Map lenstypes to lensTypes
+      colorImages: result[0].colorimages, // Map colorimages to colorImages
+      // Parse JSON fields if they exist
+      sizes: result[0].sizes ? (typeof result[0].sizes === 'string' ? JSON.parse(result[0].sizes) : result[0].sizes) : null,
+      gallery: result[0].gallery ? (typeof result[0].gallery === 'string' ? JSON.parse(result[0].gallery) : result[0].gallery) : null,
+      features: result[0].features ? (typeof result[0].features === 'string' ? JSON.parse(result[0].features) : result[0].features) : null,
+    };
+    
     return res.status(201).json({
       success: true,
-      data: result[0],
+      data: transformedProduct,
       message: 'Product created successfully'
     });
     

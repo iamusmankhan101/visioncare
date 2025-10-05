@@ -6,71 +6,103 @@ const sql = neon(process.env.DATABASE_URL);
 
 // Helper function to transform database product to frontend format
 function transformProduct(product) {
+  console.log('🔧 Transforming product:', product?.id, product?.name);
+  
+  if (!product) {
+    console.error('❌ Product is null or undefined');
+    return null;
+  }
+
   try {
-    // Parse colorImages if it exists
-    let parsedColorImages = null;
+    // Start with basic transformation
+    const transformed = {
+      ...product,
+      frameColor: product.framecolor || null,
+      lensTypes: product.lenstypes || null,
+      colorImages: null,
+      colors: [],
+      sizes: null,
+      gallery: null,
+      features: null
+    };
+
+    // Safely parse colorImages
     if (product.colorimages && typeof product.colorimages === 'string') {
       try {
-        parsedColorImages = product.colorimages.startsWith('{') ? JSON.parse(product.colorimages) : null;
+        if (product.colorimages.trim().startsWith('{')) {
+          transformed.colorImages = JSON.parse(product.colorimages);
+          console.log('✅ Parsed colorImages for product:', product.id);
+        }
       } catch (e) {
-        console.warn('Failed to parse colorImages for product:', product.id);
+        console.warn('⚠️ Failed to parse colorImages for product:', product.id, e.message);
       }
     }
 
-    // Create colors array from color string and colorImages
-    let colorsArray = [];
-    if (product.color) {
-      const colorNames = product.color.split(',').map(c => c.trim());
-      const colorMap = {
-        'Black': '#000000',
-        'Brown': '#8B4513',
-        'Gold': '#FFD700',
-        'Silver': '#C0C0C0',
-        'Blue': '#0066CC',
-        'Red': '#CC0000',
-        'Green': '#00CC00',
-        'Purple': '#6600CC',
-        'Pink': '#FF69B4',
-        'Clear': '#FFFFFF',
-        'Tortoiseshell': '#8B4513',
-        'Gray': '#808080'
-      };
+    // Safely create colors array
+    if (product.color && typeof product.color === 'string') {
+      try {
+        const colorNames = product.color.split(',').map(c => c.trim()).filter(c => c.length > 0);
+        const colorMap = {
+          'Black': '#000000', 'Brown': '#8B4513', 'Gold': '#FFD700', 'Silver': '#C0C0C0',
+          'Blue': '#0066CC', 'Red': '#CC0000', 'Green': '#00CC00', 'Purple': '#6600CC',
+          'Pink': '#FF69B4', 'Clear': '#FFFFFF', 'Tortoiseshell': '#8B4513', 'Gray': '#808080'
+        };
 
-      colorsArray = colorNames.map(colorName => ({
-        name: colorName,
-        hex: colorMap[colorName] || '#000000',
-        image: parsedColorImages && parsedColorImages[colorName] ? 
-          (Array.isArray(parsedColorImages[colorName]) ? parsedColorImages[colorName][0] : parsedColorImages[colorName]) : 
-          product.image
-      }));
+        transformed.colors = colorNames.map(colorName => {
+          const colorObj = {
+            name: colorName,
+            hex: colorMap[colorName] || '#000000',
+            image: product.image || null
+          };
+          
+          // Add color-specific image if available
+          if (transformed.colorImages && transformed.colorImages[colorName]) {
+            const colorImage = transformed.colorImages[colorName];
+            colorObj.image = Array.isArray(colorImage) ? colorImage[0] : colorImage;
+          }
+          
+          return colorObj;
+        });
+        console.log('✅ Created colors array for product:', product.id, 'colors:', transformed.colors.length);
+      } catch (e) {
+        console.warn('⚠️ Failed to create colors array for product:', product.id, e.message);
+        transformed.colors = [];
+      }
     }
 
+    // Safely parse other JSON fields
+    ['sizes', 'gallery', 'features'].forEach(field => {
+      if (product[field] && typeof product[field] === 'string') {
+        try {
+          if (product[field].trim().startsWith('[') || product[field].trim().startsWith('{')) {
+            transformed[field] = JSON.parse(product[field]);
+          } else {
+            transformed[field] = product[field];
+          }
+        } catch (e) {
+          console.warn(`⚠️ Failed to parse ${field} for product:`, product.id, e.message);
+          transformed[field] = product[field];
+        }
+      }
+    });
+
+    console.log('✅ Successfully transformed product:', product.id);
+    return transformed;
+
+  } catch (error) {
+    console.error('❌ Critical error transforming product:', product?.id, error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    // Return minimal safe transformation
     return {
       ...product,
-      frameColor: product.framecolor, // Map framecolor to frameColor
-      lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
-      colorImages: parsedColorImages, // Parsed colorImages object
-      colors: colorsArray, // Create colors array for frontend
-      // Parse JSON fields if they exist with error handling
-      sizes: product.sizes ? (typeof product.sizes === 'string' ? 
-        (product.sizes.startsWith('[') || product.sizes.startsWith('{') ? 
-          JSON.parse(product.sizes) : product.sizes) : product.sizes) : null,
-      gallery: product.gallery ? (typeof product.gallery === 'string' ? 
-        (product.gallery.startsWith('[') || product.gallery.startsWith('{') ? 
-          JSON.parse(product.gallery) : product.gallery) : product.gallery) : null,
-      features: product.features ? (typeof product.features === 'string' ? 
-        (product.features.startsWith('[') || product.features.startsWith('{') ? 
-          JSON.parse(product.features) : product.features) : product.features) : null,
-    };
-  } catch (parseError) {
-    console.error('❌ Error parsing product fields for product:', product.id, parseError.message);
-    // Return product with basic field mapping but no JSON parsing
-    return {
-      ...product,
-      frameColor: product.framecolor,
-      lensTypes: product.lenstypes,
-      colorImages: product.colorimages,
-      colors: [], // Empty colors array as fallback
+      frameColor: product.framecolor || null,
+      lensTypes: product.lenstypes || null,
+      colorImages: null,
+      colors: [],
+      sizes: product.sizes || null,
+      gallery: product.gallery || null,
+      features: product.features || null
     };
   }
 }
@@ -237,7 +269,9 @@ async function handleGet(req, res) {
         });
       }
       // Transform database field names to frontend-expected field names
+      console.log('🔧 Transforming single product:', result[0]?.id, result[0]?.name);
       const transformedProduct = transformProduct(result[0]);
+      console.log('✅ Successfully transformed single product:', transformedProduct?.id);
       
       return res.json({
         success: true,
@@ -256,7 +290,9 @@ async function handleGet(req, res) {
       `;
       
       // Transform database field names to frontend-expected field names
-      const transformedProducts = result.map(transformProduct);
+      console.log('🔧 Transforming search results:', result.length, 'products');
+      const transformedProducts = result.map(transformProduct).filter(p => p !== null);
+      console.log('✅ Successfully transformed search results:', transformedProducts.length, 'products');
       
       return res.json({
         success: true,
@@ -275,7 +311,9 @@ async function handleGet(req, res) {
       `;
       
       // Transform database field names to frontend-expected field names
-      const transformedProducts = result.map(transformProduct);
+      console.log('🔧 Transforming category results:', result.length, 'products');
+      const transformedProducts = result.map(transformProduct).filter(p => p !== null);
+      console.log('✅ Successfully transformed category results:', transformedProducts.length, 'products');
       
       return res.json({
         success: true,
@@ -289,7 +327,9 @@ async function handleGet(req, res) {
     const result = await sql`SELECT * FROM products ORDER BY created_at DESC`;
     
     // Transform database field names to frontend-expected field names
-    const transformedProducts = result.map(transformProduct);
+    console.log('🔧 Transforming', result.length, 'products');
+    const transformedProducts = result.map(transformProduct).filter(p => p !== null);
+    console.log('✅ Successfully transformed', transformedProducts.length, 'products');
     
     return res.json({
       success: true,
@@ -402,7 +442,9 @@ async function handlePost(req, res) {
     console.log('✅ Product created successfully:', result[0].name);
     
     // Transform database field names to frontend-expected field names
+    console.log('🔧 Transforming created product:', result[0]?.id, result[0]?.name);
     const transformedProduct = transformProduct(result[0]);
+    console.log('✅ Successfully transformed created product:', transformedProduct?.id);
     
     return res.status(201).json({
       success: true,

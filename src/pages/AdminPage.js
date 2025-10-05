@@ -3163,8 +3163,8 @@ const AdminPage = () => {
       console.log('🔍 AdminPage: Final - status:', formattedProduct.status);
       console.log('🔍 AdminPage: Final - framecolor:', formattedProduct.framecolor);
 
-      // Dispatch action to add product to API and Redux store
-      const result = dispatch(addProduct(formattedProduct));
+      // Dispatch async action to add product to API and Redux store
+      const result = await dispatch(createProductAsync(formattedProduct)).unwrap();
       console.log('✅ Product created:', result.name);
 
       // Refresh the product list to show the new product

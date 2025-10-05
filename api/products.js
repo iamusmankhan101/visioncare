@@ -200,6 +200,7 @@ async function handlePost(req, res) {
       specifications,
       status = 'active',
       framecolor,
+      frameColor, // Handle both naming conventions
       style,
       rim,
       gender,
@@ -208,13 +209,40 @@ async function handlePost(req, res) {
       bestseller = false,
       sizes,
       lenstypes,
+      lensTypes, // Handle both naming conventions
       discount,
-      colorimages
+      colorimages,
+      colorImages // Handle both naming conventions
     } = req.body;
     
     console.log('📦 Creating product:', name);
     console.log('💰 Price:', price);
     console.log('📂 Category:', category);
+    console.log('🔍 Debug fields - gender:', gender);
+    console.log('🔍 Debug fields - style:', style);
+    console.log('🔍 Debug fields - framecolor:', framecolor);
+    console.log('🔍 Debug fields - frameColor:', frameColor);
+    
+    // Handle field name variations and null values
+    const finalFrameColor = framecolor || frameColor || null;
+    const finalLensTypes = lenstypes || lensTypes || null;
+    const finalColorImages = colorimages || colorImages || null;
+    const finalGender = gender || 'Unisex';
+    const finalStyle = style || 'Classic';
+    const finalStatus = status || 'active';
+    
+    // Convert arrays to JSON strings if they exist
+    const finalSizes = sizes ? (Array.isArray(sizes) ? JSON.stringify(sizes) : sizes) : null;
+    const finalLensTypesStr = finalLensTypes ? (Array.isArray(finalLensTypes) ? JSON.stringify(finalLensTypes) : finalLensTypes) : null;
+    const finalGallery = gallery ? (Array.isArray(gallery) ? JSON.stringify(gallery) : gallery) : null;
+    const finalFeatures = features ? (Array.isArray(features) ? JSON.stringify(features) : features) : null;
+    const finalColorImagesStr = finalColorImages ? (typeof finalColorImages === 'object' ? JSON.stringify(finalColorImages) : finalColorImages) : null;
+    
+    console.log('🔧 Final processed values:');
+    console.log('  - framecolor:', finalFrameColor);
+    console.log('  - gender:', finalGender);
+    console.log('  - style:', finalStyle);
+    console.log('  - status:', finalStatus);
     
     // Insert new product with all fields
     const result = await sql`
@@ -227,9 +255,9 @@ async function handlePost(req, res) {
       ) VALUES (
         ${name}, ${price}, ${original_price}, ${category}, ${brand}, 
         ${material}, ${shape}, ${color}, ${size}, ${image}, 
-        ${gallery}, ${description}, ${features}, ${specifications}, ${status},
-        ${framecolor}, ${style}, ${rim}, ${gender}, ${type}, ${featured},
-        ${bestseller}, ${sizes}, ${lenstypes}, ${discount}, ${colorimages}
+        ${finalGallery}, ${description}, ${finalFeatures}, ${specifications}, ${finalStatus},
+        ${finalFrameColor}, ${finalStyle}, ${rim}, ${finalGender}, ${type}, ${featured},
+        ${bestseller}, ${finalSizes}, ${finalLensTypesStr}, ${discount}, ${finalColorImagesStr}
       ) RETURNING *
     `;
     
@@ -243,6 +271,7 @@ async function handlePost(req, res) {
     
   } catch (error) {
     console.error('❌ Error creating product:', error);
+    console.error('❌ Error details:', error.message);
     throw error;
   }
 }

@@ -166,16 +166,33 @@ async function handleGet(req, res) {
         });
       }
       // Transform database field names to frontend-expected field names
-      const transformedProduct = {
-        ...result[0],
-        frameColor: result[0].framecolor, // Map framecolor to frameColor
-        lensTypes: result[0].lenstypes,   // Map lenstypes to lensTypes
-        colorImages: result[0].colorimages, // Map colorimages to colorImages
-        // Parse JSON fields if they exist
-        sizes: result[0].sizes ? (typeof result[0].sizes === 'string' ? JSON.parse(result[0].sizes) : result[0].sizes) : null,
-        gallery: result[0].gallery ? (typeof result[0].gallery === 'string' ? JSON.parse(result[0].gallery) : result[0].gallery) : null,
-        features: result[0].features ? (typeof result[0].features === 'string' ? JSON.parse(result[0].features) : result[0].features) : null,
-      };
+      let transformedProduct;
+      try {
+        transformedProduct = {
+          ...result[0],
+          frameColor: result[0].framecolor, // Map framecolor to frameColor
+          lensTypes: result[0].lenstypes,   // Map lenstypes to lensTypes
+          colorImages: result[0].colorimages, // Map colorimages to colorImages
+          // Parse JSON fields if they exist with error handling
+          sizes: result[0].sizes ? (typeof result[0].sizes === 'string' ? 
+            (result[0].sizes.startsWith('[') || result[0].sizes.startsWith('{') ? 
+              JSON.parse(result[0].sizes) : result[0].sizes) : result[0].sizes) : null,
+          gallery: result[0].gallery ? (typeof result[0].gallery === 'string' ? 
+            (result[0].gallery.startsWith('[') || result[0].gallery.startsWith('{') ? 
+              JSON.parse(result[0].gallery) : result[0].gallery) : result[0].gallery) : null,
+          features: result[0].features ? (typeof result[0].features === 'string' ? 
+            (result[0].features.startsWith('[') || result[0].features.startsWith('{') ? 
+              JSON.parse(result[0].features) : result[0].features) : result[0].features) : null,
+        };
+      } catch (parseError) {
+        console.error('❌ Error parsing single product fields for product:', result[0].id, parseError.message);
+        transformedProduct = {
+          ...result[0],
+          frameColor: result[0].framecolor,
+          lensTypes: result[0].lenstypes,
+          colorImages: result[0].colorimages,
+        };
+      }
       
       return res.json({
         success: true,
@@ -194,16 +211,34 @@ async function handleGet(req, res) {
       `;
       
       // Transform database field names to frontend-expected field names
-      const transformedProducts = result.map(product => ({
-        ...product,
-        frameColor: product.framecolor, // Map framecolor to frameColor
-        lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
-        colorImages: product.colorimages, // Map colorimages to colorImages
-        // Parse JSON fields if they exist
-        sizes: product.sizes ? (typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes) : null,
-        gallery: product.gallery ? (typeof product.gallery === 'string' ? JSON.parse(product.gallery) : product.gallery) : null,
-        features: product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : null,
-      }));
+      const transformedProducts = result.map(product => {
+        try {
+          return {
+            ...product,
+            frameColor: product.framecolor, // Map framecolor to frameColor
+            lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
+            colorImages: product.colorimages, // Map colorimages to colorImages
+            // Parse JSON fields if they exist with error handling
+            sizes: product.sizes ? (typeof product.sizes === 'string' ? 
+              (product.sizes.startsWith('[') || product.sizes.startsWith('{') ? 
+                JSON.parse(product.sizes) : product.sizes) : product.sizes) : null,
+            gallery: product.gallery ? (typeof product.gallery === 'string' ? 
+              (product.gallery.startsWith('[') || product.gallery.startsWith('{') ? 
+                JSON.parse(product.gallery) : product.gallery) : product.gallery) : null,
+            features: product.features ? (typeof product.features === 'string' ? 
+              (product.features.startsWith('[') || product.features.startsWith('{') ? 
+                JSON.parse(product.features) : product.features) : product.features) : null,
+          };
+        } catch (parseError) {
+          console.error('❌ Error parsing search product fields for product:', product.id, parseError.message);
+          return {
+            ...product,
+            frameColor: product.framecolor,
+            lensTypes: product.lenstypes,
+            colorImages: product.colorimages,
+          };
+        }
+      });
       
       return res.json({
         success: true,
@@ -222,16 +257,34 @@ async function handleGet(req, res) {
       `;
       
       // Transform database field names to frontend-expected field names
-      const transformedProducts = result.map(product => ({
-        ...product,
-        frameColor: product.framecolor, // Map framecolor to frameColor
-        lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
-        colorImages: product.colorimages, // Map colorimages to colorImages
-        // Parse JSON fields if they exist
-        sizes: product.sizes ? (typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes) : null,
-        gallery: product.gallery ? (typeof product.gallery === 'string' ? JSON.parse(product.gallery) : product.gallery) : null,
-        features: product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : null,
-      }));
+      const transformedProducts = result.map(product => {
+        try {
+          return {
+            ...product,
+            frameColor: product.framecolor, // Map framecolor to frameColor
+            lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
+            colorImages: product.colorimages, // Map colorimages to colorImages
+            // Parse JSON fields if they exist with error handling
+            sizes: product.sizes ? (typeof product.sizes === 'string' ? 
+              (product.sizes.startsWith('[') || product.sizes.startsWith('{') ? 
+                JSON.parse(product.sizes) : product.sizes) : product.sizes) : null,
+            gallery: product.gallery ? (typeof product.gallery === 'string' ? 
+              (product.gallery.startsWith('[') || product.gallery.startsWith('{') ? 
+                JSON.parse(product.gallery) : product.gallery) : product.gallery) : null,
+            features: product.features ? (typeof product.features === 'string' ? 
+              (product.features.startsWith('[') || product.features.startsWith('{') ? 
+                JSON.parse(product.features) : product.features) : product.features) : null,
+          };
+        } catch (parseError) {
+          console.error('❌ Error parsing category product fields for product:', product.id, parseError.message);
+          return {
+            ...product,
+            frameColor: product.framecolor,
+            lensTypes: product.lenstypes,
+            colorImages: product.colorimages,
+          };
+        }
+      });
       
       return res.json({
         success: true,
@@ -245,16 +298,35 @@ async function handleGet(req, res) {
     const result = await sql`SELECT * FROM products ORDER BY created_at DESC`;
     
     // Transform database field names to frontend-expected field names
-    const transformedProducts = result.map(product => ({
-      ...product,
-      frameColor: product.framecolor, // Map framecolor to frameColor
-      lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
-      colorImages: product.colorimages, // Map colorimages to colorImages
-      // Parse JSON fields if they exist
-      sizes: product.sizes ? (typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes) : null,
-      gallery: product.gallery ? (typeof product.gallery === 'string' ? JSON.parse(product.gallery) : product.gallery) : null,
-      features: product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : null,
-    }));
+    const transformedProducts = result.map(product => {
+      try {
+        return {
+          ...product,
+          frameColor: product.framecolor, // Map framecolor to frameColor
+          lensTypes: product.lenstypes,   // Map lenstypes to lensTypes
+          colorImages: product.colorimages, // Map colorimages to colorImages
+          // Parse JSON fields if they exist with error handling
+          sizes: product.sizes ? (typeof product.sizes === 'string' ? 
+            (product.sizes.startsWith('[') || product.sizes.startsWith('{') ? 
+              JSON.parse(product.sizes) : product.sizes) : product.sizes) : null,
+          gallery: product.gallery ? (typeof product.gallery === 'string' ? 
+            (product.gallery.startsWith('[') || product.gallery.startsWith('{') ? 
+              JSON.parse(product.gallery) : product.gallery) : product.gallery) : null,
+          features: product.features ? (typeof product.features === 'string' ? 
+            (product.features.startsWith('[') || product.features.startsWith('{') ? 
+              JSON.parse(product.features) : product.features) : product.features) : null,
+        };
+      } catch (parseError) {
+        console.error('❌ Error parsing product fields for product:', product.id, parseError.message);
+        // Return product with basic field mapping but no JSON parsing
+        return {
+          ...product,
+          frameColor: product.framecolor,
+          lensTypes: product.lenstypes,
+          colorImages: product.colorimages,
+        };
+      }
+    });
     
     return res.json({
       success: true,
@@ -367,16 +439,33 @@ async function handlePost(req, res) {
     console.log('✅ Product created successfully:', result[0].name);
     
     // Transform database field names to frontend-expected field names
-    const transformedProduct = {
-      ...result[0],
-      frameColor: result[0].framecolor, // Map framecolor to frameColor
-      lensTypes: result[0].lenstypes,   // Map lenstypes to lensTypes
-      colorImages: result[0].colorimages, // Map colorimages to colorImages
-      // Parse JSON fields if they exist
-      sizes: result[0].sizes ? (typeof result[0].sizes === 'string' ? JSON.parse(result[0].sizes) : result[0].sizes) : null,
-      gallery: result[0].gallery ? (typeof result[0].gallery === 'string' ? JSON.parse(result[0].gallery) : result[0].gallery) : null,
-      features: result[0].features ? (typeof result[0].features === 'string' ? JSON.parse(result[0].features) : result[0].features) : null,
-    };
+    let transformedProduct;
+    try {
+      transformedProduct = {
+        ...result[0],
+        frameColor: result[0].framecolor, // Map framecolor to frameColor
+        lensTypes: result[0].lenstypes,   // Map lenstypes to lensTypes
+        colorImages: result[0].colorimages, // Map colorimages to colorImages
+        // Parse JSON fields if they exist with error handling
+        sizes: result[0].sizes ? (typeof result[0].sizes === 'string' ? 
+          (result[0].sizes.startsWith('[') || result[0].sizes.startsWith('{') ? 
+            JSON.parse(result[0].sizes) : result[0].sizes) : result[0].sizes) : null,
+        gallery: result[0].gallery ? (typeof result[0].gallery === 'string' ? 
+          (result[0].gallery.startsWith('[') || result[0].gallery.startsWith('{') ? 
+            JSON.parse(result[0].gallery) : result[0].gallery) : result[0].gallery) : null,
+        features: result[0].features ? (typeof result[0].features === 'string' ? 
+          (result[0].features.startsWith('[') || result[0].features.startsWith('{') ? 
+            JSON.parse(result[0].features) : result[0].features) : result[0].features) : null,
+      };
+    } catch (parseError) {
+      console.error('❌ Error parsing created product fields for product:', result[0].id, parseError.message);
+      transformedProduct = {
+        ...result[0],
+        frameColor: result[0].framecolor,
+        lensTypes: result[0].lenstypes,
+        colorImages: result[0].colorimages,
+      };
+    }
     
     return res.status(201).json({
       success: true,

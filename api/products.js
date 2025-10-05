@@ -4,66 +4,8 @@ import { neon } from '@neondatabase/serverless';
 // Initialize Neon database connection
 const sql = neon(process.env.DATABASE_URL);
 
-// CORS headers - Allow all origins for API access
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-  'Access-Control-Allow-Credentials': 'false'
-};
-
-export default async function handler(req, res) {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({});
-  }
-
-  // Add CORS headers
-  Object.entries(corsHeaders).forEach(([key, value]) => {
-    res.setHeader(key, value);
-  });
-
-  try {
-    console.log(`🌐 API Request: ${req.method} /api/products`);
-    console.log(`🔍 Query params:`, req.query);
-    
-    switch (req.method) {
-      case 'GET':
-        return await handleGet(req, res);
-      case 'POST':
-        return await handlePost(req, res);
-      case 'PUT':
-        return await handlePut(req, res);
-      case 'DELETE':
-        return await handleDelete(req, res);
-      default:
-        return res.status(405).json({ 
-          success: false, 
-          error: 'Method not allowed' 
-        });
-    }
-  } catch (error) {
-    console.error('❌ API Error:', error);
-    console.error('❌ Error name:', error.name);
-    console.error('❌ Error message:', error.message);
-    console.error('❌ Error stack:', error.stack);
-    
-    // Check if it's a database connection error
-    if (error.message.includes('column') && error.message.includes('does not exist')) {
-      console.error('🔧 Database schema issue detected - attempting to fix...');
-    }
-    
-    return res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: error.message,
-      details: error.name
-    });
-  }
-}
-
-// GET - Fetch all products
-async function handleGet(req, res) {
+// Database initialization function
+async function initializeDatabase() {
   try {
     console.log('🔧 Initializing database schema...');
     
@@ -132,6 +74,79 @@ async function handleGet(req, res) {
         created_at TIMESTAMP DEFAULT NOW()
       )
     `;
+    
+    console.log('✅ Database initialization completed');
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    throw error;
+  }
+}
+
+// CORS headers - Allow all origins for API access
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+  'Access-Control-Allow-Credentials': 'false'
+};
+
+export default async function handler(req, res) {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).json({});
+  }
+
+  // Add CORS headers
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
+
+  try {
+    console.log(`🌐 API Request: ${req.method} /api/products`);
+    console.log(`🔍 Query params:`, req.query);
+    
+    // Initialize database schema on every request to ensure it exists
+    await initializeDatabase();
+    
+    switch (req.method) {
+      case 'GET':
+        return await handleGet(req, res);
+      case 'POST':
+        return await handlePost(req, res);
+      case 'PUT':
+        return await handlePut(req, res);
+      case 'DELETE':
+        return await handleDelete(req, res);
+      default:
+        return res.status(405).json({ 
+          success: false, 
+          error: 'Method not allowed' 
+        });
+    }
+  } catch (error) {
+    console.error('❌ API Error:', error);
+    console.error('❌ Error name:', error.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    // Check if it's a database connection error
+    if (error.message.includes('column') && error.message.includes('does not exist')) {
+      console.error('🔧 Database schema issue detected - attempting to fix...');
+    }
+    
+    return res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message,
+      details: error.name
+    });
+  }
+}
+
+// GET - Fetch all products
+async function handleGet(req, res) {
+  try {
+    console.log('📦 GET /api/products - Fetching products');
 
     // Check for specific product ID in query
     const { id, search, category } = req.query;
@@ -203,6 +218,10 @@ async function handleGet(req, res) {
 // POST - Create new product
 async function handlePost(req, res) {
   try {
+    console.log('📦 POST /api/products - Creating new product');
+    console.log('🔍 Request body keys:', Object.keys(req.body));
+    console.log('🔍 Request body:', JSON.stringify(req.body, null, 2));
+    
     const {
       name,
       price,
@@ -291,7 +310,31 @@ async function handlePost(req, res) {
     
   } catch (error) {
     console.error('❌ Error creating product:', error);
-    console.error('❌ Error details:', error.message);
+    console.error('❌ Error name:', error.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    // Check for specific database errors
+    if (error.message.includes('column') && error.message.includes('does not exist')) {
+      console.error('🔧 Database column missing:', error.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Database schema error',
+        message: `Missing database column: ${error.message}`,
+        details: 'The database table is missing required columns. Please check the schema.'
+      });
+    }
+    
+    if (error.message.includes('relation') && error.message.includes('does not exist')) {
+      console.error('🔧 Database table missing:', error.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Database table error',
+        message: 'The products table does not exist',
+        details: 'Database initialization may have failed'
+      });
+    }
+    
     throw error;
   }
 }

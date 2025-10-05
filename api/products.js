@@ -102,7 +102,7 @@ async function handleGet(req, res) {
       )
     `;
     
-    console.log('✅ Products table created/verified');
+    console.log('✅ Products table created/verified with all columns');
 
     // Add missing columns if they don't exist (for existing tables)
     try {

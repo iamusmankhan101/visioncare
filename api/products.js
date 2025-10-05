@@ -24,6 +24,9 @@ export default async function handler(req, res) {
   });
 
   try {
+    console.log(`🌐 API Request: ${req.method} /api/products`);
+    console.log(`🔍 Query params:`, req.query);
+    
     switch (req.method) {
       case 'GET':
         return await handleGet(req, res);
@@ -40,11 +43,21 @@ export default async function handler(req, res) {
         });
     }
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('❌ API Error:', error);
+    console.error('❌ Error name:', error.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    // Check if it's a database connection error
+    if (error.message.includes('column') && error.message.includes('does not exist')) {
+      console.error('🔧 Database schema issue detected - attempting to fix...');
+    }
+    
     return res.status(500).json({
       success: false,
       error: 'Internal server error',
-      message: error.message
+      message: error.message,
+      details: error.name
     });
   }
 }
@@ -52,6 +65,8 @@ export default async function handler(req, res) {
 // GET - Fetch all products
 async function handleGet(req, res) {
   try {
+    console.log('🔧 Initializing database schema...');
+    
     // Ensure products table exists with all required columns
     await sql`
       CREATE TABLE IF NOT EXISTS products (
@@ -86,9 +101,13 @@ async function handleGet(req, res) {
         colorimages TEXT
       )
     `;
+    
+    console.log('✅ Products table created/verified');
 
     // Add missing columns if they don't exist (for existing tables)
     try {
+      // Add the missing 'color' column first - this is critical
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS color VARCHAR(100)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS framecolor VARCHAR(100)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS style VARCHAR(100)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS rim VARCHAR(100)`;
@@ -100,6 +119,7 @@ async function handleGet(req, res) {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS lenstypes TEXT`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS discount DECIMAL(5,2)`;
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS colorimages TEXT`;
+      console.log('✅ Database schema updated successfully');
     } catch (alterError) {
       console.log('Note: Some columns may already exist:', alterError.message);
     }

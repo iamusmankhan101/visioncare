@@ -1,5 +1,5 @@
 // Vercel Serverless Function for Health Check with Upstash Redis
-const { Redis } = require('@upstash/redis');
+import { Redis } from '@upstash/redis';
 
 // Initialize Redis
 const redis = new Redis({

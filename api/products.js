@@ -276,6 +276,7 @@ async function handlePost(req, res) {
     const finalStatus = status || 'active';
     
     // Convert arrays to JSON strings if they exist
+    const finalSize = size ? (Array.isArray(size) ? JSON.stringify(size) : size) : null;
     const finalSizes = sizes ? (Array.isArray(sizes) ? JSON.stringify(sizes) : sizes) : null;
     const finalLensTypesStr = finalLensTypes ? (Array.isArray(finalLensTypes) ? JSON.stringify(finalLensTypes) : finalLensTypes) : null;
     const finalGallery = gallery ? (Array.isArray(gallery) ? JSON.stringify(gallery) : gallery) : null;
@@ -283,6 +284,10 @@ async function handlePost(req, res) {
     const finalColorImagesStr = finalColorImages ? (typeof finalColorImages === 'object' ? JSON.stringify(finalColorImages) : finalColorImages) : null;
     
     console.log('🔧 Final processed values:');
+    console.log('  - size (raw):', size);
+    console.log('  - size (processed):', finalSize);
+    console.log('  - sizes (raw):', sizes);
+    console.log('  - sizes (processed):', finalSizes);
     console.log('  - framecolor:', finalFrameColor);
     console.log('  - gender:', finalGender);
     console.log('  - style:', finalStyle);
@@ -298,7 +303,7 @@ async function handlePost(req, res) {
         discount, colorimages
       ) VALUES (
         ${name}, ${price}, ${original_price}, ${category}, ${brand}, 
-        ${material}, ${shape}, ${color}, ${size}, ${image}, 
+        ${material}, ${shape}, ${color}, ${finalSize}, ${image}, 
         ${finalGallery}, ${description}, ${finalFeatures}, ${specifications}, ${finalStatus},
         ${finalFrameColor}, ${finalStyle}, ${rim}, ${finalGender}, ${type}, ${featured},
         ${bestseller}, ${finalSizes}, ${finalLensTypesStr}, ${discount}, ${finalColorImagesStr}

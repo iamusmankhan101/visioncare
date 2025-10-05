@@ -52,7 +52,7 @@ export default async function handler(req, res) {
 // GET - Fetch all products
 async function handleGet(req, res) {
   try {
-    // Ensure products table exists
+    // Ensure products table exists with all required columns
     await sql`
       CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
@@ -72,9 +72,37 @@ async function handleGet(req, res) {
         specifications TEXT,
         status VARCHAR(50) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
+        updated_at TIMESTAMP DEFAULT NOW(),
+        framecolor VARCHAR(100),
+        style VARCHAR(100),
+        rim VARCHAR(100),
+        gender VARCHAR(50),
+        type VARCHAR(100),
+        featured BOOLEAN DEFAULT false,
+        bestseller BOOLEAN DEFAULT false,
+        sizes TEXT,
+        lenstypes TEXT,
+        discount DECIMAL(5,2),
+        colorimages TEXT
       )
     `;
+
+    // Add missing columns if they don't exist (for existing tables)
+    try {
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS framecolor VARCHAR(100)`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS style VARCHAR(100)`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS rim VARCHAR(100)`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS gender VARCHAR(50)`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS type VARCHAR(100)`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS bestseller BOOLEAN DEFAULT false`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS sizes TEXT`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS lenstypes TEXT`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS discount DECIMAL(5,2)`;
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS colorimages TEXT`;
+    } catch (alterError) {
+      console.log('Note: Some columns may already exist:', alterError.message);
+    }
 
     // Ensure comments table exists
     await sql`
@@ -170,21 +198,42 @@ async function handlePost(req, res) {
       description,
       features,
       specifications,
-      status = 'active'
+      status = 'active',
+      framecolor,
+      style,
+      rim,
+      gender,
+      type,
+      featured = false,
+      bestseller = false,
+      sizes,
+      lenstypes,
+      discount,
+      colorimages
     } = req.body;
     
-    // Insert new product
+    console.log('📦 Creating product:', name);
+    console.log('💰 Price:', price);
+    console.log('📂 Category:', category);
+    
+    // Insert new product with all fields
     const result = await sql`
       INSERT INTO products (
         name, price, original_price, category, brand, material, 
         shape, color, size, image, gallery, description, 
-        features, specifications, status
+        features, specifications, status, framecolor, style, rim,
+        gender, type, featured, bestseller, sizes, lenstypes,
+        discount, colorimages
       ) VALUES (
         ${name}, ${price}, ${original_price}, ${category}, ${brand}, 
         ${material}, ${shape}, ${color}, ${size}, ${image}, 
-        ${gallery}, ${description}, ${features}, ${specifications}, ${status}
+        ${gallery}, ${description}, ${features}, ${specifications}, ${status},
+        ${framecolor}, ${style}, ${rim}, ${gender}, ${type}, ${featured},
+        ${bestseller}, ${sizes}, ${lenstypes}, ${discount}, ${colorimages}
       ) RETURNING *
     `;
+    
+    console.log('✅ Product created successfully:', result[0].name);
     
     return res.status(201).json({
       success: true,
@@ -193,6 +242,7 @@ async function handlePost(req, res) {
     });
     
   } catch (error) {
+    console.error('❌ Error creating product:', error);
     throw error;
   }
 }
@@ -216,10 +266,21 @@ async function handlePut(req, res) {
       description,
       features,
       specifications,
-      status
+      status,
+      framecolor,
+      style,
+      rim,
+      gender,
+      type,
+      featured,
+      bestseller,
+      sizes,
+      lenstypes,
+      discount,
+      colorimages
     } = req.body;
     
-    // Update product
+    // Update product with all fields
     const result = await sql`
       UPDATE products SET 
         name = ${name},
@@ -237,6 +298,17 @@ async function handlePut(req, res) {
         features = ${features},
         specifications = ${specifications},
         status = ${status},
+        framecolor = ${framecolor},
+        style = ${style},
+        rim = ${rim},
+        gender = ${gender},
+        type = ${type},
+        featured = ${featured},
+        bestseller = ${bestseller},
+        sizes = ${sizes},
+        lenstypes = ${lenstypes},
+        discount = ${discount},
+        colorimages = ${colorimages},
         updated_at = NOW()
       WHERE id = ${id}
       RETURNING *

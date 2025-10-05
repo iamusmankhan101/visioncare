@@ -4548,12 +4548,26 @@ Type "DELETE ALL" to confirm:`;
                                 name="sizes"
                                 value={productData.sizes?.[0] || ''}
                                 onChange={(e) => {
+                                  console.log('📏 DEBUG: Size selection triggered!');
                                   const selectedSize = e.target.value;
+                                  console.log('📏 DEBUG: Selected size:', selectedSize);
+                                  console.log('📏 DEBUG: Current sizes:', productData.sizes);
+                                  
                                   if (selectedSize && !productData.sizes?.includes(selectedSize)) {
+                                    const newSizes = [...(productData.sizes || []), selectedSize];
+                                    console.log('📏 DEBUG: Adding size. New sizes array:', newSizes);
+                                    
                                     setProductData({
                                       ...productData,
-                                      sizes: [...(productData.sizes || []), selectedSize]
+                                      sizes: newSizes
                                     });
+                                    
+                                    setSuccessMessage(`✅ Size "${selectedSize}" added`);
+                                    setTimeout(() => setSuccessMessage(''), 2000);
+                                  } else if (selectedSize && productData.sizes?.includes(selectedSize)) {
+                                    console.log('📏 DEBUG: Size already exists:', selectedSize);
+                                    setSuccessMessage(`⚠️ Size "${selectedSize}" already added`);
+                                    setTimeout(() => setSuccessMessage(''), 2000);
                                   }
                                 }}
                               >

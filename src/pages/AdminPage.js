@@ -3149,6 +3149,10 @@ const AdminPage = () => {
       const formattedProduct = {
         ...productData,
         price: parseFloat(productData.price),
+        // Handle color field - extract from colors array or use direct color field
+        color: productData.colors && productData.colors.length > 0 
+          ? productData.colors.map(c => c.name).join(', ') 
+          : productData.color || null,
         // Ensure proper field mapping for API
         framecolor: productData.frameColor || null, // Map frameColor to framecolor for API
         lenstypes: Array.isArray(productData.lensTypes) ? JSON.stringify(productData.lensTypes) : null,
@@ -3164,6 +3168,10 @@ const AdminPage = () => {
       };
 
       console.log('🔍 AdminPage: Formatted product data:', formattedProduct);
+      console.log('🔍 AdminPage: Final - color:', formattedProduct.color);
+      console.log('🔍 AdminPage: Final - image:', formattedProduct.image ? 'Present (base64)' : 'Missing');
+      console.log('🔍 AdminPage: Final - gallery:', formattedProduct.gallery);
+      console.log('🔍 AdminPage: Final - colorimages:', formattedProduct.colorimages);
       console.log('🔍 AdminPage: Final - gender:', formattedProduct.gender);
       console.log('🔍 AdminPage: Final - style:', formattedProduct.style);
       console.log('🔍 AdminPage: Final - status:', formattedProduct.status);

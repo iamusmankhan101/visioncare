@@ -1437,8 +1437,22 @@ const ProductDetailPage = () => {
         if (foundProduct.colors && foundProduct.colors.length > 0) {
           setSelectedColor(foundProduct.colors[0].name);
         }
-        if (foundProduct.sizes && foundProduct.sizes.length > 0) {
-          setSelectedSize(foundProduct.sizes[0]);
+        if (foundProduct.sizes) {
+          let sizesArray = [];
+          if (typeof foundProduct.sizes === 'string') {
+            try {
+              sizesArray = JSON.parse(foundProduct.sizes);
+            } catch (e) {
+              // If not JSON, treat as comma-separated string
+              sizesArray = foundProduct.sizes.split(',').map(s => s.trim());
+            }
+          } else if (Array.isArray(foundProduct.sizes)) {
+            sizesArray = foundProduct.sizes;
+          }
+          
+          if (sizesArray && sizesArray.length > 0) {
+            setSelectedSize(sizesArray[0]);
+          }
         }
       } else {
         console.warn('❌ Product not found for slug:', slug);

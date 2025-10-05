@@ -284,6 +284,12 @@ async function handlePost(req, res) {
     const finalColorImagesStr = finalColorImages ? (typeof finalColorImages === 'object' ? JSON.stringify(finalColorImages) : finalColorImages) : null;
     
     console.log('🔧 Final processed values:');
+    console.log('  - color (raw):', color);
+    console.log('  - image (raw):', image);
+    console.log('  - gallery (raw):', gallery);
+    console.log('  - gallery (processed):', finalGallery);
+    console.log('  - colorimages (raw):', colorimages);
+    console.log('  - colorimages (processed):', finalColorImagesStr);
     console.log('  - size (raw):', size);
     console.log('  - size (processed):', finalSize);
     console.log('  - sizes (raw):', sizes);

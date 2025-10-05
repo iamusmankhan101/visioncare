@@ -4,48 +4,48 @@ const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   
   // Debug environment variables
-  console.log('Environment Variables Check:');
+  console.log('🔍 API Routing Debug:');
   console.log('REACT_APP_PRODUCTS_API_URL:', process.env.REACT_APP_PRODUCTS_API_URL);
-  console.log('REACT_APP_ORDER_API_URL:', process.env.REACT_APP_ORDER_API_URL);
-  console.log('PGDATABASE:', process.env.PGDATABASE);
   console.log('Current hostname:', hostname);
-  console.log('Target Database: Neon PostgreSQL');
+  console.log('Window location:', window.location.href);
   
-  // Use environment variable if available (from Vercel)
-  const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
-  if (envApiUrl) {
-    console.log('Using environment API for Neon database:', envApiUrl);
-    return envApiUrl;
+  // PRIORITY 1: For localhost development, ALWAYS use local server
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    const localApiUrl = 'http://localhost:5004/api';
+    console.log('🏠 FORCING local product server:', localApiUrl);
+    console.log('🔧 Local server should be running on port 5004');
+    return localApiUrl;
+  }
+
+  // PRIORITY 2: If accessing via IP address (mobile accessing desktop), use the same IP for API
+  if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    const ipApiUrl = `http://${hostname}:5004/api`;
+    console.log('📱 Using IP-based API URL for mobile access:', ipApiUrl);
+    return ipApiUrl;
   }
   
-  // Check if we're in deployed environment
+  // PRIORITY 3: Check if we're in deployed environment
   const isDeployedEnvironment = !hostname.includes('localhost') && 
                                !hostname.includes('127.0.0.1') && 
                                !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
   
   if (isDeployedEnvironment) {
+    // Use environment variable if available (from Vercel)
+    const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
+    if (envApiUrl) {
+      console.log('☁️ Using environment API for production:', envApiUrl);
+      return envApiUrl;
+    }
+    
     // Use same domain for deployed environment
     const deployedApiUrl = `${window.location.protocol}//${window.location.host}/api`;
+    console.log('🌐 Using same-domain API for deployment:', deployedApiUrl);
     return deployedApiUrl;
   }
   
-  // For localhost development, try local product server first
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    const localApiUrl = 'http://localhost:5004/api';
-    console.log('Using local product server:', localApiUrl);
-    return localApiUrl;
-  }
-
-  // If accessing via IP address (mobile accessing desktop), use the same IP for API
-  if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-    const ipApiUrl = `http://${hostname}:5004/api`;
-    console.log('Using IP-based API URL for mobile access:', ipApiUrl);
-    return ipApiUrl;
-  }
-  
-  // Fallback to Vercel API with Neon database
-  const vercelApiUrl = process.env.REACT_APP_PRODUCTS_API_URL || 'https://vision-care-hmn4.vercel.app/api';
-  console.log('Using Vercel API with Neon database:', vercelApiUrl);
+  // PRIORITY 4: Fallback to Vercel API
+  const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
+  console.log('🔄 Fallback to Vercel API:', vercelApiUrl);
   return vercelApiUrl;
 };
 
@@ -54,6 +54,12 @@ const apiRequest = async (endpoint, options = {}) => {
   // Get API base URL dynamically for each request
   const API_BASE_URL = getApiBaseUrl();
   const url = `${API_BASE_URL}${endpoint}`;
+  
+  // Force debug logging
+  console.log('🚨 API REQUEST DEBUG:');
+  console.log('🚨 Hostname:', window.location.hostname);
+  console.log('🚨 Selected API Base URL:', API_BASE_URL);
+  console.log('🚨 Full URL:', url);
   
   const config = {
     headers: {

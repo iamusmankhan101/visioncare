@@ -94,6 +94,20 @@ function transformProduct(product) {
       }
     });
 
+    // Transform discount from decimal to object format expected by frontend
+    if (product.discount && parseFloat(product.discount) > 0) {
+      transformed.discount = {
+        hasDiscount: true,
+        discountPercentage: parseFloat(product.discount)
+      };
+      console.log('✅ Transformed discount for product:', product.id, 'discount:', transformed.discount);
+    } else {
+      transformed.discount = {
+        hasDiscount: false,
+        discountPercentage: 0
+      };
+    }
+
     console.log('✅ Successfully transformed product:', product.id);
     return transformed;
 
@@ -414,6 +428,17 @@ async function handlePost(req, res) {
     const finalFeatures = features ? (Array.isArray(features) ? JSON.stringify(features) : features) : null;
     const finalColorImagesStr = finalColorImages ? (typeof finalColorImages === 'object' ? JSON.stringify(finalColorImages) : finalColorImages) : null;
     
+    // Process discount - convert from object format to decimal for database storage
+    let finalDiscount = 0;
+    if (discount && typeof discount === 'object' && discount.hasDiscount && discount.discountPercentage) {
+      finalDiscount = parseFloat(discount.discountPercentage);
+    } else if (discount && typeof discount === 'number') {
+      finalDiscount = parseFloat(discount);
+    } else if (discount && typeof discount === 'string') {
+      finalDiscount = parseFloat(discount) || 0;
+    }
+    console.log('💰 Discount processing - raw:', discount, 'final:', finalDiscount);
+    
     console.log('🔧 Final processed values:');
     console.log('  - color (raw):', color);
     console.log('  - image (raw):', image);
@@ -443,7 +468,7 @@ async function handlePost(req, res) {
         ${material}, ${shape}, ${color}, ${finalSize}, ${image}, 
         ${finalGallery}, ${description}, ${finalFeatures}, ${specifications}, ${finalStatus},
         ${finalFrameColor}, ${finalStyle}, ${rim}, ${finalGender}, ${type}, ${featured},
-        ${bestseller}, ${finalSizes}, ${finalLensTypesStr}, ${discount}, ${finalColorImagesStr}
+        ${bestseller}, ${finalSizes}, ${finalLensTypesStr}, ${finalDiscount}, ${finalColorImagesStr}
       ) RETURNING *
     `;
     
@@ -566,6 +591,17 @@ async function handlePut(req, res) {
       colorimages
     } = req.body;
     
+    // Process discount - convert from object format to decimal for database storage
+    let finalDiscount = 0;
+    if (discount && typeof discount === 'object' && discount.hasDiscount && discount.discountPercentage) {
+      finalDiscount = parseFloat(discount.discountPercentage);
+    } else if (discount && typeof discount === 'number') {
+      finalDiscount = parseFloat(discount);
+    } else if (discount && typeof discount === 'string') {
+      finalDiscount = parseFloat(discount) || 0;
+    }
+    console.log('💰 Update discount processing - raw:', discount, 'final:', finalDiscount);
+    
     // Update product with all fields
     const result = await sql`
       UPDATE products SET 
@@ -593,7 +629,7 @@ async function handlePut(req, res) {
         bestseller = ${bestseller},
         sizes = ${sizes},
         lenstypes = ${lenstypes},
-        discount = ${discount},
+        discount = ${finalDiscount},
         colorimages = ${colorimages},
         updated_at = NOW()
       WHERE id = ${id}

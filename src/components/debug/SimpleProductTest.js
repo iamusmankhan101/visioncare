@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import sampleProducts from '../utils/addSampleProducts';
+import sampleProducts from '../../utils/addSampleProducts';
 
 const SimpleProductTest = () => {
   const { items, filteredItems, status, error } = useSelector(state => state.products);

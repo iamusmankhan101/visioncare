@@ -10,8 +10,7 @@ import formatPrice from '../utils/formatPrice';
 import { generateUniqueSlug } from '../utils/slugUtils';
 // At the top of the file, keep only one import for the icons
 import { FiHeart, FiX } from 'react-icons/fi';
-import ProductListingDebug from '../components/debug/ProductListingDebug';
-import SimpleProductTest from '../components/debug/SimpleProductTest';
+// Debug components removed for production build
 
 // Styled Components
 const PageContainer = styled.div`
@@ -1116,15 +1115,6 @@ const ProductListingPage = () => {
   
   return (
     <PageContainer>
-      {/* Debug components - remove in production */}
-      <SimpleProductTest />
-      <ProductListingDebug 
-        items={effectiveItems} 
-        filteredItems={effectiveFilteredItems} 
-        filters={filters} 
-        status={status} 
-        error={error} 
-      />
       
       <PageHeader>
         <PageTitle>
@@ -1546,25 +1536,6 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
-                  {/* Emergency hardcoded test */}
-                  <div style={{ 
-                    gridColumn: '1 / -1', 
-                    background: 'yellow', 
-                    padding: '20px', 
-                    margin: '20px 0',
-                    border: '2px solid red',
-                    fontSize: '18px',
-                    fontWeight: 'bold'
-                  }}>
-                    🚨 EMERGENCY TEST: If you see this, the component is rendering!
-                    <br />
-                    Items: {effectiveItems?.length || 0}
-                    <br />
-                    Filtered: {effectiveFilteredItems?.length || 0}
-                    <br />
-                    Status: {status}
-                  </div>
-                  
                   {status === 'loading' && (
                     <div style={{ 
                       gridColumn: '1 / -1', 

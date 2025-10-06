@@ -934,9 +934,25 @@ const ProductListingPage = () => {
       )
     });
     
-    // Log individual products
-    console.log('📦 Redux items:', items.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
-    console.log('📦 Redux filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
+    // Debug each filter individually
+    console.log('🔍 Individual filter values:');
+    Object.keys(filters).forEach(key => {
+      const value = filters[key];
+      if (value !== null && value !== '' && (!Array.isArray(value) || value.length > 0)) {
+        console.log(`  🎯 ${key}:`, value);
+      }
+    });
+    
+    // Log individual products with more details
+    console.log('📦 All Redux items (12 products):');
+    items.forEach((p, index) => {
+      console.log(`  ${index + 1}. ${p.name} - Category: "${p.category}" - Brand: "${p.brand}" - Price: ${p.price}`);
+    });
+    
+    console.log('📦 Redux filtered items (only 1 showing):');
+    filteredItems.forEach((p, index) => {
+      console.log(`  ${index + 1}. ${p.name} - Category: "${p.category}" - Brand: "${p.brand}" - Price: ${p.price}`);
+    });
     
     // Check if there are any active filters
     const hasFilters = Object.keys(filters).some(key => {

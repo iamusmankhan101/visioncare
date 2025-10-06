@@ -29,13 +29,18 @@ function transformProduct(product) {
     // Safely parse colorImages
     if (product.colorimages && typeof product.colorimages === 'string') {
       try {
-        if (product.colorimages.trim().startsWith('{')) {
+        if (product.colorimages.trim().startsWith('{') || product.colorimages.trim().startsWith('[')) {
           transformed.colorImages = JSON.parse(product.colorimages);
-          console.log('✅ Parsed colorImages for product:', product.id);
+          console.log('✅ Parsed colorImages for product:', product.id, 'Keys:', Object.keys(transformed.colorImages || {}));
         }
       } catch (e) {
         console.warn('⚠️ Failed to parse colorImages for product:', product.id, e.message);
+        console.warn('⚠️ Raw colorImages data:', product.colorimages);
       }
+    } else if (product.colorimages && typeof product.colorimages === 'object') {
+      // Handle case where colorImages is already an object
+      transformed.colorImages = product.colorimages;
+      console.log('✅ Using object colorImages for product:', product.id, 'Keys:', Object.keys(transformed.colorImages || {}));
     }
 
     // Safely create colors array
@@ -59,6 +64,9 @@ function transformProduct(product) {
           if (transformed.colorImages && transformed.colorImages[colorName]) {
             const colorImage = transformed.colorImages[colorName];
             colorObj.image = Array.isArray(colorImage) ? colorImage[0] : colorImage;
+            console.log(`🎨 Assigned color-specific image for ${colorName}:`, colorObj.image);
+          } else {
+            console.log(`⚠️ No color-specific image found for ${colorName}, using default:`, colorObj.image);
           }
           
           return colorObj;

@@ -9,6 +9,7 @@ import { FiShoppingBag, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import * as reviewService from '../services/reviewService';
 import { findProductBySlug, extractIdFromSlug, generateUniqueSlug } from '../utils/slugUtils';
+import ProductColorDebug from '../components/debug/ProductColorDebug';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -1435,7 +1436,10 @@ const ProductDetailPage = () => {
         setProduct(foundProduct);
         // Set default selections
         if (foundProduct.colors && foundProduct.colors.length > 0) {
-          setSelectedColor(foundProduct.colors[0].name);
+          const firstColor = foundProduct.colors[0];
+          setSelectedColor(firstColor.name);
+          setSelectedImage(0); // Set default image to first color's image
+          console.log('🎯 Set default color:', firstColor.name, 'with image:', firstColor.image);
         }
         if (foundProduct.sizes) {
           let sizesArray = [];
@@ -2139,6 +2143,13 @@ const ProductDetailPage = () => {
 
   return (
     <PageContainer>
+      {/* Debug component - remove in production */}
+      <ProductColorDebug 
+        product={product} 
+        selectedColor={selectedColor} 
+        selectedImage={selectedImage} 
+      />
+      
       <BreadcrumbNav>
         <Link to="/">Home</Link>
         <span>/</span>
@@ -2151,7 +2162,32 @@ const ProductDetailPage = () => {
         <ImageGallery>
           <MainImage>
             <img 
-              src={product?.colors?.[selectedImage]?.image || product?.image || '/images/eyeglasses.webp'} 
+              src={(() => {
+                // Try to get image by selected color name first
+                const selectedColorImage = selectedColor && product?.colors?.find(c => c.name === selectedColor)?.image;
+                if (selectedColorImage) {
+                  console.log('🖼️ Using selected color image:', selectedColorImage);
+                  return selectedColorImage;
+                }
+                
+                // Fallback to selected image index
+                const indexedImage = product?.colors?.[selectedImage]?.image;
+                if (indexedImage) {
+                  console.log('🖼️ Using indexed image:', indexedImage);
+                  return indexedImage;
+                }
+                
+                // Fallback to main product image
+                const mainImage = product?.image;
+                if (mainImage) {
+                  console.log('🖼️ Using main product image:', mainImage);
+                  return mainImage;
+                }
+                
+                // Final fallback
+                console.log('🖼️ Using fallback image');
+                return '/images/eyeglasses.webp';
+              })()} 
               alt={product?.name || 'Product'} 
             />
           </MainImage>
@@ -2193,7 +2229,11 @@ const ProductDetailPage = () => {
                       key={index}
                       color={color.hex}
                       selected={selectedColor === color.name}
-                      onClick={() => setSelectedColor(color.name)}
+                      onClick={() => {
+                        console.log('🎨 Color clicked:', color.name, 'with image:', color.image);
+                        setSelectedColor(color.name);
+                        setSelectedImage(index); // Update image when color is selected
+                      }}
                       title={color.name}
                     />
                   ))}

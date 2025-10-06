@@ -11,6 +11,7 @@ import { generateUniqueSlug } from '../utils/slugUtils';
 // At the top of the file, keep only one import for the icons
 import { FiHeart, FiX } from 'react-icons/fi';
 import ProductListingDebug from '../components/debug/ProductListingDebug';
+import sampleProducts from '../utils/addSampleProducts';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -803,6 +804,10 @@ const ProductListingPage = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
 
+  // Fallback to sample products if Redux state is empty
+  const effectiveItems = items && items.length > 0 ? items : sampleProducts;
+  const effectiveFilteredItems = filteredItems && filteredItems.length > 0 ? filteredItems : sampleProducts;
+
   // Helper function to calculate discounted price
   const calculateDiscountedPrice = (product) => {
     if (!product.discount || !product.discount.hasDiscount) {
@@ -908,16 +913,21 @@ const ProductListingPage = () => {
 
   // Fetch products when component mounts
   useEffect(() => {
+    console.log('🚀 ProductListingPage: Component mounted, fetching products...');
     dispatch(fetchProducts());
   }, [dispatch]);
 
   // Debug logging
   useEffect(() => {
     console.log('🔍 ProductListingPage Debug:', {
-      itemsCount: items.length,
-      filteredItemsCount: filteredItems.length,
+      itemsCount: effectiveItems.length,
+      filteredItemsCount: effectiveFilteredItems.length,
+      reduxItemsCount: items.length,
+      reduxFilteredItemsCount: filteredItems.length,
       filters,
       sortOption,
+      status,
+      error,
       activeFilters: Object.keys(filters).filter(key => 
         filters[key] !== null && 
         filters[key] !== '' && 
@@ -926,9 +936,9 @@ const ProductListingPage = () => {
     });
     
     // Log individual products
-    console.log('📦 All items:', items.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
-    console.log('📦 Filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
-  }, [items, filteredItems, filters, sortOption]);
+    console.log('📦 Effective items:', effectiveItems.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
+    console.log('📦 Effective filtered items:', effectiveFilteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
+  }, [effectiveItems, effectiveFilteredItems, items, filteredItems, filters, sortOption, status, error]);
 
   // Get category, search, featured, best-sellers, style, gender, and type from URL query params
   useEffect(() => {
@@ -980,7 +990,7 @@ const ProductListingPage = () => {
     
     // Always initialize filtered items after setting filters
     dispatch(initializeFilteredItems());
-  }, [dispatch, location.search, items.length]);
+  }, [dispatch, location.search, effectiveItems.length]);
   
   
   // Handle filter changes
@@ -1078,12 +1088,12 @@ const ProductListingPage = () => {
   };
   
   // Extract unique values for filter options
-  const categories = [...new Set(items.map(item => item.category))];
-  const brands = [...new Set(items.filter(item => item.brand).map(item => item.brand))].sort();
-  const materials = [...new Set(items.filter(item => item.material).map(item => item.material))];
-  const shapes = [...new Set(items.filter(item => item.shape).map(item => item.shape))];
-  const colors = [...new Set(items.filter(item => item.color).map(item => item.color))];
-  const allFeatures = [...new Set(items.filter(item => item.features).flatMap(item => item.features))];
+  const categories = [...new Set(effectiveItems.map(item => item.category))];
+  const brands = [...new Set(effectiveItems.filter(item => item.brand).map(item => item.brand))].sort();
+  const materials = [...new Set(effectiveItems.filter(item => item.material).map(item => item.material))];
+  const shapes = [...new Set(effectiveItems.filter(item => item.shape).map(item => item.shape))];
+  const colors = [...new Set(effectiveItems.filter(item => item.color).map(item => item.color))];
+  const allFeatures = [...new Set(effectiveItems.filter(item => item.features).flatMap(item => item.features))];
   
   // Get active filters for tags
   const activeFilters = [];
@@ -1108,8 +1118,8 @@ const ProductListingPage = () => {
     <PageContainer>
       {/* Debug component - remove in production */}
       <ProductListingDebug 
-        items={items} 
-        filteredItems={filteredItems} 
+        items={effectiveItems} 
+        filteredItems={effectiveFilteredItems} 
         filters={filters} 
         status={status} 
         error={error} 
@@ -1161,7 +1171,7 @@ const ProductListingPage = () => {
           <span>☰</span>
           Filter & Sort
         </MobileFilterButton>
-        <MobileResultsCount>{filteredItems.length} Results</MobileResultsCount>
+        <MobileResultsCount>{effectiveFilteredItems.length} Results</MobileResultsCount>
         <MobileViewToggle>
           <ViewToggleButton 
             active={viewMode === 'grid'} 
@@ -1512,7 +1522,7 @@ const ProductListingPage = () => {
               </FilterTags>
             )}
             
-            {filteredItems.length === 0 && (
+            {effectiveFilteredItems.length === 0 && (
               <div style={{ textAlign: 'center', margin: '2rem 0' }}>
                 <p>No products match your filters. Try adjusting your criteria.</p>
                 <button 
@@ -1535,6 +1545,38 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
+                  {status === 'loading' && (
+                    <div style={{ 
+                      gridColumn: '1 / -1', 
+                      textAlign: 'center', 
+                      padding: '2rem',
+                      color: '#666'
+                    }}>
+                      <div>Loading products...</div>
+                      <div style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                        {effectiveItems.length > 0 ? `Showing ${effectiveItems.length} sample products` : 'Fetching from API...'}
+                      </div>
+                    </div>
+                  )}
+                  {status === 'failed' && error && (
+                    <div style={{ 
+                      gridColumn: '1 / -1', 
+                      textAlign: 'center', 
+                      padding: '2rem',
+                      color: '#e74c3c',
+                      backgroundColor: '#fdf2f2',
+                      borderRadius: '8px',
+                      margin: '1rem 0'
+                    }}>
+                      <div>⚠️ Failed to load products from API</div>
+                      <div style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#666' }}>
+                        {error}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#666' }}>
+                        Showing {effectiveItems.length} sample products instead
+                      </div>
+                    </div>
+                  )}
                   {(() => {
                     // Check if any meaningful filters are applied
                     const hasActiveFilters = Object.keys(filters).some(key => {
@@ -1547,8 +1589,9 @@ const ProductListingPage = () => {
                     });
                     
                     // Use all items if no filters are active, otherwise use filtered items
-                    const productsToShow = hasActiveFilters ? filteredItems : items;
+                    const productsToShow = hasActiveFilters ? effectiveFilteredItems : effectiveItems;
                     console.log('🎯 Products to show:', productsToShow.length, 'hasActiveFilters:', hasActiveFilters);
+                    console.log('🎯 Using effective items:', effectiveItems.length, 'effective filtered:', effectiveFilteredItems.length);
                     
                     return productsToShow;
                   })().filter(product => {

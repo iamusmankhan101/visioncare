@@ -11,6 +11,7 @@ import { generateUniqueSlug } from '../utils/slugUtils';
 // At the top of the file, keep only one import for the icons
 import { FiHeart, FiX } from 'react-icons/fi';
 import ProductListingDebug from '../components/debug/ProductListingDebug';
+import SimpleProductTest from '../components/debug/SimpleProductTest';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -1092,7 +1093,7 @@ const ProductListingPage = () => {
   const materials = [...new Set(effectiveItems.filter(item => item.material).map(item => item.material))];
   const shapes = [...new Set(effectiveItems.filter(item => item.shape).map(item => item.shape))];
   const colors = [...new Set(effectiveItems.filter(item => item.color).map(item => item.color))];
-  const allFeatures = [...new Set(effectiveItems.filter(item => item.features).flatMap(item => item.features))];
+  const allFeatures = [...new Set(effectiveItems.filter(item => item.features && Array.isArray(item.features)).flatMap(item => item.features.filter(feature => typeof feature === 'string')))];
   
   // Get active filters for tags
   const activeFilters = [];
@@ -1110,12 +1111,13 @@ const ProductListingPage = () => {
   // Filter categories for sidebar - use actual categories from products
   const filterCategories = categories.filter(category => category).map(category => ({
     id: category,
-    name: category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    name: typeof category === 'string' ? category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : category
   }));
   
   return (
     <PageContainer>
-      {/* Debug component - remove in production */}
+      {/* Debug components - remove in production */}
+      <SimpleProductTest />
       <ProductListingDebug 
         items={effectiveItems} 
         filteredItems={effectiveFilteredItems} 
@@ -1194,7 +1196,7 @@ const ProductListingPage = () => {
         <FilterTags>
           {activeFilters.map((filter, index) => (
             <FilterTag key={index}>
-              {filter.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+              {typeof filter.value === 'string' ? filter.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : filter.value}
               <button onClick={() => {
                 if (filter.type === 'category') handleCategoryChange(null);
                 if (filter.type === 'brand') handleBrandChange(null);
@@ -1488,7 +1490,7 @@ const ProductListingPage = () => {
                       checked={filters.features.includes(feature)} 
                       onChange={() => handleFeatureToggle(feature)} 
                     />
-                    {feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    {typeof feature === 'string' ? feature.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : feature}
                   </CheckboxLabel>
                 ))}
               </FilterSection>
@@ -1498,7 +1500,7 @@ const ProductListingPage = () => {
               <FilterTags>
                 {activeFilters.map((filter, index) => (
                   <FilterTag key={index}>
-                    {filter.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    {typeof filter.value === 'string' ? filter.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : filter.value}
                     <button onClick={() => {
                       if (filter.type === 'category') handleCategoryChange(null);
                       if (filter.type === 'brand') handleBrandChange(null);
@@ -1544,6 +1546,25 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
+                  {/* Emergency hardcoded test */}
+                  <div style={{ 
+                    gridColumn: '1 / -1', 
+                    background: 'yellow', 
+                    padding: '20px', 
+                    margin: '20px 0',
+                    border: '2px solid red',
+                    fontSize: '18px',
+                    fontWeight: 'bold'
+                  }}>
+                    🚨 EMERGENCY TEST: If you see this, the component is rendering!
+                    <br />
+                    Items: {effectiveItems?.length || 0}
+                    <br />
+                    Filtered: {effectiveFilteredItems?.length || 0}
+                    <br />
+                    Status: {status}
+                  </div>
+                  
                   {status === 'loading' && (
                     <div style={{ 
                       gridColumn: '1 / -1', 
@@ -1683,7 +1704,7 @@ const ProductListingPage = () => {
             <MobileFilterSectionContent expanded={mobileExpandedSections.glassesType}>
               {categories.map(category => (
                 <MobileFilterOption key={category} onClick={() => handleCategoryChange(category)}>
-                  {category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {typeof category === 'string' ? category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : category}
                 </MobileFilterOption>
               ))}
             </MobileFilterSectionContent>
@@ -1739,7 +1760,7 @@ const ProductListingPage = () => {
             <MobileFilterSectionContent expanded={mobileExpandedSections.shape}>
               {shapes.map(shape => (
                 <MobileFilterOption key={shape} onClick={() => handleShapeChange(shape)}>
-                  {shape.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {typeof shape === 'string' ? shape.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : shape}
                 </MobileFilterOption>
               ))}
             </MobileFilterSectionContent>
@@ -1771,7 +1792,7 @@ const ProductListingPage = () => {
             <MobileFilterSectionContent expanded={mobileExpandedSections.shape}>
               {shapes.map(shape => (
                 <MobileFilterOption key={shape} onClick={() => handleShapeChange(shape)}>
-                  {shape.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {typeof shape === 'string' ? shape.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : shape}
                 </MobileFilterOption>
               ))}
             </MobileFilterSectionContent>
@@ -1788,7 +1809,7 @@ const ProductListingPage = () => {
             <MobileFilterSectionContent expanded={mobileExpandedSections.color}>
               {colors.map(color => (
                 <MobileFilterOption key={color} onClick={() => handleColorChange(color)}>
-                  {color.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {typeof color === 'string' ? color.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : color}
                 </MobileFilterOption>
               ))}
             </MobileFilterSectionContent>

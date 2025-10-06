@@ -803,9 +803,9 @@ const ProductListingPage = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
 
-  // Use Redux state directly
+  // Use Redux state directly - TEMPORARILY BYPASS FILTERING TO DEBUG
   const effectiveItems = items;
-  const effectiveFilteredItems = filteredItems;
+  const effectiveFilteredItems = items; // Use all items instead of filtered items to see all products
 
   // Helper function to calculate discounted price
   const calculateDiscountedPrice = (product) => {
@@ -914,11 +914,15 @@ const ProductListingPage = () => {
   useEffect(() => {
     console.log('🚀 ProductListingPage: Component mounted, fetching products...');
     dispatch(fetchProducts());
+    
+    // TEMPORARY: Clear all filters on mount to debug
+    console.log('🧹 Clearing all filters for debugging...');
+    dispatch(resetFilters());
   }, [dispatch]);
 
   // Debug logging
   useEffect(() => {
-    console.log('🔍 ProductListingPage Debug:', {
+    console.log('🔍 ProductListingPage Redux Debug:', {
       itemsCount: effectiveItems.length,
       filteredItemsCount: effectiveFilteredItems.length,
       reduxItemsCount: items.length,
@@ -935,8 +939,17 @@ const ProductListingPage = () => {
     });
     
     // Log individual products
-    console.log('📦 Effective items:', effectiveItems.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
-    console.log('📦 Effective filtered items:', effectiveFilteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, gender: p.gender, type: p.type })));
+    console.log('📦 Redux items:', items.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
+    console.log('📦 Redux filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
+    
+    // Check if there are any active filters
+    const hasFilters = Object.keys(filters).some(key => {
+      const value = filters[key];
+      if (key === 'priceRange') return value.min > 0 || value.max < 1000;
+      if (key === 'features') return Array.isArray(value) && value.length > 0;
+      return value !== null && value !== '';
+    });
+    console.log('🎯 Has active filters:', hasFilters);
   }, [effectiveItems, effectiveFilteredItems, items, filteredItems, filters, sortOption, status, error]);
 
   // Get category, search, featured, best-sellers, style, gender, and type from URL query params
@@ -1602,18 +1615,71 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
-                  {effectiveFilteredItems.filter(product => {
-                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
+                  {(() => {
+                    console.log('🔍 ProductListingPage Debug:');
+                    console.log('📊 Total effectiveFilteredItems:', effectiveFilteredItems.length);
+                    console.log('📦 Sample products:', effectiveFilteredItems.slice(0, 3).map(p => ({ name: p.name, category: p.category, brand: p.brand })));
                     
-                    // Exclude lens products
-                    if (lensCategories.includes(product.category)) return false;
-                    if (lensNames.some(name => product.name.includes(name))) return false;
-                    if (lensBrands.includes(product.brand)) return false;
+                    const filteredProducts = effectiveFilteredItems.filter(product => {
+                      const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+                      const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
+                      const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
+                      
+                      // Debug each product
+                      const isLensCategory = lensCategories.includes(product.category);
+                      const hasLensName = lensNames.some(name => product.name.includes(name));
+                      const isLensBrand = lensBrands.includes(product.brand);
+                      
+                      if (isLensCategory || hasLensName || isLensBrand) {
+                        console.log(`🚫 Filtering out: ${product.name} (Category: ${product.category}, Brand: ${product.brand})`);
+                        return false;
+                      }
+                      
+                      console.log(`✅ Keeping: ${product.name} (Category: ${product.category}, Brand: ${product.brand})`);
+                      return true;
+                    });
                     
-                    return true;
-                  }).map(product => (
+                    console.log('📊 Final products to show:', filteredProducts.length);
+                    
+                    if (filteredProducts.length === 0) {
+                      return [(
+                        <div key="no-products" style={{
+                          gridColumn: '1 / -1',
+                          textAlign: 'center',
+                          padding: '3rem 1rem',
+                          color: '#666',
+                          fontSize: '1.1rem'
+                        }}>
+                          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👓</div>
+                          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>No products found</div>
+                          <div style={{ fontSize: '0.9rem' }}>
+                            {effectiveFilteredItems.length === 0 
+                              ? 'No products available in the system' 
+                              : 'All products were filtered out (lens products excluded)'
+                            }
+                          </div>
+                          {activeFilters.length > 0 && (
+                            <button 
+                              onClick={handleResetFilters}
+                              style={{
+                                marginTop: '1rem',
+                                padding: '0.5rem 1rem',
+                                background: '#3ABEF9',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Clear All Filters
+                            </button>
+                          )}
+                        </div>
+                      )];
+                    }
+                    
+                    return filteredProducts;
+                  })().map(product => (
                     <ProductCard key={product.id}>
                                   {product.discount && product.discount.hasDiscount && (
                                     <DiscountBadge>

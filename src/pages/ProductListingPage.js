@@ -916,52 +916,6 @@ const ProductListingPage = () => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 ProductListingPage Redux Debug:', {
-      itemsCount: effectiveItems.length,
-      filteredItemsCount: effectiveFilteredItems.length,
-      reduxItemsCount: items.length,
-      reduxFilteredItemsCount: filteredItems.length,
-      filters,
-      sortOption,
-      status,
-      error,
-      activeFilters: Object.keys(filters).filter(key => 
-        filters[key] !== null && 
-        filters[key] !== '' && 
-        (Array.isArray(filters[key]) ? filters[key].length > 0 : true)
-      )
-    });
-    
-    // Detailed filter analysis
-    console.log('🎯 DETAILED FILTER ANALYSIS:');
-    Object.keys(filters).forEach(key => {
-      const value = filters[key];
-      if (value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
-        console.log(`🔍 Active filter: ${key} = ${JSON.stringify(value)}`);
-      }
-    });
-    
-    // Log individual products
-    console.log('📦 Redux items:', items.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
-    console.log('📦 Redux filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
-    
-    // Check if there are any active filters
-    const hasFilters = Object.keys(filters).some(key => {
-      const value = filters[key];
-      if (key === 'priceRange') return value.min > 0 || value.max < 1000;
-      if (key === 'features') return Array.isArray(value) && value.length > 0;
-      return value !== null && value !== '';
-    });
-    console.log('🎯 Has active filters:', hasFilters);
-    
-    // Special check for price range
-    if (filters.priceRange) {
-      console.log('💰 Price range filter:', filters.priceRange);
-      console.log('💰 Products by price:', items.map(p => ({ name: p.name, price: p.price, inRange: p.price >= filters.priceRange.min && p.price <= filters.priceRange.max })));
-    }
-  }, [effectiveItems, effectiveFilteredItems, items, filteredItems, filters, sortOption, status, error]);
 
   // Get category, search, featured, best-sellers, style, gender, and type from URL query params
   useEffect(() => {
@@ -1084,9 +1038,7 @@ const ProductListingPage = () => {
   };
 
   const handleGenderChange = (gender) => {
-    console.log('🚹 Gender filter clicked:', gender);
     const newGender = filters.gender === gender ? null : gender;
-    console.log('🚹 Setting gender filter to:', newGender);
     dispatch(setFilters({ gender: newGender }));
   };
 
@@ -1106,7 +1058,6 @@ const ProductListingPage = () => {
   
     
   const handleResetFilters = () => {
-    console.log('🔄 Resetting all filters...');
     dispatch(resetFilters());
     setMinPrice(0);
     setMaxPrice(1000);
@@ -1116,8 +1067,6 @@ const ProductListingPage = () => {
     const url = new URL(window.location);
     url.search = '';
     window.history.replaceState({}, '', url);
-    
-    console.log('✅ All filters reset');
   };
   
   // Toggle filter section expansion
@@ -1171,36 +1120,6 @@ const ProductListingPage = () => {
         <PageTitle>
           {filters.search ? `Search results for "${filters.search}"` : 'Shop Your Favourite Eyewear'}
         </PageTitle>
-        
-        {/* Debug: Quick Reset Button */}
-        <div style={{ 
-          background: '#fff3cd', 
-          border: '1px solid #ffeaa7', 
-          padding: '10px', 
-          borderRadius: '4px', 
-          marginBottom: '1rem',
-          fontSize: '0.9rem'
-        }}>
-          <strong>Debug Mode:</strong> Showing {effectiveFilteredItems.length} of {effectiveItems.length} products
-          {activeFilters.length > 0 && (
-            <span> | Active filters: {activeFilters.map(f => f.type).join(', ')}</span>
-          )}
-          <button 
-            onClick={handleResetFilters}
-            style={{
-              marginLeft: '10px',
-              padding: '4px 8px',
-              background: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              fontSize: '0.8rem',
-              cursor: 'pointer'
-            }}
-          >
-            Reset All Filters
-          </button>
-        </div>
        
       </PageHeader>
       
@@ -1675,71 +1594,62 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
-                  {(() => {
-                    console.log('🔍 ProductListingPage Debug:');
-                    console.log('📊 Total effectiveFilteredItems:', effectiveFilteredItems.length);
-                    console.log('📦 Sample products:', effectiveFilteredItems.slice(0, 3).map(p => ({ name: p.name, category: p.category, brand: p.brand })));
+                  {effectiveFilteredItems.filter(product => {
+                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+                    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
+                    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
                     
-                    const filteredProducts = effectiveFilteredItems.filter(product => {
-                      const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
-                      const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
-                      const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
-                      
-                      // Debug each product
-                      const isLensCategory = lensCategories.includes(product.category);
-                      const hasLensName = lensNames.some(name => product.name.includes(name));
-                      const isLensBrand = lensBrands.includes(product.brand);
-                      
-                      if (isLensCategory || hasLensName || isLensBrand) {
-                        console.log(`🚫 Filtering out: ${product.name} (Category: ${product.category}, Brand: ${product.brand})`);
-                        return false;
-                      }
-                      
-                      console.log(`✅ Keeping: ${product.name} (Category: ${product.category}, Brand: ${product.brand})`);
-                      return true;
-                    });
+                    // Exclude lens products
+                    if (lensCategories.includes(product.category)) return false;
+                    if (lensNames.some(name => product.name.includes(name))) return false;
+                    if (lensBrands.includes(product.brand)) return false;
                     
-                    console.log('📊 Final products to show:', filteredProducts.length);
+                    return true;
+                  }).length === 0 ? (
+                    <div key="no-products" style={{
+                      gridColumn: '1 / -1',
+                      textAlign: 'center',
+                      padding: '3rem 1rem',
+                      color: '#666',
+                      fontSize: '1.1rem'
+                    }}>
+                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👓</div>
+                      <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>No products found</div>
+                      <div style={{ fontSize: '0.9rem' }}>
+                        {effectiveFilteredItems.length === 0 
+                          ? 'No products available in the system' 
+                          : 'All products were filtered out (lens products excluded)'
+                        }
+                      </div>
+                      {activeFilters.length > 0 && (
+                        <button 
+                          onClick={handleResetFilters}
+                          style={{
+                            marginTop: '1rem',
+                            padding: '0.5rem 1rem',
+                            background: '#3ABEF9',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Clear All Filters
+                        </button>
+                      )}
+                    </div>
+                  ) : effectiveFilteredItems.filter(product => {
+                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+                    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
+                    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
                     
-                    if (filteredProducts.length === 0) {
-                      return [(
-                        <div key="no-products" style={{
-                          gridColumn: '1 / -1',
-                          textAlign: 'center',
-                          padding: '3rem 1rem',
-                          color: '#666',
-                          fontSize: '1.1rem'
-                        }}>
-                          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👓</div>
-                          <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>No products found</div>
-                          <div style={{ fontSize: '0.9rem' }}>
-                            {effectiveFilteredItems.length === 0 
-                              ? 'No products available in the system' 
-                              : 'All products were filtered out (lens products excluded)'
-                            }
-                          </div>
-                          {activeFilters.length > 0 && (
-                            <button 
-                              onClick={handleResetFilters}
-                              style={{
-                                marginTop: '1rem',
-                                padding: '0.5rem 1rem',
-                                background: '#3ABEF9',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              Clear All Filters
-                            </button>
-                          )}
-                        </div>
-                      )];
-                    }
+                    // Exclude lens products
+                    if (lensCategories.includes(product.category)) return false;
+                    if (lensNames.some(name => product.name.includes(name))) return false;
+                    if (lensBrands.includes(product.brand)) return false;
                     
-                    return filteredProducts;
-                  })().map(product => (
+                    return true;
+                  }).map(product => (
                     <ProductCard key={product.id}>
                                   {product.discount && product.discount.hasDiscount && (
                                     <DiscountBadge>

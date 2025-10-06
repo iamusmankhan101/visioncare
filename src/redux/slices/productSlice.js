@@ -296,26 +296,10 @@ const applyFilters = (items, filters, sortOption) => {
   }
   let result = [...items];
   
-  console.log('🔍 applyFilters called with:', {
-    itemsCount: items.length,
-    filters,
-    sampleItems: items.slice(0, 3).map(item => ({ 
-      name: item.name, 
-      price: item.price, 
-      priceType: typeof item.price,
-      category: item.category 
-    }))
-  });
   
   // First, exclude lens categories from general product listings
   const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
-  const beforeLensFilter = result.length;
   result = result.filter(item => !lensCategories.includes(item.category));
-  console.log(`🔍 After lens filter: ${beforeLensFilter} → ${result.length} products`);
-  
-  if (result.length !== beforeLensFilter) {
-    console.log('🚫 Filtered out lens products:', items.filter(item => lensCategories.includes(item.category)).map(p => ({ name: p.name, category: p.category })));
-  }
   
   // Apply category filter - handle both old and new formats
   if (filters.category) {
@@ -392,20 +376,10 @@ const applyFilters = (items, filters, sortOption) => {
   
   // Apply gender filter
   if (filters.gender) {
-    console.log('🚹 Applying gender filter:', filters.gender);
-    console.log('🚹 Products with gender field:', items.map(p => ({ name: p.name, gender: p.gender })));
-    
-    const beforeGenderFilter = result.length;
     result = result.filter(item => {
-      if (!item.gender) {
-        console.log(`🚫 Product "${item.name}" has no gender field`);
-        return false;
-      }
-      const matches = item.gender.toLowerCase() === filters.gender.toLowerCase();
-      console.log(`${matches ? '✅' : '🚫'} Product "${item.name}" gender "${item.gender}" ${matches ? 'matches' : 'does not match'} filter "${filters.gender}"`);
-      return matches;
+      if (!item.gender) return false;
+      return item.gender.toLowerCase() === filters.gender.toLowerCase();
     });
-    console.log(`🚹 Gender filter: ${beforeGenderFilter} → ${result.length} products`);
   }
   
   // Apply type filter (for subcategories like reading, computer, etc.)

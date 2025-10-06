@@ -1104,12 +1104,20 @@ const ProductListingPage = () => {
   
     
   const handleResetFilters = () => {
+    console.log('🔄 Resetting all filters...');
     dispatch(resetFilters());
     setMinPrice(0);
     setMaxPrice(1000);
+    setActiveQuickFilter(null);
+    
+    // Force clear any URL parameters that might be causing issues
+    const url = new URL(window.location);
+    url.search = '';
+    window.history.replaceState({}, '', url);
+    
+    console.log('✅ All filters reset');
   };
   
-
   // Toggle filter section expansion
   const toggleSection = (section) => {
     setExpandedSections(prev => ({

@@ -934,25 +934,9 @@ const ProductListingPage = () => {
       )
     });
     
-    // Debug each filter individually
-    console.log('🔍 Individual filter values:');
-    Object.keys(filters).forEach(key => {
-      const value = filters[key];
-      if (value !== null && value !== '' && (!Array.isArray(value) || value.length > 0)) {
-        console.log(`  🎯 ${key}:`, value);
-      }
-    });
-    
-    // Log individual products with more details
-    console.log('📦 All Redux items (12 products):');
-    items.forEach((p, index) => {
-      console.log(`  ${index + 1}. ${p.name} - Category: "${p.category}" - Brand: "${p.brand}" - Price: ${p.price}`);
-    });
-    
-    console.log('📦 Redux filtered items (only 1 showing):');
-    filteredItems.forEach((p, index) => {
-      console.log(`  ${index + 1}. ${p.name} - Category: "${p.category}" - Brand: "${p.brand}" - Price: ${p.price}`);
-    });
+    // Log individual products
+    console.log('📦 Redux items:', items.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
+    console.log('📦 Redux filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
     
     // Check if there are any active filters
     const hasFilters = Object.keys(filters).some(key => {
@@ -1019,13 +1003,8 @@ const ProductListingPage = () => {
   
   // Handle filter changes
   const handleCategoryChange = (category) => {
-    console.log('🏷️ Category change requested:', category);
-    console.log('🏷️ Current category:', filters.category);
-    
     // If the same category is selected, deselect it
     const newCategory = filters.category === category ? null : category;
-    console.log('🏷️ Setting new category:', newCategory);
-    
     dispatch(setFilters({ category: newCategory }));
   };
   
@@ -1159,11 +1138,6 @@ const ProductListingPage = () => {
     id: category,
     name: typeof category === 'string' ? category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : category
   }));
-  
-  // Debug categories
-  console.log('🏷️ Available categories:', categories);
-  console.log('🏷️ Filter categories:', filterCategories);
-  console.log('🎯 Current category filter:', filters.category);
   
   return (
     <PageContainer>

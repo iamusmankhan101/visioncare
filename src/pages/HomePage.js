@@ -8,7 +8,6 @@ import { FiShoppingBag, FiHeart, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import { generateUniqueSlug } from '../utils/slugUtils';
 import styled from 'styled-components';
-import ApiDebug from '../components/debug/ApiDebug';
 
 const HeroSection = styled.section`
   height: 500px;
@@ -859,7 +858,6 @@ const HomePage = () => {
   const [testimonialSlide, setTestimonialSlide] = useState(0);
   const [selectedColors, setSelectedColors] = useState({});
   const [wishlistModal, setWishlistModal] = useState({ isOpen: false, type: '', product: null });
-  const [showApiDebug, setShowApiDebug] = useState(false); // Debug panel (set to true to enable)
 
   // Helper function to calculate discounted price
   const calculateDiscountedPrice = (product) => {
@@ -1250,7 +1248,6 @@ const HomePage = () => {
     
     content = (
       <div className="home-page" style={{ overflowX: 'hidden' }}>
-      {showApiDebug && <ApiDebug onClose={() => setShowApiDebug(false)} />}
       <HeroSection>
         <HeroContent>
           <HeroTitle>Premium & Stylish Eyewear</HeroTitle>
@@ -1332,7 +1329,7 @@ const HomePage = () => {
                         </PriceContainer>
                       );
                     } else {
-                      return <ProductPrice>{product.price}</ProductPrice>;
+                      return <ProductPrice>{formatPrice(product.price)}</ProductPrice>;
                     }
                   })()}
                   <ColorOptions>
@@ -1406,7 +1403,7 @@ const HomePage = () => {
                         </PriceContainer>
                       );
                     } else {
-                      return <ProductPrice>{product.price}</ProductPrice>;
+                      return <ProductPrice>{formatPrice(product.price)}</ProductPrice>;
                     }
                   })()}
                   <ColorOptions>

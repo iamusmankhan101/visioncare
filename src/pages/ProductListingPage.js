@@ -1336,8 +1336,8 @@ const ProductListingPage = () => {
                   <input 
                     type="radio" 
                     name="gender" 
-                    checked={filters.gender === 'men'}
-                    onChange={() => handleGenderChange('men')}
+                    checked={filters.gender === 'male'}
+                    onChange={() => handleGenderChange('male')}
                   />
                   Men
                 </CheckboxLabel>
@@ -1345,8 +1345,8 @@ const ProductListingPage = () => {
                   <input 
                     type="radio" 
                     name="gender" 
-                    checked={filters.gender === 'women'}
-                    onChange={() => handleGenderChange('women')}
+                    checked={filters.gender === 'female'}
+                    onChange={() => handleGenderChange('female')}
                   />
                   Women
                 </CheckboxLabel>
@@ -1358,6 +1358,15 @@ const ProductListingPage = () => {
                     onChange={() => handleGenderChange('unisex')}
                   />
                   Unisex
+                </CheckboxLabel>
+                <CheckboxLabel>
+                  <input 
+                    type="radio" 
+                    name="gender" 
+                    checked={filters.gender === 'kids'}
+                    onChange={() => handleGenderChange('kids')}
+                  />
+                  Kids
                 </CheckboxLabel>
               </FilterContent>
             </FilterSection>
@@ -1819,25 +1828,31 @@ const ProductListingPage = () => {
             <MobileFilterSectionHeader onClick={() => toggleMobileSection('gender')}>
               <MobileFilterSectionTitle>
                   Gender
-                  {filters.gender && <SelectedFilterValue>{filters.gender}</SelectedFilterValue>}
+                  {filters.gender && <SelectedFilterValue>{
+                    filters.gender === 'male' ? 'Men' : 
+                    filters.gender === 'female' ? 'Women' : 
+                    filters.gender === 'unisex' ? 'Unisex' : 
+                    filters.gender === 'kids' ? 'Kids' : 
+                    filters.gender
+                  }</SelectedFilterValue>}
                 </MobileFilterSectionTitle>
               <MobileFilterSectionIcon expanded={mobileExpandedSections.gender}>+</MobileFilterSectionIcon>
             </MobileFilterSectionHeader>
             <MobileFilterSectionContent expanded={mobileExpandedSections.gender}>
               <MobileFilterOption 
-                onClick={() => handleGenderChange('men')}
+                onClick={() => handleGenderChange('male')}
                 style={{ 
-                  backgroundColor: filters.gender === 'men' ? '#f0f0f0' : 'transparent',
-                  fontWeight: filters.gender === 'men' ? '600' : '400'
+                  backgroundColor: filters.gender === 'male' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.gender === 'male' ? '600' : '400'
                 }}
               >
                 Men
               </MobileFilterOption>
               <MobileFilterOption 
-                onClick={() => handleGenderChange('women')}
+                onClick={() => handleGenderChange('female')}
                 style={{ 
-                  backgroundColor: filters.gender === 'women' ? '#f0f0f0' : 'transparent',
-                  fontWeight: filters.gender === 'women' ? '600' : '400'
+                  backgroundColor: filters.gender === 'female' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.gender === 'female' ? '600' : '400'
                 }}
               >
                 Women
@@ -1850,6 +1865,15 @@ const ProductListingPage = () => {
                 }}
               >
                 Unisex
+              </MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleGenderChange('kids')}
+                style={{ 
+                  backgroundColor: filters.gender === 'kids' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.gender === 'kids' ? '600' : '400'
+                }}
+              >
+                Kids
               </MobileFilterOption>
             </MobileFilterSectionContent>
           </MobileFilterSection>

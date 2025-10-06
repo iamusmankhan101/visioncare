@@ -9,7 +9,6 @@ import { FiShoppingBag, FiX } from 'react-icons/fi';
 import formatPrice from '../utils/formatPrice';
 import * as reviewService from '../services/reviewService';
 import { findProductBySlug, extractIdFromSlug, generateUniqueSlug } from '../utils/slugUtils';
-import ProductColorDebug from '../components/debug/ProductColorDebug';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -2196,13 +2195,6 @@ const ProductDetailPage = () => {
 
   return (
     <PageContainer>
-      {/* Debug component - remove in production */}
-      <ProductColorDebug 
-        product={product} 
-        selectedColor={selectedColor} 
-        selectedImage={selectedImage} 
-      />
-      
       <BreadcrumbNav>
         <Link to="/">Home</Link>
         <span>/</span>

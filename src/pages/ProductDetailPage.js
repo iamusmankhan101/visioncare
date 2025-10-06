@@ -1385,13 +1385,7 @@ const ProductDetailPage = () => {
 
   // Set product from Redux store when data is loaded
   useEffect(() => {
-    console.log('🔍 ProductDetailPage: Looking for product with slug:', slug);
-    console.log('📦 Available products:', products?.length || 0);
-    
     if (products && products.length > 0) {
-      // Log product structure for debugging
-      console.log('📋 First product structure:', products[0]);
-      
       // Try multiple matching strategies
       let foundProduct = null;
       
@@ -1401,7 +1395,6 @@ const ProductDetailPage = () => {
       // Strategy 2: If slug matching fails, try direct ID matching
       if (!foundProduct) {
         const extractedId = extractIdFromSlug(slug);
-        console.log('🔍 Extracted ID from slug:', extractedId);
         
         if (extractedId) {
           // Try numeric ID match
@@ -1426,11 +1419,7 @@ const ProductDetailPage = () => {
         foundProduct = products.find(p => 
           p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
-        console.log('🔍 Trying name search with term:', searchTerm);
       }
-      
-      console.log('🎯 Found product:', foundProduct ? foundProduct.name : 'Not found');
-      console.log('🎯 Product ID:', foundProduct ? foundProduct.id || foundProduct._id : 'N/A');
       
       if (foundProduct) {
         setProduct(foundProduct);
@@ -1439,7 +1428,6 @@ const ProductDetailPage = () => {
           const firstColor = foundProduct.colors[0];
           setSelectedColor(firstColor.name);
           setSelectedImage(0); // Set default image to first color's image
-          console.log('🎯 Set default color:', firstColor.name, 'with image:', firstColor.image);
         }
         if (foundProduct.sizes) {
           let sizesArray = [];
@@ -2166,26 +2154,22 @@ const ProductDetailPage = () => {
                 // Try to get image by selected color name first
                 const selectedColorImage = selectedColor && product?.colors?.find(c => c.name === selectedColor)?.image;
                 if (selectedColorImage) {
-                  console.log('🖼️ Using selected color image:', selectedColorImage);
                   return selectedColorImage;
                 }
                 
                 // Fallback to selected image index
                 const indexedImage = product?.colors?.[selectedImage]?.image;
                 if (indexedImage) {
-                  console.log('🖼️ Using indexed image:', indexedImage);
                   return indexedImage;
                 }
                 
                 // Fallback to main product image
                 const mainImage = product?.image;
                 if (mainImage) {
-                  console.log('🖼️ Using main product image:', mainImage);
                   return mainImage;
                 }
                 
                 // Final fallback
-                console.log('🖼️ Using fallback image');
                 return '/images/eyeglasses.webp';
               })()} 
               alt={product?.name || 'Product'} 
@@ -2230,7 +2214,6 @@ const ProductDetailPage = () => {
                       color={color.hex}
                       selected={selectedColor === color.name}
                       onClick={() => {
-                        console.log('🎨 Color clicked:', color.name, 'with image:', color.image);
                         setSelectedColor(color.name);
                         setSelectedImage(index); // Update image when color is selected
                       }}
@@ -2643,7 +2626,6 @@ const ProductDetailPage = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('Back button clicked');
                       setShowLensTypeSelection(false);
                       setShowUsageSelection(true);
                     }}

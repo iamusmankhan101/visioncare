@@ -392,10 +392,20 @@ const applyFilters = (items, filters, sortOption) => {
   
   // Apply gender filter
   if (filters.gender) {
+    console.log('🚹 Applying gender filter:', filters.gender);
+    console.log('🚹 Products with gender field:', items.map(p => ({ name: p.name, gender: p.gender })));
+    
+    const beforeGenderFilter = result.length;
     result = result.filter(item => {
-      if (!item.gender) return false;
-      return item.gender.toLowerCase() === filters.gender.toLowerCase();
+      if (!item.gender) {
+        console.log(`🚫 Product "${item.name}" has no gender field`);
+        return false;
+      }
+      const matches = item.gender.toLowerCase() === filters.gender.toLowerCase();
+      console.log(`${matches ? '✅' : '🚫'} Product "${item.name}" gender "${item.gender}" ${matches ? 'matches' : 'does not match'} filter "${filters.gender}"`);
+      return matches;
     });
+    console.log(`🚹 Gender filter: ${beforeGenderFilter} → ${result.length} products`);
   }
   
   // Apply type filter (for subcategories like reading, computer, etc.)

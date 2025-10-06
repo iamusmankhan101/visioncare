@@ -1084,7 +1084,9 @@ const ProductListingPage = () => {
   };
 
   const handleGenderChange = (gender) => {
+    console.log('🚹 Gender filter clicked:', gender);
     const newGender = filters.gender === gender ? null : gender;
+    console.log('🚹 Setting gender filter to:', newGender);
     dispatch(setFilters({ gender: newGender }));
   };
 

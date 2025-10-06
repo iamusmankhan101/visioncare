@@ -804,9 +804,9 @@ const ProductListingPage = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
 
-  // Fallback to sample products if Redux state is empty
-  const effectiveItems = items && items.length > 0 ? items : sampleProducts;
-  const effectiveFilteredItems = filteredItems && filteredItems.length > 0 ? filteredItems : sampleProducts;
+  // Use Redux state directly since it's now initialized with sample products
+  const effectiveItems = items;
+  const effectiveFilteredItems = filteredItems;
 
   // Helper function to calculate discounted price
   const calculateDiscountedPrice = (product) => {

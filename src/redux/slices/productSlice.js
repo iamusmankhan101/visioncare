@@ -7,10 +7,22 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async () => {
     try {
-      return await productApi.getAllProducts();
+      const products = await productApi.getAllProducts();
+      console.log('🔍 Redux fetchProducts: Got', products?.length || 0, 'products from API');
+      
+      // Ensure we always return valid products
+      if (products && Array.isArray(products) && products.length > 0) {
+        return products;
+      } else {
+        console.warn('🔄 Redux fetchProducts: API returned empty/invalid data, using sample products');
+        return sampleProducts.map((product, index) => ({
+          ...product,
+          id: index + 1
+        }));
+      }
     } catch (error) {
       // If API fails, use sample products as fallback
-      console.warn('API failed, using sample products:', error.message);
+      console.warn('🔄 Redux fetchProducts: API failed, using sample products:', error.message);
       return sampleProducts.map((product, index) => ({
         ...product,
         id: index + 1
@@ -65,9 +77,168 @@ export const deleteProductAsync = createAsyncThunk(
   }
 );
 
+// Helper function to apply filters and sorting
+const applyFilters = (items, filters, sortOption) => {
+  // Ensure items is an array
+  if (!Array.isArray(items)) {
+    console.warn('applyFilters received non-array items:', items);
+    return [];
+  }
+  let result = [...items];
+  
+  // First, exclude lens categories from general product listings
+  const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
+  result = result.filter(item => !lensCategories.includes(item.category));
+  
+  // Apply category filter - handle both old and new formats
+  if (filters.category) {
+    result = result.filter(item => {
+      if (!item.category) return false;
+      
+      // Direct match
+      if (item.category === filters.category) return true;
+      
+      // Convert category to lowercase with dashes for comparison
+      const normalizeCategory = (cat) => cat.toLowerCase().replace(/\s+/g, '-');
+      const itemCategoryNormalized = normalizeCategory(item.category);
+      const filterCategoryNormalized = normalizeCategory(filters.category);
+      
+      return itemCategoryNormalized === filterCategoryNormalized;
+    });
+  }
+  
+  // Apply brand filter
+  if (filters.brand) {
+    result = result.filter(item => item.brand === filters.brand);
+  }
+  
+  // Apply featured filter
+  if (filters.featured) {
+    result = result.filter(item => item.featured === true);
+  }
+  
+  // Apply best selling filter
+  if (filters.bestSelling) {
+    result = result.filter(item => item.bestSeller === true || item.bestSelling === true);
+  }
+  
+  // Apply search filter
+  if (filters.search) {
+    const searchTerm = filters.search.toLowerCase();
+    result = result.filter(item => 
+      item.name.toLowerCase().includes(searchTerm) ||
+      (item.brand && item.brand.toLowerCase().includes(searchTerm)) ||
+      (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+      (item.description && item.description.toLowerCase().includes(searchTerm))
+    );
+  }
+  
+  // Apply price range filter
+  result = result.filter(item => 
+    item.price >= filters.priceRange.min && 
+    item.price <= filters.priceRange.max
+  );
+  
+  // Apply material filter
+  if (filters.material) {
+    result = result.filter(item => item.material === filters.material);
+  }
+  
+  // Apply shape filter
+  if (filters.shape) {
+    result = result.filter(item => item.shape === filters.shape);
+  }
+  
+  // Apply style filter
+  if (filters.style) {
+    result = result.filter(item => {
+      return item.style && item.style === filters.style;
+    });
+  }
+  
+  // Apply color filter
+  if (filters.color) {
+    result = result.filter(item => item.color === filters.color);
+  }
+  
+  // Apply gender filter
+  if (filters.gender) {
+    result = result.filter(item => {
+      if (!item.gender) return false;
+      return item.gender.toLowerCase() === filters.gender.toLowerCase();
+    });
+  }
+  
+  // Apply type filter (for subcategories like reading, computer, etc.)
+  if (filters.type) {
+    result = result.filter(item => {
+      if (!item.type) {
+        // If no type field, check if category matches the type
+        const itemCategory = item.category ? item.category.toLowerCase() : '';
+        const filterType = filters.type.toLowerCase();
+        
+        // Handle special cases
+        if (filterType === 'reading' && (itemCategory.includes('reading') || itemCategory === 'reading-glasses')) return true;
+        if (filterType === 'computer' && (itemCategory.includes('computer') || itemCategory === 'computer-glasses')) return true;
+        if (filterType === 'polarized' && (itemCategory.includes('polarized') || item.features?.includes('Polarized'))) return true;
+        if (filterType === 'aviator' && (itemCategory.includes('aviator') || item.shape === 'Aviator')) return true;
+        
+        return false;
+      }
+      return item.type.toLowerCase() === filters.type.toLowerCase();
+    });
+  }
+  
+  // Apply features filter
+  if (filters.features && filters.features.length > 0) {
+    result = result.filter(item => 
+      item.features && filters.features.every(feature => item.features.includes(feature))
+    );
+  }
+  
+  // Apply sorting
+  switch (sortOption) {
+    case 'price-low-high':
+      result.sort((a, b) => a.price - b.price);
+      break;
+    case 'price-high-low':
+      result.sort((a, b) => b.price - a.price);
+      break;
+    case 'name-a-z':
+      result.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'name-z-a':
+      result.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case 'featured':
+    default:
+      // Featured sorting (default) - no change to order
+      break;
+  }
+  
+  return result;
+};
+
+// Initialize with sample products
+const initialItems = sampleProducts.map((product, index) => ({ ...product, id: index + 1 }));
+
 const initialState = {
-  items: [],
-  filteredItems: [],
+  items: initialItems,
+  filteredItems: applyFilters(initialItems, {
+    category: null,
+    brand: null,
+    featured: null,
+    bestSelling: null,
+    search: null,
+    priceRange: { min: 0, max: 1000 },
+    material: null,
+    shape: null,
+    color: null,
+    style: null,
+    gender: null,
+    type: null,
+    features: []
+  }, 'featured'),
   filters: {
     category: null,
     brand: null,
@@ -159,7 +330,16 @@ const productSlice = createSlice({
         state.status = 'succeeded';
         // Handle API response structure: { success: true, products: [...], count: N }
         const products = action.payload.products || action.payload || [];
-        state.items = Array.isArray(products) ? products : [];
+        const validProducts = Array.isArray(products) ? products : [];
+        
+        // Only update if we actually got products, otherwise keep existing items (including sample products)
+        if (validProducts.length > 0) {
+          state.items = validProducts;
+          console.log('✅ Redux: Updated with', validProducts.length, 'products from API');
+        } else {
+          console.log('⚠️ Redux: API returned empty array, keeping existing items:', state.items.length);
+        }
+        
         state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
       })
       .addCase(fetchProducts.rejected, (state, action) => {
@@ -281,145 +461,3 @@ export const {
 } = productSlice.actions;
 
 export default productSlice.reducer;
-
-// Helper function to apply filters and sorting
-const applyFilters = (items, filters, sortOption) => {
-  // Ensure items is an array
-  if (!Array.isArray(items)) {
-    console.warn('applyFilters received non-array items:', items);
-    return [];
-  }
-  let result = [...items];
-  
-  // First, exclude lens categories from general product listings
-  const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
-  result = result.filter(item => !lensCategories.includes(item.category));
-  
-  // Apply category filter - handle both old and new formats
-  if (filters.category) {
-    result = result.filter(item => {
-      if (!item.category) return false;
-      
-      // Direct match
-      if (item.category === filters.category) return true;
-      
-      // Convert category to lowercase with dashes for comparison
-      const normalizeCategory = (cat) => cat.toLowerCase().replace(/\s+/g, '-');
-      const itemCategoryNormalized = normalizeCategory(item.category);
-      const filterCategoryNormalized = normalizeCategory(filters.category);
-      
-      return itemCategoryNormalized === filterCategoryNormalized;
-    });
-  }
-  
-  // Apply brand filter
-  if (filters.brand) {
-    result = result.filter(item => item.brand === filters.brand);
-  }
-  
-  // Apply featured filter
-  if (filters.featured) {
-    result = result.filter(item => item.featured === true);
-  }
-  
-  // Apply best selling filter
-  if (filters.bestSelling) {
-    result = result.filter(item => item.bestSeller === true || item.bestSelling === true);
-  }
-  
-  // Apply search filter
-  if (filters.search) {
-    const searchTerm = filters.search.toLowerCase();
-    result = result.filter(item => 
-      item.name.toLowerCase().includes(searchTerm) ||
-      (item.brand && item.brand.toLowerCase().includes(searchTerm)) ||
-      (item.category && item.category.toLowerCase().includes(searchTerm)) ||
-      (item.description && item.description.toLowerCase().includes(searchTerm))
-    );
-  }
-  
-  // Apply price range filter
-  result = result.filter(item => 
-    item.price >= filters.priceRange.min && 
-    item.price <= filters.priceRange.max
-  );
-  
-  // Apply material filter
-  if (filters.material) {
-    result = result.filter(item => item.material === filters.material);
-  }
-  
-  // Apply shape filter
-  if (filters.shape) {
-    result = result.filter(item => item.shape === filters.shape);
-  }
-  
-  // Apply style filter
-  if (filters.style) {
-    result = result.filter(item => {
-      return item.style && item.style === filters.style;
-    });
-  }
-  
-  // Apply color filter
-  if (filters.color) {
-    result = result.filter(item => item.color === filters.color);
-  }
-  
-  // Apply gender filter
-  if (filters.gender) {
-    result = result.filter(item => {
-      if (!item.gender) return false;
-      return item.gender.toLowerCase() === filters.gender.toLowerCase();
-    });
-  }
-  
-  // Apply type filter (for subcategories like reading, computer, etc.)
-  if (filters.type) {
-    result = result.filter(item => {
-      if (!item.type) {
-        // If no type field, check if category matches the type
-        const itemCategory = item.category ? item.category.toLowerCase() : '';
-        const filterType = filters.type.toLowerCase();
-        
-        // Handle special cases
-        if (filterType === 'reading' && (itemCategory.includes('reading') || itemCategory === 'reading-glasses')) return true;
-        if (filterType === 'computer' && (itemCategory.includes('computer') || itemCategory === 'computer-glasses')) return true;
-        if (filterType === 'polarized' && (itemCategory.includes('polarized') || item.features?.includes('Polarized'))) return true;
-        if (filterType === 'aviator' && (itemCategory.includes('aviator') || item.shape === 'Aviator')) return true;
-        
-        return false;
-      }
-      return item.type.toLowerCase() === filters.type.toLowerCase();
-    });
-  }
-  
-  // Apply features filter
-  if (filters.features.length > 0) {
-    result = result.filter(item => 
-      item.features && filters.features.every(feature => item.features.includes(feature))
-    );
-  }
-  
-  // Apply sorting
-  switch (sortOption) {
-    case 'price-low-high':
-      result.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-high-low':
-      result.sort((a, b) => b.price - a.price);
-      break;
-    case 'name-a-z':
-      result.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case 'name-z-a':
-      result.sort((a, b) => b.name.localeCompare(a.name));
-      break;
-    case 'featured':
-    default:
-      // Featured sorting (default) - no change to order
-      break;
-  }
-  
-  return result;
-};

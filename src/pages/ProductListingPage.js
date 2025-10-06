@@ -934,6 +934,15 @@ const ProductListingPage = () => {
       )
     });
     
+    // Detailed filter analysis
+    console.log('🎯 DETAILED FILTER ANALYSIS:');
+    Object.keys(filters).forEach(key => {
+      const value = filters[key];
+      if (value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
+        console.log(`🔍 Active filter: ${key} = ${JSON.stringify(value)}`);
+      }
+    });
+    
     // Log individual products
     console.log('📦 Redux items:', items.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
     console.log('📦 Redux filtered items:', filteredItems.map(p => ({ id: p.id, name: p.name, category: p.category, brand: p.brand })));
@@ -946,6 +955,12 @@ const ProductListingPage = () => {
       return value !== null && value !== '';
     });
     console.log('🎯 Has active filters:', hasFilters);
+    
+    // Special check for price range
+    if (filters.priceRange) {
+      console.log('💰 Price range filter:', filters.priceRange);
+      console.log('💰 Products by price:', items.map(p => ({ name: p.name, price: p.price, inRange: p.price >= filters.priceRange.min && p.price <= filters.priceRange.max })));
+    }
   }, [effectiveItems, effectiveFilteredItems, items, filteredItems, filters, sortOption, status, error]);
 
   // Get category, search, featured, best-sellers, style, gender, and type from URL query params
@@ -1146,6 +1161,36 @@ const ProductListingPage = () => {
         <PageTitle>
           {filters.search ? `Search results for "${filters.search}"` : 'Shop Your Favourite Eyewear'}
         </PageTitle>
+        
+        {/* Debug: Quick Reset Button */}
+        <div style={{ 
+          background: '#fff3cd', 
+          border: '1px solid #ffeaa7', 
+          padding: '10px', 
+          borderRadius: '4px', 
+          marginBottom: '1rem',
+          fontSize: '0.9rem'
+        }}>
+          <strong>Debug Mode:</strong> Showing {effectiveFilteredItems.length} of {effectiveItems.length} products
+          {activeFilters.length > 0 && (
+            <span> | Active filters: {activeFilters.map(f => f.type).join(', ')}</span>
+          )}
+          <button 
+            onClick={handleResetFilters}
+            style={{
+              marginLeft: '10px',
+              padding: '4px 8px',
+              background: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '3px',
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            Reset All Filters
+          </button>
+        </div>
        
       </PageHeader>
       

@@ -803,9 +803,9 @@ const ProductListingPage = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
 
-  // Use Redux state directly - TEMPORARILY BYPASS FILTERING TO DEBUG
+  // Use Redux state directly
   const effectiveItems = items;
-  const effectiveFilteredItems = items; // Use all items instead of filtered items to see all products
+  const effectiveFilteredItems = filteredItems;
 
   // Helper function to calculate discounted price
   const calculateDiscountedPrice = (product) => {
@@ -914,10 +914,6 @@ const ProductListingPage = () => {
   useEffect(() => {
     console.log('🚀 ProductListingPage: Component mounted, fetching products...');
     dispatch(fetchProducts());
-    
-    // TEMPORARY: Clear all filters on mount to debug
-    console.log('🧹 Clearing all filters for debugging...');
-    dispatch(resetFilters());
   }, [dispatch]);
 
   // Debug logging
@@ -1007,8 +1003,13 @@ const ProductListingPage = () => {
   
   // Handle filter changes
   const handleCategoryChange = (category) => {
+    console.log('🏷️ Category change requested:', category);
+    console.log('🏷️ Current category:', filters.category);
+    
     // If the same category is selected, deselect it
     const newCategory = filters.category === category ? null : category;
+    console.log('🏷️ Setting new category:', newCategory);
+    
     dispatch(setFilters({ category: newCategory }));
   };
   
@@ -1142,6 +1143,11 @@ const ProductListingPage = () => {
     id: category,
     name: typeof category === 'string' ? category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : category
   }));
+  
+  // Debug categories
+  console.log('🏷️ Available categories:', categories);
+  console.log('🏷️ Filter categories:', filterCategories);
+  console.log('🎯 Current category filter:', filters.category);
   
   return (
     <PageContainer>

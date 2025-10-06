@@ -105,6 +105,71 @@ const MainImage = styled.div`
   }
 `;
 
+const ThumbnailGallery = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+`;
+
+const ThumbnailImage = styled.div`
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid ${props => props.active ? '#3ABEF9' : 'transparent'};
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #3ABEF9;
+    transform: scale(1.05);
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #f5f5f5;
+  }
+  
+  @media (max-width: 480px) {
+    width: 60px;
+    height: 60px;
+  }
+`;
+
+const ColorIndicator = styled.div`
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: ${props => props.color || '#ccc'};
+  border: 1px solid #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+`;
+
 const ProductInfo = styled.div`
   flex: 1;
   display: flex;
@@ -2151,6 +2216,11 @@ const ProductDetailPage = () => {
           <MainImage>
             <img 
               src={(() => {
+                // If selectedImage is -1, show main product image
+                if (selectedImage === -1 && product?.image) {
+                  return product.image;
+                }
+                
                 // Try to get image by selected color name first
                 const selectedColorImage = selectedColor && product?.colors?.find(c => c.name === selectedColor)?.image;
                 if (selectedColorImage) {
@@ -2173,8 +2243,67 @@ const ProductDetailPage = () => {
                 return '/images/eyeglasses.webp';
               })()} 
               alt={product?.name || 'Product'} 
+              onError={(e) => {
+                e.target.src = '/images/eyeglasses.webp';
+              }}
             />
           </MainImage>
+          
+          {/* Thumbnail Gallery - Show when there are color images or main image */}
+          {(() => {
+            const colorImages = product?.colors?.filter(c => c.image) || [];
+            const hasMainImage = product?.image && !colorImages.some(c => c.image === product.image);
+            const totalImages = colorImages.length + (hasMainImage ? 1 : 0);
+            
+            if (totalImages > 1) {
+              return (
+                <ThumbnailGallery>
+                  {/* Main product image first (if different from color images) */}
+                  {hasMainImage && (
+                    <ThumbnailImage
+                      active={selectedImage === -1}
+                      onClick={() => {
+                        setSelectedImage(-1);
+                        setSelectedColor(null);
+                      }}
+                      style={{ position: 'relative' }}
+                    >
+                      <img 
+                        src={product.image} 
+                        alt={`${product.name} - Main`}
+                        onError={(e) => {
+                          e.target.src = '/images/eyeglasses.webp';
+                        }}
+                      />
+                    </ThumbnailImage>
+                  )}
+                  
+                  {/* Color variant images */}
+                  {colorImages.map((color, index) => (
+                    <ThumbnailImage
+                      key={`color-${index}`}
+                      active={selectedImage === index}
+                      onClick={() => {
+                        setSelectedImage(index);
+                        setSelectedColor(color.name);
+                      }}
+                      style={{ position: 'relative' }}
+                    >
+                      <img 
+                        src={color.image} 
+                        alt={`${product.name} - ${color.name}`}
+                        onError={(e) => {
+                          e.target.src = '/images/eyeglasses.webp';
+                        }}
+                      />
+                      <ColorIndicator color={color.hex} />
+                    </ThumbnailImage>
+                  ))}
+                </ThumbnailGallery>
+              );
+            }
+            return null;
+          })()}
         </ImageGallery>
 
         <ProductInfo>

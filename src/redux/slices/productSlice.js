@@ -1,20 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import productApi from '../../api/productApi';
-import sampleProducts from '../../utils/addSampleProducts';
 
 // Async thunks for API operations
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
-  async () => {
+  async (_, { rejectWithValue }) => {
     try {
       return await productApi.getAllProducts();
     } catch (error) {
-      // If API fails, use sample products as fallback
-      console.warn('API failed, using sample products:', error.message);
-      return sampleProducts.map((product, index) => ({
-        ...product,
-        id: index + 1
-      }));
+      console.warn('API failed:', error.message);
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -65,15 +60,9 @@ export const deleteProductAsync = createAsyncThunk(
   }
 );
 
-// Initialize sample products
-const initialSampleProducts = sampleProducts.map((product, index) => ({
-  ...product,
-  id: index + 1
-}));
-
 const initialState = {
-  items: initialSampleProducts,
-  filteredItems: initialSampleProducts, // Initialize with sample products
+  items: [],
+  filteredItems: [],
   filters: {
     category: null,
     brand: null,
@@ -87,6 +76,8 @@ const initialState = {
     style: null,
     gender: null,
     type: null,
+    size: null,
+    rim: null,
     features: []
   },
   sortOption: 'featured',
@@ -167,37 +158,18 @@ const productSlice = createSlice({
         const products = action.payload.products || action.payload || [];
         const validProducts = Array.isArray(products) ? products : [];
         
-        // Only update if we got valid products, otherwise keep existing items (including sample products)
-        if (validProducts.length > 0) {
-          state.items = validProducts;
-          console.log(`✅ Redux: Updated with ${validProducts.length} products from API`);
-        } else {
-          console.warn('⚠️ Redux: API returned empty array, keeping existing products');
-          // If state.items is also empty, use sample products as fallback
-          if (state.items.length === 0) {
-            state.items = sampleProducts.map((product, index) => ({
-              ...product,
-              id: index + 1
-            }));
-            console.log(`📦 Redux: Using ${state.items.length} sample products as fallback`);
-          }
-        }
+        // Update with products from API (empty array if no products)
+        state.items = validProducts;
+        console.log(`✅ Redux: Updated with ${validProducts.length} products from API`);
         
         state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
-        
-        // Ensure we have sample products as fallback when API fails
-        if (state.items.length === 0) {
-          state.items = sampleProducts.map((product, index) => ({
-            ...product,
-            id: index + 1
-          }));
-          console.log(`📦 Redux: API failed, using ${state.items.length} sample products as fallback`);
-          state.filteredItems = applyFilters(state.items, state.filters, state.sortOption);
-        }
+        // Keep items empty if API fails
+        state.items = [];
+        state.filteredItems = [];
       })
       
       // Handle createProductAsync
@@ -424,6 +396,22 @@ const applyFilters = (items, filters, sortOption) => {
         return false;
       }
       return item.type.toLowerCase() === filters.type.toLowerCase();
+    });
+  }
+  
+  // Apply size filter
+  if (filters.size) {
+    result = result.filter(item => {
+      if (!item.size) return false;
+      return item.size.toLowerCase() === filters.size.toLowerCase();
+    });
+  }
+  
+  // Apply rim filter
+  if (filters.rim) {
+    result = result.filter(item => {
+      if (!item.rim) return false;
+      return item.rim.toLowerCase() === filters.rim.toLowerCase();
     });
   }
   

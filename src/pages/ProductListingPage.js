@@ -803,7 +803,7 @@ const ProductListingPage = () => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
 
-  // Use Redux state directly (now initialized with sample products)
+  // Use Redux state directly
   const effectiveItems = items;
   const effectiveFilteredItems = filteredItems;
 
@@ -1058,6 +1058,21 @@ const ProductListingPage = () => {
     
     dispatch(setFilters({ features: updatedFeatures }));
   };
+
+  const handleGenderChange = (gender) => {
+    const newGender = filters.gender === gender ? null : gender;
+    dispatch(setFilters({ gender: newGender }));
+  };
+
+  const handleSizeChange = (size) => {
+    const newSize = filters.size === size ? null : size;
+    dispatch(setFilters({ size: newSize }));
+  };
+
+  const handleRimChange = (rim) => {
+    const newRim = filters.rim === rim ? null : rim;
+    dispatch(setFilters({ rim: newRim }));
+  };
   
   const handlePriceRangeChange = () => {
     dispatch(setFilters({ priceRange: { min: Number(minPrice), max: Number(maxPrice) } }));
@@ -1103,6 +1118,8 @@ const ProductListingPage = () => {
   if (filters.shape) activeFilters.push({ type: 'shape', value: filters.shape });
   if (filters.color) activeFilters.push({ type: 'color', value: filters.color });
   if (filters.gender) activeFilters.push({ type: 'gender', value: filters.gender });
+  if (filters.size) activeFilters.push({ type: 'size', value: filters.size });
+  if (filters.rim) activeFilters.push({ type: 'rim', value: filters.rim });
   if (filters.type) activeFilters.push({ type: 'type', value: filters.type });
   if (filters.style) activeFilters.push({ type: 'style', value: filters.style });
   filters.features.forEach(feature => activeFilters.push({ type: 'feature', value: feature }));
@@ -1194,7 +1211,9 @@ const ProductListingPage = () => {
                 if (filter.type === 'material') handleMaterialChange(null);
                 if (filter.type === 'shape') handleShapeChange(null);
                 if (filter.type === 'color') handleColorChange(null);
-                if (filter.type === 'gender') dispatch(setFilters({ gender: null }));
+                if (filter.type === 'gender') handleGenderChange(null);
+                if (filter.type === 'size') handleSizeChange(null);
+                if (filter.type === 'rim') handleRimChange(null);
                 if (filter.type === 'type') dispatch(setFilters({ type: null }));
                 if (filter.type === 'style') dispatch(setFilters({ style: null }));
                 if (filter.type === 'feature') handleFeatureToggle(filter.value);
@@ -1250,15 +1269,30 @@ const ProductListingPage = () => {
               </FilterTitle>
               <FilterContent expanded={expandedSections.gender}>
                 <CheckboxLabel>
-                  <input type="radio" name="gender" />
+                  <input 
+                    type="radio" 
+                    name="gender" 
+                    checked={filters.gender === 'men'}
+                    onChange={() => handleGenderChange('men')}
+                  />
                   Men
                 </CheckboxLabel>
                 <CheckboxLabel>
-                  <input type="radio" name="gender" />
+                  <input 
+                    type="radio" 
+                    name="gender" 
+                    checked={filters.gender === 'women'}
+                    onChange={() => handleGenderChange('women')}
+                  />
                   Women
                 </CheckboxLabel>
                 <CheckboxLabel>
-                  <input type="radio" name="gender" />
+                  <input 
+                    type="radio" 
+                    name="gender" 
+                    checked={filters.gender === 'unisex'}
+                    onChange={() => handleGenderChange('unisex')}
+                  />
                   Unisex
                 </CheckboxLabel>
               </FilterContent>
@@ -1294,15 +1328,30 @@ const ProductListingPage = () => {
               </FilterTitle>
               <FilterContent expanded={expandedSections.size}>
                 <CheckboxLabel>
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="size" 
+                    checked={filters.size === 'small'}
+                    onChange={() => handleSizeChange('small')}
+                  />
                   Small
                 </CheckboxLabel>
                 <CheckboxLabel>
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="size" 
+                    checked={filters.size === 'medium'}
+                    onChange={() => handleSizeChange('medium')}
+                  />
                   Medium
                 </CheckboxLabel>
                 <CheckboxLabel>
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="size" 
+                    checked={filters.size === 'large'}
+                    onChange={() => handleSizeChange('large')}
+                  />
                   Large
                 </CheckboxLabel>
               </FilterContent>
@@ -1406,15 +1455,30 @@ const ProductListingPage = () => {
               </FilterTitle>
               <FilterContent expanded={expandedSections.rim}>
                 <CheckboxLabel>
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="rim" 
+                    checked={filters.rim === 'full-rim'}
+                    onChange={() => handleRimChange('full-rim')}
+                  />
                   Full Rim
                 </CheckboxLabel>
                 <CheckboxLabel>
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="rim" 
+                    checked={filters.rim === 'semi-rim'}
+                    onChange={() => handleRimChange('semi-rim')}
+                  />
                   Semi Rim
                 </CheckboxLabel>
                 <CheckboxLabel>
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="rim" 
+                    checked={filters.rim === 'rimless'}
+                    onChange={() => handleRimChange('rimless')}
+                  />
                   Rimless
                 </CheckboxLabel>
               </FilterContent>
@@ -1498,7 +1562,9 @@ const ProductListingPage = () => {
                       if (filter.type === 'material') handleMaterialChange(null);
                       if (filter.type === 'shape') handleShapeChange(null);
                       if (filter.type === 'color') handleColorChange(null);
-                      if (filter.type === 'gender') dispatch(setFilters({ gender: null }));
+                      if (filter.type === 'gender') handleGenderChange(null);
+                      if (filter.type === 'size') handleSizeChange(null);
+                      if (filter.type === 'rim') handleRimChange(null);
                       if (filter.type === 'type') dispatch(setFilters({ type: null }));
                       if (filter.type === 'style') dispatch(setFilters({ style: null }));
                       if (filter.type === 'feature') handleFeatureToggle(filter.value);
@@ -1536,56 +1602,7 @@ const ProductListingPage = () => {
         </DesktopFilters>
         
         <ProductGrid viewMode={viewMode}>
-                  {status === 'loading' && (
-                    <div style={{ 
-                      gridColumn: '1 / -1', 
-                      textAlign: 'center', 
-                      padding: '2rem',
-                      color: '#666'
-                    }}>
-                      <div>Loading products...</div>
-                      <div style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                        {effectiveItems.length > 0 ? `Showing ${effectiveItems.length} sample products` : 'Fetching from API...'}
-                      </div>
-                    </div>
-                  )}
-                  {status === 'failed' && error && (
-                    <div style={{ 
-                      gridColumn: '1 / -1', 
-                      textAlign: 'center', 
-                      padding: '2rem',
-                      color: '#e74c3c',
-                      backgroundColor: '#fdf2f2',
-                      borderRadius: '8px',
-                      margin: '1rem 0'
-                    }}>
-                      <div>⚠️ Failed to load products from API</div>
-                      <div style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#666' }}>
-                        {error}
-                      </div>
-                      <div style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#666' }}>
-                        Showing {effectiveItems.length} sample products instead
-                      </div>
-                    </div>
-                  )}
-                  {(() => {
-                    // Check if any meaningful filters are applied
-                    const hasActiveFilters = Object.keys(filters).some(key => {
-                      const value = filters[key];
-                      if (key === 'priceRange') {
-                        return value.min > 0 || value.max < 1000;
-                      }
-                      return value !== null && value !== '' && 
-                             (Array.isArray(value) ? value.length > 0 : true);
-                    });
-                    
-                    // Use all items if no filters are active, otherwise use filtered items
-                    const productsToShow = hasActiveFilters ? effectiveFilteredItems : effectiveItems;
-                    console.log('🎯 Products to show:', productsToShow.length, 'hasActiveFilters:', hasActiveFilters);
-                    console.log('🎯 Using effective items:', effectiveItems.length, 'effective filtered:', effectiveFilteredItems.length);
-                    
-                    return productsToShow;
-                  })().filter(product => {
+                  {effectiveFilteredItems.filter(product => {
                     const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
                     const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
                     const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
@@ -1690,9 +1707,33 @@ const ProductListingPage = () => {
               <MobileFilterSectionIcon expanded={mobileExpandedSections.gender}>+</MobileFilterSectionIcon>
             </MobileFilterSectionHeader>
             <MobileFilterSectionContent expanded={mobileExpandedSections.gender}>
-              <MobileFilterOption>Men</MobileFilterOption>
-              <MobileFilterOption>Women</MobileFilterOption>
-              <MobileFilterOption>Unisex</MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleGenderChange('men')}
+                style={{ 
+                  backgroundColor: filters.gender === 'men' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.gender === 'men' ? '600' : '400'
+                }}
+              >
+                Men
+              </MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleGenderChange('women')}
+                style={{ 
+                  backgroundColor: filters.gender === 'women' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.gender === 'women' ? '600' : '400'
+                }}
+              >
+                Women
+              </MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleGenderChange('unisex')}
+                style={{ 
+                  backgroundColor: filters.gender === 'unisex' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.gender === 'unisex' ? '600' : '400'
+                }}
+              >
+                Unisex
+              </MobileFilterOption>
             </MobileFilterSectionContent>
           </MobileFilterSection>
           
@@ -1741,14 +1782,38 @@ const ProductListingPage = () => {
             <MobileFilterSectionHeader onClick={() => toggleMobileSection('size')}>
               <MobileFilterSectionTitle>
                 Size
-                {filters.size && <SelectedFilterValue>{filters.size}</SelectedFilterValue>}
+                {filters.size && <SelectedFilterValue>{filters.size === 'small' ? 'Small' : filters.size === 'medium' ? 'Medium' : 'Large'}</SelectedFilterValue>}
               </MobileFilterSectionTitle>
               <MobileFilterSectionIcon expanded={mobileExpandedSections.size}>+</MobileFilterSectionIcon>
             </MobileFilterSectionHeader>
             <MobileFilterSectionContent expanded={mobileExpandedSections.size}>
-              <MobileFilterOption>Small</MobileFilterOption>
-              <MobileFilterOption>Medium</MobileFilterOption>
-              <MobileFilterOption>Large</MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleSizeChange('small')}
+                style={{ 
+                  backgroundColor: filters.size === 'small' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.size === 'small' ? '600' : '400'
+                }}
+              >
+                Small
+              </MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleSizeChange('medium')}
+                style={{ 
+                  backgroundColor: filters.size === 'medium' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.size === 'medium' ? '600' : '400'
+                }}
+              >
+                Medium
+              </MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleSizeChange('large')}
+                style={{ 
+                  backgroundColor: filters.size === 'large' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.size === 'large' ? '600' : '400'
+                }}
+              >
+                Large
+              </MobileFilterOption>
             </MobileFilterSectionContent>
           </MobileFilterSection>
           
@@ -1796,9 +1861,33 @@ const ProductListingPage = () => {
               <MobileFilterSectionIcon expanded={mobileExpandedSections.rim}>+</MobileFilterSectionIcon>
             </MobileFilterSectionHeader>
             <MobileFilterSectionContent expanded={mobileExpandedSections.rim}>
-              <MobileFilterOption>Full Rim</MobileFilterOption>
-              <MobileFilterOption>Semi Rim</MobileFilterOption>
-              <MobileFilterOption>Rimless</MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleRimChange('full-rim')}
+                style={{ 
+                  backgroundColor: filters.rim === 'full-rim' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.rim === 'full-rim' ? '600' : '400'
+                }}
+              >
+                Full Rim
+              </MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleRimChange('semi-rim')}
+                style={{ 
+                  backgroundColor: filters.rim === 'semi-rim' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.rim === 'semi-rim' ? '600' : '400'
+                }}
+              >
+                Semi Rim
+              </MobileFilterOption>
+              <MobileFilterOption 
+                onClick={() => handleRimChange('rimless')}
+                style={{ 
+                  backgroundColor: filters.rim === 'rimless' ? '#f0f0f0' : 'transparent',
+                  fontWeight: filters.rim === 'rimless' ? '600' : '400'
+                }}
+              >
+                Rimless
+              </MobileFilterOption>
             </MobileFilterSectionContent>
           </MobileFilterSection>
           

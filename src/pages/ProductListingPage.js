@@ -10,6 +10,7 @@ import formatPrice from '../utils/formatPrice';
 import { generateUniqueSlug } from '../utils/slugUtils';
 // At the top of the file, keep only one import for the icons
 import { FiHeart, FiX } from 'react-icons/fi';
+import ProductListingDebug from '../components/debug/ProductListingDebug';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -798,7 +799,7 @@ const ProductListingPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { items, filteredItems, filters, sortOption } = useSelector(state => state.products);
+  const { items, filteredItems, filters, sortOption, status, error } = useSelector(state => state.products);
   const { isAuthenticated } = useSelector(state => state.auth);
   const wishlist = useSelector(state => state.wishlist.items);
 
@@ -1105,6 +1106,15 @@ const ProductListingPage = () => {
   
   return (
     <PageContainer>
+      {/* Debug component - remove in production */}
+      <ProductListingDebug 
+        items={items} 
+        filteredItems={filteredItems} 
+        filters={filters} 
+        status={status} 
+        error={error} 
+      />
+      
       <PageHeader>
         <PageTitle>
           {filters.search ? `Search results for "${filters.search}"` : 'Shop Your Favourite Eyewear'}

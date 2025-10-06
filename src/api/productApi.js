@@ -16,21 +16,33 @@ const getApiBaseUrl = () => {
     return envApiUrl;
   }
   
+  // For localhost development, try local product server first
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    const localApiUrl = 'http://localhost:5004/api';
+    console.log('🏠 Using local development server:', localApiUrl);
+    return localApiUrl;
+  }
+
+  // If accessing via IP address (mobile accessing desktop), use the same IP for API
+  if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    const ipApiUrl = `http://${hostname}:5004/api`;
+    console.log('📱 Using IP-based API URL for mobile access:', ipApiUrl);
+    return ipApiUrl;
+  }
+  
   // Check if we're in deployed environment
   const isDeployedEnvironment = !hostname.includes('localhost') && 
                                !hostname.includes('127.0.0.1') && 
                                !hostname.match(/^\d+\.\d+\.\d+\.\d+$/);
   
   if (isDeployedEnvironment) {
-    // Use same domain for deployed environment
-    const deployedApiUrl = `${window.location.protocol}//${window.location.host}/api`;
-    console.log('🌐 Using same-domain API for deployment:', deployedApiUrl);
-    return deployedApiUrl;
+    console.log('🌐 Deployed environment detected - using localStorage only');
+    return null; // Force localStorage usage for deployed sites
   }
   
-  // Always use Vercel API for development and fallback
+  // Fallback to Vercel API if needed
   const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
-  console.log('☁️ Using Vercel API:', vercelApiUrl);
+  console.log('☁️ Using Vercel API as fallback:', vercelApiUrl);
   return vercelApiUrl;
 };
 
@@ -38,6 +50,12 @@ const getApiBaseUrl = () => {
 const apiRequest = async (endpoint, options = {}) => {
   // Get API base URL dynamically for each request
   const API_BASE_URL = getApiBaseUrl();
+  
+  // If API_BASE_URL is null, throw error to trigger fallback
+  if (!API_BASE_URL) {
+    throw new Error('No API URL available - using localStorage fallback');
+  }
+  
   const url = `${API_BASE_URL}${endpoint}`;
   
   // Force debug logging
@@ -285,10 +303,19 @@ const productApi = {
   // Get all products
   getAllProducts: async () => {
     try {
-      console.log('🔍 Attempting to fetch products from Neon database...');
+      console.log('🔍 Attempting to fetch products...');
       const API_BASE_URL = getApiBaseUrl();
+      
+      // If API_BASE_URL is null, use localStorage directly (deployed environment)
+      if (!API_BASE_URL) {
+        console.log('🌐 Deployed environment - using localStorage products');
+        const backupProducts = getStoredProducts();
+        console.log(`📦 Using ${backupProducts.length} products from localStorage`);
+        return backupProducts;
+      }
+      
       console.log(`🔗 API URL: ${API_BASE_URL}/products`);
-      console.log('🗄️ Database: Neon PostgreSQL from Vercel backend database');
+      console.log('🗄️ Database: Backend API');
       
       const response = await apiRequest('/products');
       

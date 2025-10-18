@@ -2649,9 +2649,13 @@ const AdminPage = () => {
     const mouseX = event.clientX - chartCanvasRect.left;
     const mouseY = event.clientY - chartCanvasRect.top;
 
-    const content = type === 'revenue'
+    const baseContent = type === 'revenue'
       ? `${point.shortLabel}: ${formatPKR(point.revenue)}`
       : `${point.shortLabel}: ${point.orders} orders`;
+    
+    const content = point.isDemo 
+      ? `${baseContent} (Demo)`
+      : baseContent;
 
     setTooltip({
       show: true,
@@ -3051,7 +3055,7 @@ const AdminPage = () => {
     });
   };
 
-  // Generate chart data based on real orders only
+  // Generate chart data based on real orders, with demo data fallback
   const chartData = useMemo(() => {
     const data = [];
 
@@ -3083,18 +3087,41 @@ const AdminPage = () => {
       });
     }
 
+    // Check if we have any real data
+    const hasRealData = data.some(d => d.orders > 0 || d.revenue > 0);
+
+    // If no real data, generate demo data for visualization
+    if (!hasRealData) {
+      // Demo data with realistic patterns for an eyewear store
+      const demoRevenues = [2500, 3200, 1800, 4100, 2900, 3600, 2200];
+      const demoOrders = [5, 7, 3, 9, 6, 8, 4];
+      
+      data.forEach((item, index) => {
+        item.revenue = demoRevenues[index];
+        item.orders = demoOrders[index];
+        item.isDemo = true; // Flag to indicate this is demo data
+      });
+    }
+
     // Debug: Log the data to console (reduced frequency)
     if (Math.random() < 0.2) {
-      console.log('📊 Chart: Real Orders:', realOrders.length, '| Has Data:', data.some(d => d.orders > 0 || d.revenue > 0));
+      console.log('📊 Chart: Real Orders:', realOrders.length, '| Has Real Data:', hasRealData, '| Using Demo:', !hasRealData);
     }
 
     // Calculate max values for scaling (minimum 1 to prevent division by zero)
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
 
-    const hasAnyData = data.some(d => d.orders > 0 || d.revenue > 0);
+    // Always show data now (either real or demo)
+    const hasAnyData = true;
 
-    return { orderData: data, maxRevenue, maxOrders, hasAnyData };
+    return { 
+      orderData: data, 
+      maxRevenue, 
+      maxOrders, 
+      hasAnyData, 
+      isUsingDemoData: !hasRealData 
+    };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
 
   // Eyewear categories (excluding contact lenses and lens-only products)
@@ -4118,7 +4145,24 @@ Type "DELETE ALL" to confirm:`;
             <ContentGrid>
               <ChartContainer>
                 <ChartHeader>
-                  <ChartTitle>Sales & Orders Overview</ChartTitle>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <ChartTitle>Sales & Orders Overview</ChartTitle>
+                    {chartData.isUsingDemoData && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                        color: 'white',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}>
+                        ✨ Demo Data
+                      </div>
+                    )}
+                  </div>
                   <ChartControls>
                     <ChartLegend>
                       <LegendItem>
@@ -4181,26 +4225,7 @@ Type "DELETE ALL" to confirm:`;
                     )}
                     {(() => {
                       // Extract data from chartData
-                      const { orderData, maxRevenue, maxOrders, hasAnyData } = chartData;
-
-                      // Show "no data" message if there are no real orders
-                      if (!hasAnyData) {
-                        return (
-                          <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: '300px',
-                            color: '#64748b',
-                            textAlign: 'center'
-                          }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
-                            <h3 style={{ color: '#1a202c', marginBottom: '0.5rem' }}>No Sales Data Yet</h3>
-                            <p>Your sales chart will appear here once you start receiving orders.</p>
-                          </div>
-                        );
-                      }
+                      const { orderData, maxRevenue, maxOrders, hasAnyData, isUsingDemoData } = chartData;
 
                       // Memoize normalized data to prevent re-calculation on hover
                       const revenuePoints = orderData.map((data, index) => ({
@@ -4309,6 +4334,24 @@ Type "DELETE ALL" to confirm:`;
                         </>
                       );
                     })()}
+                    
+                    {/* Demo Data Note */}
+                    {chartData.isUsingDemoData && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        right: '10px',
+                        background: 'rgba(251, 191, 36, 0.1)',
+                        border: '1px solid rgba(251, 191, 36, 0.3)',
+                        borderRadius: '8px',
+                        padding: '0.5rem 0.75rem',
+                        fontSize: '0.75rem',
+                        color: '#92400e',
+                        fontWeight: '500'
+                      }}>
+                        📊 Showing sample data for demonstration
+                      </div>
+                    )}
                   </ChartCanvas>
                 </ChartContainer2>
               </ChartContainer>

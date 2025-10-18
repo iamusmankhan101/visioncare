@@ -2652,8 +2652,8 @@ const AdminPage = () => {
     const baseContent = type === 'revenue'
       ? `${point.shortLabel}: ${formatPKR(point.revenue)}`
       : `${point.shortLabel}: ${point.orders} orders`;
-    
-    const content = point.isDemo 
+
+    const content = point.isDemo
       ? `${baseContent} (Demo)`
       : baseContent;
 
@@ -3095,7 +3095,7 @@ const AdminPage = () => {
       // Demo data with realistic patterns for an eyewear store
       const demoRevenues = [2500, 3200, 1800, 4100, 2900, 3600, 2200];
       const demoOrders = [5, 7, 3, 9, 6, 8, 4];
-      
+
       data.forEach((item, index) => {
         item.revenue = demoRevenues[index];
         item.orders = demoOrders[index];
@@ -3115,12 +3115,12 @@ const AdminPage = () => {
     // Always show data now (either real or demo)
     const hasAnyData = true;
 
-    return { 
-      orderData: data, 
-      maxRevenue, 
-      maxOrders, 
-      hasAnyData, 
-      isUsingDemoData: !hasRealData 
+    return {
+      orderData: data,
+      maxRevenue,
+      maxOrders,
+      hasAnyData,
+      isUsingDemoData: !hasRealData
     };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
 
@@ -4334,7 +4334,7 @@ Type "DELETE ALL" to confirm:`;
                         </>
                       );
                     })()}
-                    
+
                     {/* Demo Data Note */}
                     {chartData.isUsingDemoData && (
                       <div style={{

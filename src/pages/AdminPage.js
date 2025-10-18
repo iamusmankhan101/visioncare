@@ -2649,13 +2649,9 @@ const AdminPage = () => {
     const mouseX = event.clientX - chartCanvasRect.left;
     const mouseY = event.clientY - chartCanvasRect.top;
 
-    const baseContent = type === 'revenue'
+    const content = type === 'revenue'
       ? `${point.shortLabel}: ${formatPKR(point.revenue)}`
       : `${point.shortLabel}: ${point.orders} orders`;
-
-    const content = point.isDemo
-      ? `${baseContent} (Demo)`
-      : baseContent;
 
     setTooltip({
       show: true,
@@ -3087,41 +3083,18 @@ const AdminPage = () => {
       });
     }
 
-    // Check if we have any real data
-    const hasRealData = data.some(d => d.orders > 0 || d.revenue > 0);
-
-    // If no real data, generate demo data for visualization
-    if (!hasRealData) {
-      // Demo data with realistic patterns for an eyewear store
-      const demoRevenues = [2500, 3200, 1800, 4100, 2900, 3600, 2200];
-      const demoOrders = [5, 7, 3, 9, 6, 8, 4];
-
-      data.forEach((item, index) => {
-        item.revenue = demoRevenues[index];
-        item.orders = demoOrders[index];
-        item.isDemo = true; // Flag to indicate this is demo data
-      });
-    }
-
     // Debug: Log the data to console (reduced frequency)
     if (Math.random() < 0.2) {
-      console.log('📊 Chart: Real Orders:', realOrders.length, '| Has Real Data:', hasRealData, '| Using Demo:', !hasRealData);
+      console.log('📊 Chart: Real Orders:', realOrders.length, '| Has Data:', data.some(d => d.orders > 0 || d.revenue > 0));
     }
 
     // Calculate max values for scaling (minimum 1 to prevent division by zero)
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
 
-    // Always show data now (either real or demo)
-    const hasAnyData = true;
+    const hasAnyData = data.some(d => d.orders > 0 || d.revenue > 0);
 
-    return {
-      orderData: data,
-      maxRevenue,
-      maxOrders,
-      hasAnyData,
-      isUsingDemoData: !hasRealData
-    };
+    return { orderData: data, maxRevenue, maxOrders, hasAnyData };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
 
   // Eyewear categories (excluding contact lenses and lens-only products)
@@ -4145,32 +4118,15 @@ Type "DELETE ALL" to confirm:`;
             <ContentGrid>
               <ChartContainer>
                 <ChartHeader>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <ChartTitle>Sales & Orders Overview</ChartTitle>
-                    {chartData.isUsingDemoData && (
-                      <div style={{
-                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                        color: 'white',
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: '12px',
-                        fontSize: '0.75rem',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}>
-                        ✨ Demo Data
-                      </div>
-                    )}
-                  </div>
+                  <ChartTitle>Sales & Orders Overview</ChartTitle>
                   <ChartControls>
                     <ChartLegend>
                       <LegendItem>
-                        <LegendDot color="#0891b2" />
+                        <LegendDot color="#3b82f6" />
                         Revenue
                       </LegendItem>
                       <LegendItem>
-                        <LegendDot color="#22c55e" />
+                        <LegendDot color="#60a5fa" />
                         Orders
                       </LegendItem>
                     </ChartLegend>
@@ -4225,7 +4181,26 @@ Type "DELETE ALL" to confirm:`;
                     )}
                     {(() => {
                       // Extract data from chartData
-                      const { orderData, maxRevenue, maxOrders, hasAnyData, isUsingDemoData } = chartData;
+                      const { orderData, maxRevenue, maxOrders, hasAnyData } = chartData;
+
+                      // Show "no data" message if there are no real orders
+                      if (!hasAnyData) {
+                        return (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: '300px',
+                            color: '#64748b',
+                            textAlign: 'center'
+                          }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
+                            <h3 style={{ color: '#1a202c', marginBottom: '0.5rem' }}>No Sales Data Yet</h3>
+                            <p>Your sales chart will appear here once you start receiving orders.</p>
+                          </div>
+                        );
+                      }
 
                       // Memoize normalized data to prevent re-calculation on hover
                       const revenuePoints = orderData.map((data, index) => ({
@@ -4264,12 +4239,12 @@ Type "DELETE ALL" to confirm:`;
                             <BarChart viewBox="0 0 100 100" preserveAspectRatio="none">
                               <defs>
                                 <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor="#0891b2" stopOpacity="0.8" />
-                                  <stop offset="100%" stopColor="#0891b2" stopOpacity="0.6" />
+                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+                                  <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.6" />
                                 </linearGradient>
                                 <linearGradient id="orderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.8" />
-                                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0.6" />
+                                  <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.8" />
+                                  <stop offset="100%" stopColor="#2563eb" stopOpacity="0.6" />
                                 </linearGradient>
                               </defs>
 
@@ -4287,11 +4262,11 @@ Type "DELETE ALL" to confirm:`;
                                     width={barWidth}
                                     height={barHeight}
                                     fill="url(#revenueGradient)"
-                                    stroke="#0891b2"
+                                    stroke="#3b82f6"
                                     strokeWidth="0.1"
                                     style={{
                                       cursor: 'pointer',
-                                      filter: 'drop-shadow(0 2px 4px rgba(8, 145, 178, 0.2))'
+                                      filter: 'drop-shadow(0 2px 4px rgba(59, 130, 246, 0.2))'
                                     }}
                                     onMouseEnter={(e) => handlePointHover(e, point, 'revenue')}
                                     onMouseLeave={handlePointLeave}
@@ -4313,11 +4288,11 @@ Type "DELETE ALL" to confirm:`;
                                     width={barWidth}
                                     height={barHeight}
                                     fill="url(#orderGradient)"
-                                    stroke="#22c55e"
+                                    stroke="#60a5fa"
                                     strokeWidth="0.1"
                                     style={{
                                       cursor: 'pointer',
-                                      filter: 'drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2))'
+                                      filter: 'drop-shadow(0 2px 4px rgba(96, 165, 250, 0.2))'
                                     }}
                                     onMouseEnter={(e) => handlePointHover(e, point, 'orders')}
                                     onMouseLeave={handlePointLeave}
@@ -4335,23 +4310,7 @@ Type "DELETE ALL" to confirm:`;
                       );
                     })()}
 
-                    {/* Demo Data Note */}
-                    {chartData.isUsingDemoData && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        right: '10px',
-                        background: 'rgba(251, 191, 36, 0.1)',
-                        border: '1px solid rgba(251, 191, 36, 0.3)',
-                        borderRadius: '8px',
-                        padding: '0.5rem 0.75rem',
-                        fontSize: '0.75rem',
-                        color: '#92400e',
-                        fontWeight: '500'
-                      }}>
-                        📊 Showing sample data for demonstration
-                      </div>
-                    )}
+
                   </ChartCanvas>
                 </ChartContainer2>
               </ChartContainer>

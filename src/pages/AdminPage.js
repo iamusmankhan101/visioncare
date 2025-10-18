@@ -2763,7 +2763,7 @@ const AdminPage = () => {
     loadRealOrders();
 
     // Ensure page starts at the top
-    w.indow.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }, [dispatch]);
 
   // Auto-refresh chart data every 30 seconds - TEMPORARILY DISABLED

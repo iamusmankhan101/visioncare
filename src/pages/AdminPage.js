@@ -2526,6 +2526,13 @@ const AdminPage = () => {
     lensColorImages: {}, // Object to store images for each lens color
     hasPowerOptions: false,
     lensType: '',
+    // Contact lens specific fields
+    contactLensType: '',
+    coloredLensStyle: '',
+    contactLensFeatures: [],
+    // Prescription lens specific fields
+    prescriptionType: '',
+    // General lens specifications
     waterContent: '',
     baseCurve: '',
     diameter: '',
@@ -5240,8 +5247,99 @@ Type "DELETE ALL" to confirm:`;
                               <FormHint>Check if this lens product is available in different powers</FormHint>
                             </FormGroup>
 
+                            {/* Contact Lens Specific Options */}
+                            {(productData.category === 'contact-lenses' || productData.category === 'colored-lenses' || productData.category === 'transparent-lenses') && (
+                              <FormGroup>
+                                <Label htmlFor="contactLensType">Contact Lens Type</Label>
+                                <Select
+                                  id="contactLensType"
+                                  name="contactLensType"
+                                  value={productData.contactLensType || ''}
+                                  onChange={handleLensInputChange}
+                                >
+                                  <option value="">Select Contact Lens Type</option>
+                                  <option value="Daily Disposable">Daily Disposable</option>
+                                  <option value="Weekly">Weekly</option>
+                                  <option value="Bi-Weekly">Bi-Weekly</option>
+                                  <option value="Monthly">Monthly</option>
+                                  <option value="Quarterly">Quarterly</option>
+                                  <option value="Yearly">Yearly</option>
+                                </Select>
+                              </FormGroup>
+                            )}
+
+                            {/* Colored Contact Lens Options */}
+                            {productData.category === 'colored-lenses' && (
+                              <FormGroup>
+                                <Label htmlFor="coloredLensStyle">Colored Lens Style</Label>
+                                <Select
+                                  id="coloredLensStyle"
+                                  name="coloredLensStyle"
+                                  value={productData.coloredLensStyle || ''}
+                                  onChange={handleLensInputChange}
+                                >
+                                  <option value="">Select Style</option>
+                                  <option value="Natural Enhancement">Natural Enhancement</option>
+                                  <option value="Color Change">Color Change</option>
+                                  <option value="Cosmetic">Cosmetic</option>
+                                  <option value="Special Effects">Special Effects</option>
+                                  <option value="Halloween/Costume">Halloween/Costume</option>
+                                </Select>
+                              </FormGroup>
+                            )}
+
+                            {/* Prescription Lens Options */}
+                            {productData.category === 'prescription-lenses' && (
+                              <FormGroup>
+                                <Label htmlFor="prescriptionType">Prescription Type</Label>
+                                <Select
+                                  id="prescriptionType"
+                                  name="prescriptionType"
+                                  value={productData.prescriptionType || ''}
+                                  onChange={handleLensInputChange}
+                                >
+                                  <option value="">Select Prescription Type</option>
+                                  <option value="Single Vision">Single Vision</option>
+                                  <option value="Bifocal">Bifocal</option>
+                                  <option value="Progressive">Progressive</option>
+                                  <option value="Trifocal">Trifocal</option>
+                                  <option value="Reading">Reading</option>
+                                  <option value="Computer">Computer/Blue Light</option>
+                                </Select>
+                              </FormGroup>
+                            )}
+
+                            {/* Special Features for Contact Lenses */}
+                            {(productData.category === 'contact-lenses' || productData.category === 'colored-lenses' || productData.category === 'transparent-lenses') && (
+                              <FormGroup>
+                                <Label>Contact Lens Features</Label>
+                                <CheckboxContainer>
+                                  {['UV Protection', 'Moisture Lock', 'Astigmatism Correction', 'Multifocal', 'Extended Wear', 'Silicone Hydrogel'].map(feature => (
+                                    <CheckboxLabel key={feature}>
+                                      <input
+                                        type="checkbox"
+                                        checked={(productData.contactLensFeatures || []).includes(feature)}
+                                        onChange={() => {
+                                          const currentFeatures = productData.contactLensFeatures || [];
+                                          const updatedFeatures = currentFeatures.includes(feature)
+                                            ? currentFeatures.filter(f => f !== feature)
+                                            : [...currentFeatures, feature];
+                                          setProductData({
+                                            ...productData,
+                                            contactLensFeatures: updatedFeatures
+                                          });
+                                        }}
+                                      />
+                                      {feature}
+                                    </CheckboxLabel>
+                                  ))}
+                                </CheckboxContainer>
+                              </FormGroup>
+                            )}
+
+                            {/* General Lens Type (for all lens categories) */}
                             <FormGroup>
-                              <Label htmlFor="lensType">Lens Type</Label>
+                              <Label htmlFor="lensType">General Lens Type</Label>
                               <Select
                                 id="lensType"
                                 name="lensType"
@@ -5249,13 +5347,10 @@ Type "DELETE ALL" to confirm:`;
                                 onChange={handleLensInputChange}
                               >
                                 <option value="">Select Type</option>
-                                <option value="Daily">Daily Disposable</option>
-                                <option value="Weekly">Weekly</option>
-                                <option value="Monthly">Monthly</option>
-                                <option value="Yearly">Yearly</option>
-                                <option value="Colored">Colored</option>
-                                <option value="Toric">Toric (Astigmatism)</option>
-                                <option value="Multifocal">Multifocal</option>
+                                <option value="Standard">Standard</option>
+                                <option value="Premium">Premium</option>
+                                <option value="Specialty">Specialty</option>
+                                <option value="Custom">Custom</option>
                               </Select>
                             </FormGroup>
                           </FormSection>

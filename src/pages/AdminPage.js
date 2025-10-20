@@ -3306,15 +3306,6 @@ const AdminPage = () => {
       eyewearCategories.includes(product.category);
   };
 
-  // Handle checkbox change for featured products
-  const handleFeaturedToggle = () => {
-    setProductData({
-      ...productData,
-      featured: !productData.featured
-    });
-  };
-
-
   // Add these new handler functions
   const handleGalleryUpload = (e) => {
     const files = Array.from(e.target.files);

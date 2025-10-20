@@ -3306,52 +3306,6 @@ const AdminPage = () => {
       eyewearCategories.includes(product.category);
   };
 
-  // Handle input changes
-  const handleInputChange = (e) => {
-    console.log('🔥 DEBUG: handleInputChange called!');
-    console.log('🔥 DEBUG: Event target:', e.target);
-    console.log('🔥 DEBUG: Event type:', e.type);
-
-    const { name, value } = e.target;
-    console.log(`🔄 AdminPage: Input changed - ${name}: "${value}"`);
-    console.log(`🔄 AdminPage: Input name type:`, typeof name);
-    console.log(`🔄 AdminPage: Input value type:`, typeof value);
-
-    // Special handling for specific fields
-    let processedValue = value;
-    if (name === 'price') {
-      processedValue = parseFloat(value);
-    }
-
-    console.log('🔄 AdminPage: Current productData before update:', productData);
-
-    const updatedData = {
-      ...productData,
-      [name]: processedValue
-    };
-
-    console.log('🔄 AdminPage: New updatedData:', updatedData);
-    console.log(`🔄 AdminPage: Specific field ${name} in updatedData:`, updatedData[name]);
-
-    setProductData(updatedData);
-    console.log('🔄 AdminPage: setProductData called with:', updatedData);
-
-    // Debug specific fields that were having issues
-    if (name === 'gender' || name === 'style' || name === 'status' || name === 'category') {
-      console.log(`✅ AdminPage: ${name} field updated successfully to: "${processedValue}"`);
-      console.log(`✅ AdminPage: Current ${name} value in state:`, updatedData[name]);
-
-      // Show immediate visual feedback
-      setSuccessMessage(`✅ ${name.charAt(0).toUpperCase() + name.slice(1)} updated to: ${processedValue}`);
-      setTimeout(() => setSuccessMessage(''), 3000);
-    }
-
-    // Debug colors array changes
-    if (name === 'colors') {
-      console.log(`🎨 AdminPage: Colors updated:`, updatedData.colors);
-    }
-  };
-
   // Handle feature checkbox changes
   const handleFeatureToggle = (feature) => {
     const updatedFeatures = productData.features?.includes(feature)

@@ -3295,7 +3295,7 @@ const AdminPage = () => {
     const category = product.category.toLowerCase();
 
     // Exclude contact lenses and lens-only products
-    if (category.includes('contact') || category.includes('transparent-lenses') || category.includes('colored-lenses')) {
+    if (category.includes('contact') || category.includes('transparent-lenses') || category.includes('colored-lenses') || category.includes('prescription-lenses')) {
       return false;
     }
 

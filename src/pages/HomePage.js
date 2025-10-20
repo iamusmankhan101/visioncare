@@ -1025,8 +1025,14 @@ const HomePage = () => {
   
   // Removed slider functions as sliders are no longer used
   
-  // Filter featured products
-  const featuredProducts = products ? products.filter(product => product.featured).map(product => {
+  // Filter featured products (exclude lens products)
+  const featuredProducts = products ? products.filter(product => {
+    // Exclude lens products - they should only appear on /lenses page
+    const lensCategories = ['contact-lenses', 'transparent-lenses', 'colored-lenses', 'prescription-lenses'];
+    if (lensCategories.includes(product.category)) return false;
+    
+    return product.featured;
+  }).map(product => {
     const selectedColorIndex = selectedColors[product.id] || 0;
     const selectedColor = product.colors && product.colors[selectedColorIndex];
     
@@ -1044,8 +1050,14 @@ const HomePage = () => {
     };
   }) : [];
   
-  // Filter best selling products
-  const bestSellingProducts = products ? products.filter(product => product.bestSelling || product.bestSeller).map(product => {
+  // Filter best selling products (exclude lens products)
+  const bestSellingProducts = products ? products.filter(product => {
+    // Exclude lens products - they should only appear on /lenses page
+    const lensCategories = ['contact-lenses', 'transparent-lenses', 'colored-lenses', 'prescription-lenses'];
+    if (lensCategories.includes(product.category)) return false;
+    
+    return product.bestSelling || product.bestSeller;
+  }).map(product => {
     const selectedColorIndex = selectedColors[product.id] || 0;
     const selectedColor = product.colors && product.colors[selectedColorIndex];
     

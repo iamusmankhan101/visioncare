@@ -241,7 +241,8 @@ const LensesPage = () => {
     { key: 'all', label: 'All Lenses', description: 'Browse all available lens types' },
     { key: 'contact-lenses', label: 'Contact Lenses', description: 'Comfortable daily and monthly contact lenses' },
     { key: 'transparent-lenses', label: 'Transparent Lenses', description: 'Clear prescription lenses for everyday wear' },
-    { key: 'colored-lenses', label: 'Colored Lenses', description: 'Fashion and cosmetic colored contact lenses' }
+    { key: 'colored-lenses', label: 'Colored Lenses', description: 'Fashion and cosmetic colored contact lenses' },
+    { key: 'prescription-lenses', label: 'Prescription Lenses', description: 'Custom prescription lenses for vision correction' }
   ];
   
   // Get category from URL params
@@ -261,7 +262,8 @@ const LensesPage = () => {
   
   // Filter products to show only lens products
   const filteredProducts = products.filter(product => {
-    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+    // Updated lens categories to match admin form
+    const lensCategories = ['contact-lenses', 'transparent-lenses', 'colored-lenses', 'prescription-lenses'];
     const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
     const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
     
@@ -278,9 +280,10 @@ const LensesPage = () => {
     }
     
     const categoryMap = {
-      'contact-lenses': 'Contact Lenses',
-      'transparent-lenses': 'Transparent Lenses',
-      'colored-lenses': 'Colored Lenses'
+      'contact-lenses': 'contact-lenses',
+      'transparent-lenses': 'transparent-lenses',
+      'colored-lenses': 'colored-lenses',
+      'prescription-lenses': 'prescription-lenses'
     };
     
     return product.category === categoryMap[activeCategory];

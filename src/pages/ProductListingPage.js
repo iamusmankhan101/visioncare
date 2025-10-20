@@ -1595,11 +1595,12 @@ const ProductListingPage = () => {
         
         <ProductGrid viewMode={viewMode}>
                   {effectiveFilteredItems.filter(product => {
-                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+                    // Updated lens categories to match admin form
+                    const lensCategories = ['contact-lenses', 'transparent-lenses', 'colored-lenses', 'prescription-lenses'];
                     const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
                     const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
                     
-                    // Exclude lens products
+                    // Exclude lens products - they should only appear on /lenses page
                     if (lensCategories.includes(product.category)) return false;
                     if (lensNames.some(name => product.name.includes(name))) return false;
                     if (lensBrands.includes(product.brand)) return false;
@@ -1639,11 +1640,12 @@ const ProductListingPage = () => {
                       )}
                     </div>
                   ) : effectiveFilteredItems.filter(product => {
-                    const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses'];
+                    // Updated lens categories to match admin form
+                    const lensCategories = ['contact-lenses', 'transparent-lenses', 'colored-lenses', 'prescription-lenses'];
                     const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
                     const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
                     
-                    // Exclude lens products
+                    // Exclude lens products - they should only appear on /lenses page
                     if (lensCategories.includes(product.category)) return false;
                     if (lensNames.some(name => product.name.includes(name))) return false;
                     if (lensBrands.includes(product.brand)) return false;

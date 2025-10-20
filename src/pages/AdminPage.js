@@ -2519,7 +2519,16 @@ const AdminPage = () => {
     discount: {
       hasDiscount: false,
       discountPercentage: 0
-    }
+    },
+    // Lens-specific fields
+    thumbnail: '',
+    lensColors: [],
+    hasPowerOptions: false,
+    lensType: '',
+    waterContent: '',
+    baseCurve: '',
+    diameter: '',
+    powerRange: ''
   };
 
   const [productData, setProductData] = useState(defaultProductData);
@@ -2530,13 +2539,26 @@ const AdminPage = () => {
   const materials = ['acetate', 'metal', 'titanium', 'plastic', 'wood', 'carbon-fiber', 'stainless-steel', 'aluminum'];
   const shapes = ['round', 'square', 'oval', 'cat-eye', 'aviator', 'wayfarer', 'rectangular', 'geometric'];
   const genders = ['male', 'female', 'unisex', 'kids'];
-  const styleOptions = ['Classic', 'Eco Friendly', 'Artsy', 'Retro', 'Street Style', 'Bold'];
-  const rimOptions = ['full-rim', 'semi-rimless', 'rimless'];
-  const statusOptions = ['in-stock', 'out-of-stock', 'discontinued', 'pre-order'];
+  const brandOptions = ['', 'Ray-Ban', 'Oakley', 'Persol', 'Maui Jim', 'Tom Ford', 'Gucci', 'Prada', 'Versace', 'Dior', 'Chanel', 'Burberry', 'Police', 'Carrera', 'Hugo Boss', 'Emporio Armani', 'Giorgio Armani', 'Dolce & Gabbana', 'Fendi', 'Bulgari', 'Cartier', 'Chopard', 'Tiffany & Co', 'Coach', 'Kate Spade', 'Marc Jacobs', 'Michael Kors', 'Polo Ralph Lauren', 'Tommy Hilfiger', 'Calvin Klein', 'Lacoste', 'Diesel', 'Fossil', 'Guess', 'Vogue', 'Arnette', 'Costa Del Mar', 'Revo', 'Serengeti', 'Bolle', 'Spy', 'Electric', 'Dragon', 'VonZipper', 'Smith', 'Kaenon', 'Wiley X', 'Rudy Project', 'Tifosi', 'Julbo', 'Cebe', 'Uvex', 'Alpina', 'Adidas', 'Nike', 'Under Armour', 'Reebok', 'Puma', 'New Balance', 'Champion', 'Fila', 'Converse', 'Vans', 'DC', 'Quiksilver', 'Billabong', 'Rip Curl', 'Volcom', 'Hurley', 'ONeill', 'Reef', 'Roxy', 'Dakine', 'Arnette', 'Anon', 'Ashbury', 'Bern', 'Giro', 'POC', 'Scott', 'Sweet Protection', 'Zeal'];
   const typeOptions = ['', 'reading', 'computer', 'polarized', 'aviator', 'sports', 'fashion'];
   const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'One Size'];
   const featureOptions = ['uv-protection', 'polarized', 'anti-glare', 'scratch-resistant', 'lightweight', 'flexible'];
   const lensTypeOptions = ['Standard', 'Blue Light Blocking', 'Progressive', 'Photochromic', 'Polarized'];
+  
+  // Lens-specific options
+  const [lensColorOptions, setLensColorOptions] = useState([
+    { id: 1, name: 'Clear', hex: '#FFFFFF' },
+    { id: 2, name: 'Blue', hex: '#0066CC' },
+    { id: 3, name: 'Green', hex: '#00AA00' },
+    { id: 4, name: 'Brown', hex: '#8B4513' },
+    { id: 5, name: 'Gray', hex: '#808080' },
+    { id: 6, name: 'Hazel', hex: '#8E7618' },
+    { id: 7, name: 'Violet', hex: '#8A2BE2' },
+    { id: 8, name: 'Honey', hex: '#FFC649' }
+  ]);
+  const [newColorName, setNewColorName] = useState('');
+  const [newColorHex, setNewColorHex] = useState('#000000');
+  const lensStatusOptions = ['In Stock', 'Out of Stock', 'Coming Soon'];
   const colorOptions = [
     { name: 'Black', hex: '#000000' },
     { name: 'Brown', hex: '#8B4513' },
@@ -3042,13 +3064,161 @@ const AdminPage = () => {
 
   // Enhanced input change handler for lens-specific fields
   const handleLensInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setProductData({
       ...productData,
-      [name]: name === 'price' || name === 'waterContent' || name === 'baseCurve' || name === 'diameter'
-        ? parseFloat(value) || ''
-        : value
+      [name]: type === 'checkbox' ? checked : value
     });
+  };
+
+  // Handle lens color selection
+  const handleLensColorToggle = (colorId) => {
+    const selectedColors = productData.lensColors || [];
+    const updatedColors = selectedColors.includes(colorId)
+      ? selectedColors.filter(id => id !== colorId)
+      : [...selectedColors, colorId];
+    
+    setProductData({
+      ...productData,
+      lensColors: updatedColors
+    });
+  };
+
+  // Add new lens color
+  const handleAddLensColor = () => {
+    if (newColorName.trim() && newColorHex) {
+      const newColor = {
+        id: Date.now(),
+        name: newColorName.trim(),
+        hex: newColorHex
+      };
+      setLensColorOptions([...lensColorOptions, newColor]);
+      setNewColorName('');
+      setNewColorHex('#000000');
+    }
+  };
+
+  // Remove lens color
+  const handleRemoveLensColor = (colorId) => {
+    setLensColorOptions(lensColorOptions.filter(color => color.id !== colorId));
+    // Also remove from selected colors if it was selected
+    const selectedColors = productData.lensColors || [];
+    if (selectedColors.includes(colorId)) {
+      setProductData({
+        ...productData,
+        lensColors: selectedColors.filter(id => id !== colorId)
+      });
+    }
+  };
+
+  // Handle lens thumbnail upload
+  const handleLensThumbnailUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProductData({
+          ...productData,
+          thumbnail: event.target.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle input changes
+  const handleInputChange = (e) => {
+    console.log('🔥 DEBUG: handleInputChange called!');
+    console.log('🔥 DEBUG: Event target:', e.target);
+    console.log('🔥 DEBUG: Event type:', e.type);
+
+    const { name, value } = e.target;
+    console.log(`🔄 AdminPage: Input changed - ${name}: "${value}"`);
+    console.log(`🔄 AdminPage: Input name type:`, typeof name);
+    console.log(`🔄 AdminPage: Input value type:`, typeof value);
+
+    // Special handling for specific fields
+    let processedValue = value;
+    if (name === 'price') {
+      processedValue = parseFloat(value);
+    }
+
+    console.log('🔄 AdminPage: Current productData before update:', productData);
+
+    const updatedData = {
+      ...productData,
+      [name]: processedValue
+    };
+
+    console.log('🔄 AdminPage: New updatedData:', updatedData);
+    console.log(`🔄 AdminPage: Specific field ${name} in updatedData:`, updatedData[name]);
+
+    setProductData(updatedData);
+    console.log('🔄 AdminPage: setProductData called with:', updatedData);
+
+    // Debug specific fields that were having issues
+    if (name === 'gender' || name === 'style' || name === 'status' || name === 'category') {
+      console.log(`✅ AdminPage: ${name} field updated successfully to: "${processedValue}"`);
+      console.log(`✅ AdminPage: Current ${name} value in state:`, updatedData[name]);
+
+      // Show immediate visual feedback
+      setSuccessMessage(`✅ ${name.charAt(0).toUpperCase() + name.slice(1)} updated to: ${processedValue}`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    }
+
+    // Debug colors array changes
+    if (name === 'colors') {
+      console.log(`🎨 AdminPage: Colors updated:`, updatedData.colors);
+    }
+  };
+
+  // Handle feature checkbox changes
+  const handleFeatureToggle = (feature) => {
+    const updatedFeatures = productData.features?.includes(feature)
+      ? productData.features.filter(f => f !== feature)
+      : [...(productData.features || []), feature];
+
+    setProductData({
+      ...productData,
+      features: updatedFeatures
+    });
+  };
+
+  // Handle checkbox change for featured products
+  const handleFeaturedToggle = () => {
+    setProductData({
+      ...productData,
+      featured: !productData.featured
+    });
+  };
+
+  // File upload state
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+        // Update product data with the image data URL
+        setProductData({
+          ...productData,
+          image: reader.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle upload button click
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
   };
 
   // Generate chart data based on real orders, with demo data fallback
@@ -5144,11 +5314,25 @@ Type "DELETE ALL" to confirm:`;
                                 required
                               >
                                 <option value="">Select Category</option>
-                                <option value="Contact Lenses">Contact Lenses</option>
-                                <option value="Lens Solutions">Lens Solutions</option>
-                                <option value="Lens Accessories">Lens Accessories</option>
-                                <option value="Prescription Lenses">Prescription Lenses</option>
+                                <option value="contact-lenses">Contact Lenses</option>
+                                <option value="transparent-lenses">Transparent Lenses</option>
+                                <option value="colored-lenses">Colored Lenses</option>
+                                <option value="prescription-lenses">Prescription Lenses</option>
                               </Select>
+                            </FormGroup>
+
+                            <FormGroup>
+                              <Label>
+                                <input
+                                  type="checkbox"
+                                  name="hasPowerOptions"
+                                  checked={productData.hasPowerOptions || false}
+                                  onChange={handleLensInputChange}
+                                  style={{ marginRight: '8px' }}
+                                />
+                                Has Power Options
+                              </Label>
+                              <FormHint>Check if this lens product is available in different powers</FormHint>
                             </FormGroup>
 
                             <FormGroup>
@@ -5168,6 +5352,100 @@ Type "DELETE ALL" to confirm:`;
                                 <option value="Toric">Toric (Astigmatism)</option>
                                 <option value="Multifocal">Multifocal</option>
                               </Select>
+                            </FormGroup>
+                          </FormSection>
+
+                          {/* Lens Colors */}
+                          <FormSection>
+                            <SectionTitle>🎨 Available Lens Colors</SectionTitle>
+
+                            <FormGroup>
+                              <Label>Select Available Colors</Label>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px', marginBottom: '15px' }}>
+                                {lensColorOptions.map(color => (
+                                  <div key={color.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px', position: 'relative' }}>
+                                    <div 
+                                      style={{ 
+                                        width: '40px', 
+                                        height: '40px', 
+                                        backgroundColor: color.hex, 
+                                        borderRadius: '50%', 
+                                        border: '2px solid #e2e8f0',
+                                        marginBottom: '5px'
+                                      }}
+                                    ></div>
+                                    <CheckboxLabel style={{ fontSize: '12px', textAlign: 'center' }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={(productData.lensColors || []).includes(color.id)}
+                                        onChange={() => handleLensColorToggle(color.id)}
+                                        style={{ marginRight: '4px' }}
+                                      />
+                                      {color.name}
+                                    </CheckboxLabel>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveLensColor(color.id)}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '2px',
+                                        right: '2px',
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '18px',
+                                        height: '18px',
+                                        fontSize: '10px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div style={{ display: 'flex', gap: '10px', alignItems: 'end', padding: '15px', background: '#f8fafc', borderRadius: '8px' }}>
+                                <div style={{ flex: 1 }}>
+                                  <Label htmlFor="newColorName">Add New Color</Label>
+                                  <Input
+                                    type="text"
+                                    id="newColorName"
+                                    value={newColorName}
+                                    onChange={(e) => setNewColorName(e.target.value)}
+                                    placeholder="Color name"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="newColorHex">Color</Label>
+                                  <input
+                                    type="color"
+                                    id="newColorHex"
+                                    value={newColorHex}
+                                    onChange={(e) => setNewColorHex(e.target.value)}
+                                    style={{ width: '50px', height: '38px', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={handleAddLensColor}
+                                  style={{
+                                    padding: '8px 16px',
+                                    background: '#3b82f6',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    height: '38px'
+                                  }}
+                                >
+                                  Add
+                                </button>
+                              </div>
                             </FormGroup>
                           </FormSection>
 
@@ -5289,41 +5567,42 @@ Type "DELETE ALL" to confirm:`;
                         </ProductFormMain>
 
                         <ProductFormSidebar>
-                          {/* Image Upload Section */}
+                          {/* Thumbnail Upload Section */}
                           <ImageSection>
-                            <SectionTitle>📸 Product Images</SectionTitle>
+                            <SectionTitle>📸 Lens Thumbnail</SectionTitle>
 
                             <MainImageContainer>
                               <MainImagePreview>
-                                {productData.image ? (
-                                  <img src={productData.image} alt="Product preview" />
+                                {productData.thumbnail ? (
+                                  <img src={productData.thumbnail} alt="Lens thumbnail" style={{ borderRadius: '8px' }} />
                                 ) : (
                                   <div className="placeholder">
                                     <FiUpload size={24} />
-                                    <p>No image selected</p>
+                                    <p>No thumbnail selected</p>
                                   </div>
                                 )}
                               </MainImagePreview>
 
                               <ImageActions>
-                                <ActionButton primary onClick={handleUploadClick}>
+                                <ActionButton primary onClick={() => document.getElementById('lensThumbnailInput').click()}>
                                   <FiUpload />
-                                  Upload Main Image
+                                  Upload Thumbnail
                                 </ActionButton>
-                                {productData.image && (
-                                  <ActionButton onClick={() => setProductData({ ...productData, image: '' })}>
+                                {productData.thumbnail && (
+                                  <ActionButton onClick={() => setProductData({ ...productData, thumbnail: '' })}>
                                     <FiX />
-                                    Remove Image
+                                    Remove Thumbnail
                                   </ActionButton>
                                 )}
                               </ImageActions>
                             </MainImageContainer>
 
-                            <HiddenFileInput
-                              ref={fileInputRef}
+                            <input
+                              id="lensThumbnailInput"
                               type="file"
                               accept="image/*"
-                              onChange={handleFileSelect}
+                              onChange={handleLensThumbnailUpload}
+                              style={{ display: 'none' }}
                             />
                           </ImageSection>
 
@@ -5340,9 +5619,9 @@ Type "DELETE ALL" to confirm:`;
                                   value={productData.status}
                                   onChange={handleLensInputChange}
                                 >
-                                  <option value="active">Active</option>
-                                  <option value="inactive">Inactive</option>
-                                  <option value="out-of-stock">Out of Stock</option>
+                                  {lensStatusOptions.map(status => (
+                                    <option key={status} value={status}>{status}</option>
+                                  ))}
                                 </Select>
                               </DetailsItem>
 

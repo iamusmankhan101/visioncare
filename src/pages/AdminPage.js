@@ -3306,35 +3306,6 @@ const AdminPage = () => {
       eyewearCategories.includes(product.category);
   };
 
-  // File upload state
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-
-  // Handle file selection
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-
-      // Create a preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result);
-        // Update product data with the image data URL
-        setProductData({
-          ...productData,
-          image: reader.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Handle upload button click
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
-
   // Handle input changes
   const handleInputChange = (e) => {
     console.log('🔥 DEBUG: handleInputChange called!');

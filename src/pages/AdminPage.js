@@ -2523,6 +2523,7 @@ const AdminPage = () => {
     // Lens-specific fields
     thumbnail: '',
     lensColors: [],
+    lensColorImages: {}, // Object to store images for each lens color
     hasPowerOptions: false,
     lensType: '',
     waterContent: '',
@@ -5352,6 +5353,152 @@ Type "DELETE ALL" to confirm:`;
                               </div>
                             </FormGroup>
                           </FormSection>
+
+                          {/* Color-Specific Images for Selected Lens Colors */}
+                          {(productData.lensColors && productData.lensColors.length > 0) && (
+                            <FormSection>
+                              <SectionTitle>🖼️ Color-Specific Images</SectionTitle>
+                              <FormHint style={{ marginBottom: '20px' }}>Upload specific images for each selected lens color to show how the lenses look in different colors.</FormHint>
+                              
+                              {productData.lensColors.map(colorId => {
+                                const color = lensColorOptions.find(c => c.id === colorId);
+                                if (!color) return null;
+                                
+                                const colorImages = productData.lensColorImages?.[color.name] || [];
+                                
+                                return (
+                                  <div key={colorId} style={{ 
+                                    border: '1px solid #e2e8f0', 
+                                    borderRadius: '8px', 
+                                    padding: '15px', 
+                                    marginBottom: '15px',
+                                    background: '#fafafa'
+                                  }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                                      <div 
+                                        style={{ 
+                                          width: '24px', 
+                                          height: '24px', 
+                                          backgroundColor: color.hex, 
+                                          borderRadius: '50%', 
+                                          border: '2px solid #e2e8f0'
+                                        }}
+                                      ></div>
+                                      <Label style={{ margin: 0, fontWeight: '600' }}>{color.name} Lens Images</Label>
+                                    </div>
+                                    
+                                    {/* Display existing images for this color */}
+                                    {colorImages.length > 0 && (
+                                      <div style={{ 
+                                        display: 'grid', 
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', 
+                                        gap: '8px', 
+                                        marginBottom: '10px' 
+                                      }}>
+                                        {colorImages.map((image, index) => (
+                                          <div key={index} style={{ position: 'relative' }}>
+                                            <img 
+                                              src={image} 
+                                              alt={`${color.name} lens ${index + 1}`}
+                                              style={{ 
+                                                width: '100%', 
+                                                height: '80px', 
+                                                objectFit: 'cover', 
+                                                borderRadius: '6px',
+                                                border: '1px solid #e2e8f0'
+                                              }}
+                                            />
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const updatedImages = colorImages.filter((_, i) => i !== index);
+                                                const updatedColorImages = {
+                                                  ...productData.lensColorImages,
+                                                  [color.name]: updatedImages
+                                                };
+                                                setProductData({
+                                                  ...productData,
+                                                  lensColorImages: updatedColorImages
+                                                });
+                                              }}
+                                              style={{
+                                                position: 'absolute',
+                                                top: '2px',
+                                                right: '2px',
+                                                background: '#ef4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '50%',
+                                                width: '16px',
+                                                height: '16px',
+                                                fontSize: '10px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                              }}
+                                            >
+                                              ×
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    
+                                    {/* Upload button for this color */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const input = document.createElement('input');
+                                        input.type = 'file';
+                                        input.accept = 'image/*';
+                                        input.multiple = true;
+                                        input.onchange = (e) => {
+                                          const files = Array.from(e.target.files);
+                                          if (files.length > 0) {
+                                            const newImages = [];
+                                            files.forEach(file => {
+                                              const reader = new FileReader();
+                                              reader.onloadend = () => {
+                                                newImages.push(reader.result);
+                                                if (newImages.length === files.length) {
+                                                  const existingImages = productData.lensColorImages?.[color.name] || [];
+                                                  const updatedColorImages = {
+                                                    ...productData.lensColorImages,
+                                                    [color.name]: [...existingImages, ...newImages]
+                                                  };
+                                                  setProductData({
+                                                    ...productData,
+                                                    lensColorImages: updatedColorImages
+                                                  });
+                                                }
+                                              };
+                                              reader.readAsDataURL(file);
+                                            });
+                                          }
+                                        };
+                                        input.click();
+                                      }}
+                                      style={{
+                                        padding: '8px 12px',
+                                        background: '#3b82f6',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontSize: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                      }}
+                                    >
+                                      📷 Upload {color.name} Images
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </FormSection>
+                          )}
 
                           {/* Lens Specifications */}
                           <FormSection>

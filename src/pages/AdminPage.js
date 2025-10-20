@@ -3306,18 +3306,6 @@ const AdminPage = () => {
       eyewearCategories.includes(product.category);
   };
 
-  // Handle feature checkbox changes
-  const handleFeatureToggle = (feature) => {
-    const updatedFeatures = productData.features?.includes(feature)
-      ? productData.features.filter(f => f !== feature)
-      : [...(productData.features || []), feature];
-
-    setProductData({
-      ...productData,
-      features: updatedFeatures
-    });
-  };
-
   // Handle checkbox change for featured products
   const handleFeaturedToggle = () => {
     setProductData({

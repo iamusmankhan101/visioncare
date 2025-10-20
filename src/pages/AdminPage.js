@@ -5514,39 +5514,41 @@ Type "DELETE ALL" to confirm:`;
                             </FormGroup>
                           </FormSection>
 
-                          {/* Available Powers */}
-                          <FormSection>
-                            <SectionTitle>👁️ Available Powers</SectionTitle>
+                          {/* Available Powers - Only show when hasPowerOptions is checked */}
+                          {productData.hasPowerOptions && (
+                            <FormSection>
+                              <SectionTitle>👁️ Available Powers</SectionTitle>
 
-                            <FormGroup>
-                              <Label htmlFor="powerRange">Power Range</Label>
-                              <Input
-                                type="text"
-                                id="powerRange"
-                                name="powerRange"
-                                value={productData.powerRange || ''}
-                                onChange={handleLensInputChange}
-                                placeholder="e.g., -10.00 to +6.00"
-                              />
-                              <FormHint>Specify the available power range for this lens</FormHint>
-                            </FormGroup>
+                              <FormGroup>
+                                <Label htmlFor="powerRange">Power Range</Label>
+                                <Input
+                                  type="text"
+                                  id="powerRange"
+                                  name="powerRange"
+                                  value={productData.powerRange || ''}
+                                  onChange={handleLensInputChange}
+                                  placeholder="e.g., -10.00 to +6.00"
+                                />
+                                <FormHint>Specify the available power range for this lens</FormHint>
+                              </FormGroup>
 
-                            <FormGroup>
-                              <Label>Available Features</Label>
-                              <CheckboxContainer>
-                                {['UV Protection', 'Blue Light Filter', 'Moisture Lock', 'Anti-Bacterial', 'Oxygen Permeable', 'Astigmatism Correction'].map(feature => (
-                                  <CheckboxLabel key={feature}>
-                                    <input
-                                      type="checkbox"
-                                      checked={productData.features?.includes(feature) || false}
-                                      onChange={() => handleFeatureToggle(feature)}
-                                    />
-                                    {feature}
-                                  </CheckboxLabel>
-                                ))}
-                              </CheckboxContainer>
-                            </FormGroup>
-                          </FormSection>
+                              <FormGroup>
+                                <Label>Available Features</Label>
+                                <CheckboxContainer>
+                                  {['UV Protection', 'Blue Light Filter', 'Moisture Lock', 'Anti-Bacterial', 'Oxygen Permeable', 'Astigmatism Correction'].map(feature => (
+                                    <CheckboxLabel key={feature}>
+                                      <input
+                                        type="checkbox"
+                                        checked={productData.features?.includes(feature) || false}
+                                        onChange={() => handleFeatureToggle(feature)}
+                                      />
+                                      {feature}
+                                    </CheckboxLabel>
+                                  ))}
+                                </CheckboxContainer>
+                              </FormGroup>
+                            </FormSection>
+                          )}
 
                           {/* Product Description */}
                           <FormSection>

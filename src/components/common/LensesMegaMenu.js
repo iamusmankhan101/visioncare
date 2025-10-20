@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FiChevronDown, FiEye, FiSun, FiShield, FiZap } from 'react-icons/fi';
+import { FiChevronDown, FiEye, FiSun, FiShield, FiZap, FiActivity, FiTarget } from 'react-icons/fi';
 
 const MegaMenuContainer = styled.div`
   position: relative;
@@ -78,8 +78,8 @@ const MenuSubtitle = styled.p`
 
 const LensesGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
   margin-bottom: 2rem;
   
   @media (max-width: 768px) {
@@ -235,28 +235,57 @@ const LensesMegaMenu = ({ onLensSelect }) => {
 
   const lensCategories = [
     {
-      id: 'colored',
-      title: 'Colored Contact Lenses',
-      description: 'Transform your look with vibrant colored lenses. Available in natural and dramatic shades.',
-      image: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From $25',
-      features: [<FiEye key="eye" />, <FiZap key="zap" />],
-      colors: ['#8B4513', '#228B22', '#4169E1', '#9932CC', '#FF1493', '#32CD32']
+      id: 'contact-lenses',
+      title: 'Contact Lenses',
+      description: 'Comfortable daily and monthly contact lenses for clear vision and convenience.',
+      image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 2,500',
+      features: [<FiEye key="eye" />, <FiShield key="shield" />],
+      colors: ['transparent'],
+      category: 'contact-lenses'
     },
     {
-      id: 'transparent',
-      title: 'Clear Contact Lenses',
-      description: 'Crystal clear vision correction lenses. Comfortable daily wear with UV protection.',
+      id: 'colored-lenses',
+      title: 'Colored Lenses',
+      description: 'Transform your look with vibrant colored lenses. Available in natural and dramatic shades.',
+      image: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 3,500',
+      features: [<FiEye key="eye" />, <FiZap key="zap" />],
+      colors: ['#8B4513', '#228B22', '#4169E1', '#9932CC', '#FF1493', '#32CD32'],
+      category: 'colored-lenses'
+    },
+    {
+      id: 'transparent-lenses',
+      title: 'Transparent Lenses',
+      description: 'Crystal clear prescription lenses for everyday wear with superior comfort.',
       image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From $15',
+      price: 'From PKR 2,200',
       features: [<FiShield key="shield" />, <FiSun key="sun" />],
-      colors: ['transparent']
+      colors: ['transparent'],
+      category: 'transparent-lenses'
+    },
+    {
+      id: 'prescription-lenses',
+      title: 'Prescription Lenses',
+      description: 'Custom prescription lenses for vision correction with advanced lens technology.',
+      image: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 4,500',
+      features: [<FiTarget key="target" />, <FiActivity key="activity" />],
+      colors: ['transparent'],
+      category: 'prescription-lenses'
     }
   ];
 
   const handleLensSelect = (lens) => {
     if (onLensSelect) {
       onLensSelect(lens);
+    } else {
+      // Default navigation to lenses page with category
+      if (lens.id === 'all') {
+        window.location.href = '/lenses';
+      } else {
+        window.location.href = `/lenses?category=${lens.category || lens.id}`;
+      }
     }
     setIsOpen(false);
   };
@@ -285,14 +314,14 @@ const LensesMegaMenu = ({ onLensSelect }) => {
         isOpen={isOpen}
         onClick={() => setIsOpen(!isOpen)}
       >
-        Contact Lenses
+        Lenses
         <FiChevronDown />
       </MenuTrigger>
       
       <MegaMenuDropdown isOpen={isOpen}>
         <MenuHeader>
-          <MenuTitle>Contact Lenses Collection</MenuTitle>
-          <MenuSubtitle>Discover our premium range of contact lenses</MenuSubtitle>
+          <MenuTitle>Lens Collection</MenuTitle>
+          <MenuSubtitle>Discover our premium range of contact and prescription lenses</MenuSubtitle>
         </MenuHeader>
         
         <LensesGrid>
@@ -339,7 +368,7 @@ const LensesMegaMenu = ({ onLensSelect }) => {
         
         <BottomSection>
           <ViewAllButton onClick={() => handleLensSelect({ id: 'all', title: 'All Lenses' })}>
-            View All Contact Lenses
+            View All Lenses
           </ViewAllButton>
         </BottomSection>
       </MegaMenuDropdown>

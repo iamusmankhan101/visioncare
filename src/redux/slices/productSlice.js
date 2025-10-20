@@ -298,7 +298,7 @@ const applyFilters = (items, filters, sortOption) => {
   
   
   // First, exclude lens categories from general product listings
-  const lensCategories = ['Contact Lenses', 'Transparent Lenses', 'Colored Lenses', 'contact-lenses', 'transparent-lenses', 'colored-lenses'];
+  const lensCategories = ['contact-lenses', 'transparent-lenses', 'colored-lenses', 'prescription-lenses'];
   result = result.filter(item => !lensCategories.includes(item.category));
   
   // Apply category filter - handle both old and new formats

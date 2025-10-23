@@ -3733,10 +3733,25 @@ const AdminPage = () => {
         throw new Error('Product name and price are required.');
       }
 
-      // Ensure price is a number
+      // Ensure price is a number and map fields for API compatibility (same as create function)
       const updatedProduct = {
         ...productData,
-        price: parseFloat(productData.price)
+        price: parseFloat(productData.price),
+        // Handle color field - extract from colors array or use direct color field
+        color: productData.colors && productData.colors.length > 0
+          ? productData.colors.map(c => c.name).join(', ')
+          : productData.color || null,
+        // Map frontend field names to API field names
+        framecolor: productData.frameColor || null, // Map frameColor to framecolor for API
+        lenstypes: Array.isArray(productData.lensTypes) ? JSON.stringify(productData.lensTypes) : null,
+        colorimages: productData.colorImages ? JSON.stringify(productData.colorImages) : null,
+        sizes: Array.isArray(productData.sizes) ? JSON.stringify(productData.sizes) : null,
+        gallery: Array.isArray(productData.gallery) ? JSON.stringify(productData.gallery) : null,
+        features: Array.isArray(productData.features) ? JSON.stringify(productData.features) : null,
+        // Ensure required fields have defaults
+        gender: productData.gender || 'Unisex',
+        style: productData.style || 'Classic',
+        status: productData.status || 'active'
       };
 
       const productId = updatedProduct.id || updatedProduct._id;
@@ -3747,7 +3762,8 @@ const AdminPage = () => {
       console.log('🔍 AdminPage: Submitting - gender:', updatedProduct.gender);
       console.log('🔍 AdminPage: Submitting - style:', updatedProduct.style);
       console.log('🔍 AdminPage: Submitting - status:', updatedProduct.status);
-      console.log('🔍 AdminPage: Submitting - frameColor:', updatedProduct.frameColor);
+      console.log('🔍 AdminPage: Submitting - frameColor (frontend):', updatedProduct.frameColor);
+      console.log('🔍 AdminPage: Submitting - framecolor (API):', updatedProduct.framecolor);
       console.log('🔍 AdminPage: Submitting - sizes:', updatedProduct.sizes);
 
       // Dispatch async action to update product in API and Redux store

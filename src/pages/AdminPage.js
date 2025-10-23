@@ -3261,16 +3261,40 @@ const AdminPage = () => {
       });
     }
 
-    // Debug: Log the data to console (reduced frequency)
-    if (Math.random() < 0.2) {
-      console.log('📊 Chart: Real Orders:', realOrders.length, '| Has Data:', data.some(d => d.orders > 0 || d.revenue > 0));
-    }
+    // Debug: Log the data to console (always for debugging)
+    console.log('📊 Chart Debug - Real Orders:', realOrders.length);
+    console.log('📊 Chart Debug - Chart Data:', data);
+    console.log('📊 Chart Debug - Has Any Data:', data.some(d => d.orders > 0 || d.revenue > 0));
 
     // Calculate max values for scaling (minimum 1 to prevent division by zero)
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
 
     const hasAnyData = data.some(d => d.orders > 0 || d.revenue > 0);
+
+    // For testing: Add sample data if no real data exists
+    if (!hasAnyData) {
+      console.log('📊 No real data found, adding sample data for testing');
+      const sampleRevenues = [1500, 2300, 1800, 2800, 2100, 3200, 1900];
+      const sampleOrders = [3, 5, 4, 7, 5, 8, 4];
+      
+      data.forEach((item, index) => {
+        item.revenue = sampleRevenues[index];
+        item.orders = sampleOrders[index];
+      });
+      
+      // Recalculate max values with sample data
+      const maxRevenueSample = Math.max(...data.map(d => d.revenue), 1);
+      const maxOrdersSample = Math.max(...data.map(d => d.orders), 1);
+      
+      return { 
+        orderData: data, 
+        maxRevenue: maxRevenueSample, 
+        maxOrders: maxOrdersSample, 
+        hasAnyData: true,
+        isTestData: true
+      };
+    }
 
     return { orderData: data, maxRevenue, maxOrders, hasAnyData };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
@@ -4200,7 +4224,21 @@ Type "DELETE ALL" to confirm:`;
             <ContentGrid>
               <ChartContainer>
                 <ChartHeader>
-                  <ChartTitle>Sales & Orders Overview</ChartTitle>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <ChartTitle>Sales & Orders Overview</ChartTitle>
+                    {chartData.isTestData && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        color: 'white',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                      }}>
+                        🧪 Test Data
+                      </div>
+                    )}
+                  </div>
                   <ChartControls>
                     <ChartLegend>
                       <LegendItem>
@@ -4263,7 +4301,7 @@ Type "DELETE ALL" to confirm:`;
                     )}
                     {(() => {
                       // Extract data from chartData
-                      const { orderData, maxRevenue, maxOrders, hasAnyData } = chartData;
+                      const { orderData, maxRevenue, maxOrders, hasAnyData, isTestData } = chartData;
 
                       // Show "no data" message if there are no real orders
                       if (!hasAnyData) {

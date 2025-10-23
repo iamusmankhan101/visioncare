@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - Vision Care</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Vision Care API Test</h1>
+        <p>Test your API endpoints to verify they're working correctly.</p>
+        
+        <div>
+            <button class="test-button" onclick="testHealthEndpoint()">Test Health Endpoint</button>
+            <button class="test-button" onclick="testProductsEndpoint()">Test Products Endpoint</button>
+            <button class="test-button" onclick="testOrdersEndpoint()">Test Orders Endpoint</button>
+            <button class="test-button" onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(title, content, isSuccess = true) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.innerHTML = `<strong>${title}</strong>\n${content}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+        
+        async function testHealthEndpoint() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                addResult('✅ Health Endpoint', `Status: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                addResult('❌ Health Endpoint Failed', `Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testProductsEndpoint() {
+            try {
+                const response = await fetch('/api/products');
+                const data = await response.json();
+                addResult('✅ Products Endpoint', `Status: ${response.status}\nProducts Count: ${data.products?.length || 0}\nResponse: ${JSON.stringify(data, null, 2).substring(0, 500)}...`);
+            } catch (error) {
+                addResult('❌ Products Endpoint Failed', `Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testOrdersEndpoint() {
+            try {
+                const response = await fetch('/api/orders');
+                const data = await response.json();
+                addResult('✅ Orders Endpoint', `Status: ${response.status}\nResponse: ${JSON.stringify(data, null, 2).substring(0, 500)}...`);
+            } catch (error) {
+                addResult('❌ Orders Endpoint Failed', `Error: ${error.message}`, false);
+            }
+        }
+        
+        // Auto-test on page load
+        window.onload = function() {
+            addResult('🌐 Current Domain', `Testing API endpoints on: ${window.location.origin}`);
+        };
+    </script>
+</body>
+</html>

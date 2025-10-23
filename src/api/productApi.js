@@ -9,10 +9,17 @@ const getApiBaseUrl = () => {
   console.log('Current hostname:', hostname);
   console.log('Window location:', window.location.href);
   
-  // Use environment variable if available (from Vercel)
+  // For deployed environments, use the same domain as the frontend
+  if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
+    const currentDomainApiUrl = `${window.location.protocol}//${window.location.host}/api`;
+    console.log('🌐 Using current domain API for deployed environment:', currentDomainApiUrl);
+    return currentDomainApiUrl;
+  }
+
+  // Use environment variable if available (from Vercel) - only for local development
   const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
-  if (envApiUrl) {
-    console.log('☁️ Using environment API:', envApiUrl);
+  if (envApiUrl && (hostname === 'localhost' || hostname === '127.0.0.1')) {
+    console.log('☁️ Using environment API for local development:', envApiUrl);
     return envApiUrl;
   }
   
@@ -40,9 +47,9 @@ const getApiBaseUrl = () => {
     return null; // Force localStorage usage for deployed sites
   }
   
-  // Use the same domain as the frontend for API calls
+  // Fallback: Use the same domain as the frontend for API calls
   const currentDomainApiUrl = `${window.location.protocol}//${window.location.host}/api`;
-  console.log('🌐 Using current domain API:', currentDomainApiUrl);
+  console.log('🌐 Using current domain API as fallback:', currentDomainApiUrl);
   return currentDomainApiUrl;
 };
 

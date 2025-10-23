@@ -3105,6 +3105,29 @@ const AdminPage = () => {
     setActiveTab('dashboard');
   };
 
+  // Debug function to test update functionality
+  const testUpdateFunctionality = () => {
+    console.log('🧪 Testing update functionality...');
+    console.log('🧪 Current productData:', productData);
+    console.log('🧪 Product ID:', productData.id || productData._id);
+    console.log('🧪 Required fields - Name:', productData.name, 'Price:', productData.price);
+    
+    if (!productData.id && !productData._id) {
+      console.error('❌ No product ID found - cannot update');
+      alert('Error: No product ID found. Please select a product to edit first.');
+      return;
+    }
+    
+    if (!productData.name || !productData.price) {
+      console.error('❌ Missing required fields');
+      alert('Error: Product name and price are required.');
+      return;
+    }
+    
+    console.log('✅ Update functionality test passed - all required data is present');
+    alert('✅ Update test passed! The form has all required data. Try submitting the form.');
+  };
+
   // Enhanced input change handler for lens-specific fields
   const handleLensInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -3728,10 +3751,13 @@ const AdminPage = () => {
       console.log('🔍 AdminPage: Submitting - sizes:', updatedProduct.sizes);
 
       // Dispatch async action to update product in API and Redux store
+      console.log('🚀 AdminPage: Dispatching updateProductAsync...');
       const result = await dispatch(updateProductAsync({
         id: productId,
         productData: updatedProduct
       })).unwrap();
+      
+      console.log('✅ AdminPage: updateProductAsync completed successfully');
 
       console.log('✅ AdminPage: Product updated successfully');
       console.log('✅ AdminPage: Update result:', result);
@@ -6643,9 +6669,26 @@ Type "DELETE ALL" to confirm:`;
                             />
                           </FormGroup>
 
-                          <SubmitButton type="submit" disabled={isLoading}>
-                            {isLoading ? 'Updating...' : 'Update Product'}
-                          </SubmitButton>
+                          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={testUpdateFunctionality}
+                              style={{
+                                padding: '0.75rem 1rem',
+                                background: '#f59e0b',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: '600'
+                              }}
+                            >
+                              🧪 Test Update
+                            </button>
+                            <SubmitButton type="submit" disabled={isLoading}>
+                              {isLoading ? 'Updating...' : 'Update Product'}
+                            </SubmitButton>
+                          </div>
                         </Form>
                       </ProductFormMain>
 

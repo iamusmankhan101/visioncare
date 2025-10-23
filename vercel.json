@@ -45,6 +45,12 @@
     }
   ],
   "env": {
+    "DATABASE_URL": "postgresql://neondb_owner:npg_1xqXF3dizyGI@ep-long-credit-agwg1whu-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require",
+    "POSTGRES_URL": "postgresql://neondb_owner:npg_1xqXF3dizyGI@ep-long-credit-agwg1whu-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require",
+    "POSTGRES_USER": "neondb_owner",
+    "POSTGRES_HOST": "ep-long-credit-agwg1whu-pooler.c-2.eu-central-1.aws.neon.tech",
+    "POSTGRES_PASSWORD": "npg_1xqXF3dizyGI",
+    "POSTGRES_DATABASE": "neondb",
     "UPSTASH_REDIS_REST_URL": "https://optimal-sailfish-15823.upstash.io",
     "UPSTASH_REDIS_REST_TOKEN": "AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM"
   }

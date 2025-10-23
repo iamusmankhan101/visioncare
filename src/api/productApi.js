@@ -502,7 +502,7 @@ const productApi = {
       const API_BASE_URL = getApiBaseUrl();
       console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${resolvedId}`);
       
-     console.log(products);// Try to update with resolved ID - try multiple API formats
+      // Try to update with resolved ID - try multiple API formats
       try {
         console.log('🔄 ProductAPI: Attempting update with URL path format...');
         const updatedProduct = await apiRequest(`/products/${resolvedId}`, {

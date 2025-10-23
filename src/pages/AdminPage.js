@@ -2552,6 +2552,9 @@ const AdminPage = () => {
   const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'One Size'];
   const featureOptions = ['uv-protection', 'polarized', 'anti-glare', 'scratch-resistant', 'lightweight', 'flexible'];
   const lensTypeOptions = ['Standard', 'Blue Light Blocking', 'Progressive', 'Photochromic', 'Polarized'];
+  const rimOptions = ['Full Rim', 'Semi Rim', 'Rimless', 'Browline', 'Wire Frame'];
+  const styleOptions = ['Classic', 'Eco Friendly', 'Artsy', 'Retro', 'Street Style', 'Bold'];
+  const statusOptions = ['active', 'inactive', 'out-of-stock', 'coming-soon'];
   
   // Lens-specific options
   const [lensColorOptions, setLensColorOptions] = useState([
@@ -4046,7 +4049,6 @@ Type "DELETE ALL" to confirm:`;
     if (window.confirm('This will update all existing products without style data with random styles. Continue?')) {
       try {
         setIsLoading(true);
-        const styleOptions = ['Classic', 'Eco Friendly', 'Artsy', 'Retro', 'Street Style', 'Bold'];
 
         for (const product of products) {
           if (!product.style) {

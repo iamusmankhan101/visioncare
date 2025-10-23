@@ -212,24 +212,44 @@ async function initializeDatabase() {
   }
 }
 
-// CORS headers - Allow all origins for API access
+// CORS headers - Allow multiple origins for API access
+const getAllowedOrigins = () => {
+  return [
+    'https://visioncare-sigma.vercel.app',
+    'https://vision-care-hmn4.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000'
+  ];
+};
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-  'Access-Control-Allow-Credentials': 'false'
+  'Access-Control-Allow-Credentials': 'true'
 };
 
 export default async function handler(req, res) {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({});
+  // Handle dynamic CORS origin
+  const origin = req.headers.origin;
+  const allowedOrigins = getAllowedOrigins();
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Fallback to allow all origins for now
+    res.setHeader('Access-Control-Allow-Origin', '*');
   }
-
-  // Add CORS headers
+  
+  // Add other CORS headers
   Object.entries(corsHeaders).forEach(([key, value]) => {
     res.setHeader(key, value);
   });
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   try {
     console.log(`🌐 API Request: ${req.method} /api/products`);

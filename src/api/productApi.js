@@ -40,10 +40,10 @@ const getApiBaseUrl = () => {
     return null; // Force localStorage usage for deployed sites
   }
   
-  // Fallback to Vercel API if needed
-  const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
-  console.log('☁️ Using Vercel API as fallback:', vercelApiUrl);
-  return vercelApiUrl;
+  // Use the same domain as the frontend for API calls
+  const currentDomainApiUrl = `${window.location.protocol}//${window.location.host}/api`;
+  console.log('🌐 Using current domain API:', currentDomainApiUrl);
+  return currentDomainApiUrl;
 };
 
 // Helper function to handle API requests

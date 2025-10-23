@@ -2707,6 +2707,38 @@ const AdminPage = () => {
     }).format(amount);
   };
 
+  // Generate placeholder image for products without images
+  const generatePlaceholderImage = (productName, category) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+    
+    // Background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 300, 200);
+    gradient.addColorStop(0, '#3ABEF9');
+    gradient.addColorStop(1, '#3572EF');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 300, 200);
+    
+    // Add glasses icon
+    ctx.fillStyle = 'white';
+    ctx.font = '48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('👓', 150, 80);
+    
+    // Add product name
+    ctx.font = '16px Arial';
+    ctx.fillText(productName.substring(0, 20), 150, 120);
+    
+    // Add category
+    ctx.font = '12px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillText(category || 'Eyewear', 150, 140);
+    
+    return canvas.toDataURL('image/png');
+  };
+
   // Fetch reviews function
   const fetchReviews = async () => {
     setReviewsLoading(true);
@@ -6105,16 +6137,11 @@ Type "DELETE ALL" to confirm:`;
                             {product.image ? (
                               <img src={product.image} alt={product.name} />
                             ) : (
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                height: '100%',
-                                background: '#f8fafc',
-                                color: '#64748b'
-                              }}>
-                                No Image
-                              </div>
+                              <img 
+                                src={generatePlaceholderImage(product.name, product.category)} 
+                                alt={`${product.name} placeholder`}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
                             )}
                           </ProductImage>
                           <ProductInfo>
@@ -6130,9 +6157,9 @@ Type "DELETE ALL" to confirm:`;
                           <ProductActions>
                             <ActionButton
                               onClick={() => {
-                                setSelectedProduct(product);
-                                setProductData(product);
-                                setActiveTab('edit-product');
+                                console.log('🔧 Edit button clicked for product:', product.name);
+                                console.log('🔧 Product data:', product);
+                                handleEditProduct(product);
                               }}
                             >
                               Edit
@@ -6167,6 +6194,7 @@ Type "DELETE ALL" to confirm:`;
 
               {activeTab === 'edit-product' && (
                 <>
+                  {console.log('🎯 Rendering edit-product tab with productData:', productData)}
                   <ProductFormContainer>
                     <ProductFormHeader>
                       <h2>Edit Product</h2>
@@ -6974,9 +7002,8 @@ Type "DELETE ALL" to confirm:`;
                             <ProductActions>
                               <ActionButton
                                 onClick={() => {
-                                  setSelectedProduct(product);
-                                  setProductData(product);
-                                  setActiveTab('edit-product');
+                                  console.log('🔧 Edit button clicked for lens product:', product.name);
+                                  handleEditProduct(product);
                                 }}
                               >
                                 Edit

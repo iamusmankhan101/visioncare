@@ -21,6 +21,29 @@
       "destination": "/api/orders"
     }
   ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-Requested-With"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        }
+      ]
+    }
+  ],
   "env": {
     "UPSTASH_REDIS_REST_URL": "https://optimal-sailfish-15823.upstash.io",
     "UPSTASH_REDIS_REST_TOKEN": "AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM"

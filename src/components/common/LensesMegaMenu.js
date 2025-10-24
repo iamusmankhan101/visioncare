@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FiChevronDown, FiEye, FiSun, FiShield, FiZap, FiActivity, FiTarget } from 'react-icons/fi';
+import { FiChevronDown, FiEye, FiSun, FiShield, FiZap, FiActivity, FiTarget, FiMonitor, FiLayers, FiTrendingUp, FiMoon } from 'react-icons/fi';
 
 const MegaMenuContainer = styled.div`
   position: relative;
@@ -37,7 +37,7 @@ const MegaMenuDropdown = styled.div`
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  width: 800px;
+  width: 1200px;
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
@@ -49,6 +49,12 @@ const MegaMenuDropdown = styled.div`
   transition: all 0.3s ease;
   padding: 2rem;
   margin-top: 0.5rem;
+  
+  @media (max-width: 1280px) {
+    width: 95vw;
+    left: 2.5vw;
+    transform: ${props => props.isOpen ? 'none' : 'translateY(-10px)'};
+  }
   
   @media (max-width: 768px) {
     width: 95vw;
@@ -78,9 +84,13 @@ const MenuSubtitle = styled.p`
 
 const LensesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -106,7 +116,7 @@ const LensCategory = styled.div`
 
 const LensImageContainer = styled.div`
   width: 100%;
-  height: 200px;
+  height: 150px;
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 1rem;
@@ -273,6 +283,56 @@ const LensesMegaMenu = ({ onLensSelect }) => {
       features: [<FiTarget key="target" />, <FiActivity key="activity" />],
       colors: ['transparent'],
       category: 'prescription-lenses'
+    },
+    {
+      id: 'blue-light-lenses',
+      title: 'Blue Light Filter',
+      description: 'Protect your eyes from harmful blue light with advanced filtering technology.',
+      image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 3,200',
+      features: [<FiShield key="shield" />, <FiMonitor key="monitor" />],
+      colors: ['#E6F3FF'],
+      category: 'blue-light-lenses'
+    },
+    {
+      id: 'progressive-lenses',
+      title: 'Progressive Lenses',
+      description: 'Multi-focal lenses for seamless vision at all distances without visible lines.',
+      image: 'https://images.unsplash.com/photo-1509695507497-903c140c43b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 6,500',
+      features: [<FiLayers key="layers" />, <FiTrendingUp key="trending" />],
+      colors: ['transparent'],
+      category: 'progressive-lenses'
+    },
+    {
+      id: 'photochromic-lenses',
+      title: 'Photochromic Lenses',
+      description: 'Adaptive lenses that automatically adjust to changing light conditions.',
+      image: 'https://images.unsplash.com/photo-1556306535-38febf6782e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 5,800',
+      features: [<FiSun key="sun" />, <FiMoon key="moon" />],
+      colors: ['#F0F0F0'],
+      category: 'photochromic-lenses'
+    },
+    {
+      id: 'polarized-lenses',
+      title: 'Polarized Lenses',
+      description: 'Reduce glare and enhance visual clarity for outdoor activities and driving.',
+      image: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 4,200',
+      features: [<FiSun key="sun" />, <FiEye key="eye" />],
+      colors: ['#2C3E50'],
+      category: 'polarized-lenses'
+    },
+    {
+      id: 'anti-reflective-lenses',
+      title: 'Anti-Reflective',
+      description: 'Eliminate reflections and glare for crystal clear vision and better appearance.',
+      image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      price: 'From PKR 3,800',
+      features: [<FiZap key="zap" />, <FiEye key="eye" />],
+      colors: ['transparent'],
+      category: 'anti-reflective-lenses'
     }
   ];
 

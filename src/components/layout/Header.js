@@ -8,6 +8,7 @@ import formatPrice from '../../utils/formatPrice';
 import { generateUniqueSlug } from '../../utils/slugUtils';
 import { logout } from '../../redux/slices/authSlice';
 import PremiumBrandsMegaMenu from './PremiumBrandsMegaMenu';
+import LensesMegaMenu from '../common/LensesMegaMenu';
 
 const TopBar = styled.div`
   background-color: #48b2ee;
@@ -106,7 +107,7 @@ const Logo = styled.div`
 const Nav = styled.nav`
   display: flex;
   gap: 3rem;
-  margin: 0 auto;
+  align-items: center;
   
   @media (max-width: 768px) {
     display: none;
@@ -190,7 +191,10 @@ const NavButton = styled.button`
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
+  padding: 0.5rem 0;
+  white-space: nowrap;
   
   &:hover {
     color: #48b2ee;
@@ -378,249 +382,7 @@ const RecentlyViewed = styled.div`
   justify-content: center;
 `;
 
-// Lenses Mega Menu Styled Components
-const LensesMegaMenu = styled.div`
-  position: absolute;
-  top: 100%;
-  left: -200px;
-  width: 800px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-  z-index: 1000;
-  margin-top: 8px;
-  padding: 2rem;
-  display: none;
-  
-  @media (max-width: 1024px) {
-    left: -150px;
-    width: 600px;
-  }
-  
-  @media (max-width: 768px) {
-    left: -100px;
-    width: 400px;
-    padding: 1rem;
-  }
-`;
-
-const LensesMegaMenuTitle = styled.h3`
-  margin: 0 0 1.5rem 0;
-  font-size: 1.4rem;
-  color: #333;
-  text-align: center;
-  font-weight: 600;
-`;
-
-const LensesBrandsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-  justify-items: center;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-`;
-
-const LensesSection = styled.div`
-  margin-bottom: 2rem;
-`;
-
-const LensesSectionTitle = styled.h4`
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
-  color: #666;
-  font-weight: 500;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const LensesBrandCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 2px solid transparent;
-  background: #f8f9fa;
-  position: relative;
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    border-color: #48b2ee;
-    background: white;
-  }
-`;
-
-const LensesBrandImage = styled.div`
-  width: 120px;
-  height: 80px;
-  background: ${props => props.bgColor || '#fff'};
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e0e0e0;
-  position: relative;
-  overflow: hidden;
-  
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-  }
-`;
-
-const NewBadge = styled.span`
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #ff4444;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  text-transform: uppercase;
-`;
-
-const LensesBrandName = styled.h4`
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  color: #333;
-  font-weight: 600;
-`;
-
-const LensesBrandDescription = styled.p`
-  margin: 0 0 1rem 0;
-  font-size: 0.85rem;
-  color: #666;
-  line-height: 1.4;
-`;
-
-const LensesFeaturesList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 0.8rem;
-  color: #555;
-  
-  li {
-    margin-bottom: 0.3rem;
-    position: relative;
-    padding-left: 1rem;
-    
-    &:before {
-      content: '✓';
-      position: absolute;
-      left: 0;
-      color: #48b2ee;
-      font-weight: 600;
-    }
-  }
-`;
-
-const LensesBottomSection = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #f0f0f0;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-`;
-
-const LensesCategories = styled.div`
-  h4 {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    color: #333;
-    font-weight: 600;
-  }
-`;
-
-const LensesCategoryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const LensesCategoryLink = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  color: #555;
-  text-decoration: none;
-  font-size: 0.9rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background: #f0f8ff;
-    color: #48b2ee;
-  }
-  
-  &:before {
-    content: '→';
-    color: #48b2ee;
-    font-weight: 600;
-  }
-`;
-
-const LensesPromoSection = styled.div`
-  background: linear-gradient(135deg, #48b2ee 0%, #3a9bd9 100%);
-  color: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  text-align: center;
-  
-  h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-  
-  p {
-    margin: 0 0 1rem 0;
-    font-size: 0.9rem;
-    opacity: 0.9;
-  }
-  
-  button {
-    background: white;
-    color: #48b2ee;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-  }
-`;
+// Removed old lenses mega menu styled components - now using LensesMegaMenu component
 
 const MegaMenuTitle = styled.h3`
   margin: 0;
@@ -1058,7 +820,7 @@ const Header = () => {
     lenses: false,
     help: false
   });
-  const [lensesMegaMenuOpen, setLensesMegaMenuOpen] = useState(false);
+
   const [premiumBrandsMegaMenuOpen, setPremiumBrandsMegaMenuOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -1137,48 +899,7 @@ const Header = () => {
   
   const suggestedQueries = ['sunglasses', 'cat eyeglasses', 'reading glasses', 'designer frames'];
   
-  // Lenses data
-  const lensesBrands = [
-    {
-      id: 'colored',
-      name: 'Colored Lenses',
-      description: 'Transform your look with natural-looking colored contact lenses',
-      bgColor: '#fff0f5',
-      image: '/images/destiny-blue.webp',
-      isNew: true,
-      features: [
-        'Natural color enhancement',
-        'Multiple color options',
-        'Daily & monthly options',
-        'Comfortable wear'
-      ],
-      link: '/lenses?category=colored-lenses'
-    },
-    {
-      id: 'transparent',
-      name: 'Transparent Lenses',
-      description: 'Crystal clear vision correction without changing your natural eye color',
-      bgColor: '#f0f8ff',
-      image: '/images/eye_clear.webp',
-      isNew: false,
-      features: [
-        'Crystal clear vision',
-        'Invisible on eyes',
-        'All-day comfort',
-        'Various prescriptions'
-      ],
-      link: '/lenses?category=transparent-lenses'
-    }
-  ];
-  
-  const lensesCategories = [
-    { name: 'Daily Disposable', link: '/lenses?type=daily' },
-    { name: 'Weekly/Monthly', link: '/lenses?type=extended' },
-    { name: 'Colored Lenses', link: '/lenses?type=colored' },
-    { name: 'Toric (Astigmatism)', link: '/lenses?type=toric' },
-    { name: 'Multifocal', link: '/lenses?type=multifocal' },
-    { name: 'Specialty Lenses', link: '/lenses?type=specialty' }
-  ];
+  // Removed old lenses data - now using LensesMegaMenu component
   
   const handleSignInClick = () => {
     if (isAuthenticated) {
@@ -1296,47 +1017,14 @@ const Header = () => {
           />
         </NavItem>
         
-        <NavItem
-          onMouseEnter={() => setLensesMegaMenuOpen(true)}
-          onMouseLeave={() => setLensesMegaMenuOpen(false)}
-        >
-          <NavButton>
-            Lenses
-            <DropdownIcon>
-              <FiChevronDown />
-            </DropdownIcon>
-          </NavButton>
-          <LensesMegaMenu style={{ display: lensesMegaMenuOpen ? 'block' : 'none' }}>
-            <LensesMegaMenuTitle>Contact Lenses</LensesMegaMenuTitle>
-            
-            <LensesSection>
-              <LensesSectionTitle>Types</LensesSectionTitle>
-              <LensesBrandsGrid>
-                {lensesBrands.map(brand => (
-                  <LensesBrandCard key={brand.id} onClick={() => navigate(brand.link)}>
-                    {brand.isNew && <NewBadge>New</NewBadge>}
-                    <LensesBrandImage bgColor={brand.bgColor}>
-                      <img 
-                        src={brand.image} 
-                        alt={brand.name}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.parentElement.innerHTML = `<div style="font-size: 0.9rem; color: #666; font-weight: 600;">${brand.name}</div>`;
-                        }}
-                      />
-                    </LensesBrandImage>
-                    <LensesBrandName>{brand.name}</LensesBrandName>
-                    <LensesBrandDescription>{brand.description}</LensesBrandDescription>
-                    <LensesFeaturesList>
-                      {brand.features.map((feature, index) => (
-                        <li key={index}>{feature}</li>
-                      ))}
-                    </LensesFeaturesList>
-                  </LensesBrandCard>
-                ))}
-              </LensesBrandsGrid>
-            </LensesSection>
-          </LensesMegaMenu>
+        <NavItem>
+          <LensesMegaMenu onLensSelect={(lens) => {
+            if (lens.id === 'all') {
+              navigate('/lenses');
+            } else {
+              navigate(`/lenses?category=${lens.id}`);
+            }
+          }} />
         </NavItem>
         
         <NavItem>

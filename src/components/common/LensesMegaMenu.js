@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FiChevronDown, FiEye, FiSun, FiShield, FiZap, FiActivity, FiTarget, FiMonitor, FiLayers, FiTrendingUp, FiMoon } from 'react-icons/fi';
+import { FiChevronDown, FiEye, FiShield, FiTarget } from 'react-icons/fi';
 
 const MegaMenuContainer = styled.div`
   position: relative;
@@ -38,6 +38,8 @@ const MegaMenuDropdown = styled.div`
   left: 50%;
   transform: translateX(-50%);
   width: 1200px;
+  max-height: 80vh;
+  overflow-y: auto;
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
@@ -52,14 +54,14 @@ const MegaMenuDropdown = styled.div`
   
   @media (max-width: 1280px) {
     width: 95vw;
-    left: 2.5vw;
-    transform: ${props => props.isOpen ? 'none' : 'translateY(-10px)'};
+    left: 50%;
+    transform: translateX(-50%) ${props => props.isOpen ? 'translateY(0)' : 'translateY(-10px)'};
   }
   
   @media (max-width: 768px) {
     width: 95vw;
-    left: 2.5vw;
-    transform: none;
+    left: 50%;
+    transform: translateX(-50%) ${props => props.isOpen ? 'translateY(0)' : 'translateY(-10px)'};
     padding: 1.5rem;
   }
 `;
@@ -84,12 +86,14 @@ const MenuSubtitle = styled.p`
 
 const LensesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
+  align-items: start;
   
   @media (max-width: 1024px) {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
   
   @media (max-width: 768px) {
@@ -101,10 +105,13 @@ const LensesGrid = styled.div`
 const LensCategory = styled.div`
   background: #f8fafc;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.2rem;
   transition: all 0.3s ease;
   cursor: pointer;
   border: 2px solid transparent;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
   
   &:hover {
     background: #f1f5f9;
@@ -116,7 +123,7 @@ const LensCategory = styled.div`
 
 const LensImageContainer = styled.div`
   width: 100%;
-  height: 150px;
+  height: 140px;
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 1rem;
@@ -125,6 +132,7 @@ const LensImageContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 `;
 
 const LensImage = styled.img`
@@ -154,46 +162,53 @@ const LensPlaceholder = styled.div`
 
 const LensInfo = styled.div`
   text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 const LensTitle = styled.h3`
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #1a202c;
   margin: 0 0 0.5rem 0;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.1;
 `;
 
 const LensDescription = styled.p`
   color: #64748b;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin: 0 0 1rem 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0 0 0.8rem 0;
+  flex: 1;
 `;
 
 const LensFeatures = styled.div`
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
 `;
 
 const FeatureIcon = styled.div`
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #3ABEF9;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 `;
 
-const LensPrice = styled.div`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #3ABEF9;
-`;
+
 
 const ColorOptions = styled.div`
   display: flex;
@@ -243,98 +258,89 @@ const ViewAllButton = styled.button`
 const LensesMegaMenu = ({ onLensSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const lensCategories = [
-    {
-      id: 'contact-lenses',
-      title: 'Contact Lenses',
-      description: 'Comfortable daily and monthly contact lenses for clear vision and convenience.',
-      image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 2,500',
-      features: [<FiEye key="eye" />, <FiShield key="shield" />],
-      colors: ['transparent'],
-      category: 'contact-lenses'
-    },
-    {
-      id: 'colored-lenses',
+  // Main lens categories with subcategories
+  const lensCategories = {
+    'colored-lenses': {
       title: 'Colored Lenses',
-      description: 'Transform your look with vibrant colored lenses. Available in natural and dramatic shades.',
+      subtitle: 'Transform your look with natural-looking colored contact lenses',
       image: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 3,500',
-      features: [<FiEye key="eye" />, <FiZap key="zap" />],
-      colors: ['#8B4513', '#228B22', '#4169E1', '#9932CC', '#FF1493', '#32CD32'],
-      category: 'colored-lenses'
+      badge: 'NEW',
+      features: [
+        'Natural color enhancement',
+        'Multiple color options',
+        'Daily & monthly options',
+        'Comfortable wear'
+      ],
+      subcategories: [
+        { name: 'Natural Brown', color: '#8B4513' },
+        { name: 'Ocean Blue', color: '#4169E1' },
+        { name: 'Emerald Green', color: '#228B22' },
+        { name: 'Honey Hazel', color: '#CD853F' },
+        { name: 'Violet Purple', color: '#9932CC' }
+      ]
     },
-    {
-      id: 'transparent-lenses',
+    'transparent-lenses': {
       title: 'Transparent Lenses',
-      description: 'Crystal clear prescription lenses for everyday wear with superior comfort.',
+      subtitle: 'Crystal clear vision correction without changing your natural eye color',
       image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 2,200',
-      features: [<FiShield key="shield" />, <FiSun key="sun" />],
-      colors: ['transparent'],
-      category: 'transparent-lenses'
+      badge: 'TRANSPARENT LENSES',
+      features: [
+        'Crystal clear vision',
+        'Invisible on eyes',
+        'All-day comfort',
+        'Various prescriptions'
+      ],
+      subcategories: [
+        { name: 'Daily Clear', color: 'transparent' },
+        { name: 'Monthly Clear', color: 'transparent' },
+        { name: 'Toric Clear', color: 'transparent' },
+        { name: 'Multifocal Clear', color: 'transparent' },
+        { name: 'Extended Wear', color: 'transparent' }
+      ]
     },
-    {
-      id: 'prescription-lenses',
-      title: 'Prescription Lenses',
-      description: 'Custom prescription lenses for vision correction with advanced lens technology.',
+    'contact-lenses': {
+      title: 'Contact Lenses',
+      subtitle: 'Premium contact lenses for all-day comfort and clear vision',
       image: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 4,500',
-      features: [<FiTarget key="target" />, <FiActivity key="activity" />],
-      colors: ['transparent'],
-      category: 'prescription-lenses'
+      badge: 'TYPES',
+      features: [
+        'Daily disposable options',
+        'Monthly replacement',
+        'Silicone hydrogel material',
+        'UV protection available'
+      ],
+      subcategories: [
+        { name: 'Daily Disposable', color: 'transparent' },
+        { name: 'Weekly Replacement', color: 'transparent' },
+        { name: 'Monthly Replacement', color: 'transparent' },
+        { name: 'Extended Wear', color: 'transparent' },
+        { name: 'Specialty Lenses', color: 'transparent' }
+      ]
     },
-    {
-      id: 'blue-light-lenses',
-      title: 'Blue Light Filter',
-      description: 'Protect your eyes from harmful blue light with advanced filtering technology.',
-      image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 3,200',
-      features: [<FiShield key="shield" />, <FiMonitor key="monitor" />],
-      colors: ['#E6F3FF'],
-      category: 'blue-light-lenses'
-    },
-    {
-      id: 'progressive-lenses',
-      title: 'Progressive Lenses',
-      description: 'Multi-focal lenses for seamless vision at all distances without visible lines.',
+    'prescription-lenses': {
+      title: 'Prescription Lenses',
+      subtitle: 'Custom prescription solutions for all vision correction needs',
       image: 'https://images.unsplash.com/photo-1509695507497-903c140c43b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 6,500',
-      features: [<FiLayers key="layers" />, <FiTrendingUp key="trending" />],
-      colors: ['transparent'],
-      category: 'progressive-lenses'
+      badge: 'PRESCRIPTION',
+      features: [
+        'Custom prescriptions',
+        'Advanced lens technology',
+        'Anti-reflective coating',
+        'Blue light protection'
+      ],
+      subcategories: [
+        { name: 'Single Vision', color: 'transparent', description: 'For nearsightedness or farsightedness' },
+        { name: 'Progressive', color: 'transparent', description: 'Seamless multifocal vision' },
+        { name: 'Bifocal', color: 'transparent', description: 'Two distinct vision zones' },
+        { name: 'Photochromic', color: 'transparent', description: 'Adaptive light-changing lenses' },
+        { name: 'High Index', color: 'transparent', description: 'Ultra-thin for strong prescriptions' },
+        { name: 'Blue Light Filter', color: 'transparent', description: 'Digital eye strain protection' },
+        { name: 'Anti-Glare', color: 'transparent', description: 'Reduces reflections and glare' },
+        { name: 'Polarized Prescription', color: 'transparent', description: 'Prescription with polarization' }
+      ]
     },
-    {
-      id: 'photochromic-lenses',
-      title: 'Photochromic Lenses',
-      description: 'Adaptive lenses that automatically adjust to changing light conditions.',
-      image: 'https://images.unsplash.com/photo-1556306535-38febf6782e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 5,800',
-      features: [<FiSun key="sun" />, <FiMoon key="moon" />],
-      colors: ['#F0F0F0'],
-      category: 'photochromic-lenses'
-    },
-    {
-      id: 'polarized-lenses',
-      title: 'Polarized Lenses',
-      description: 'Reduce glare and enhance visual clarity for outdoor activities and driving.',
-      image: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 4,200',
-      features: [<FiSun key="sun" />, <FiEye key="eye" />],
-      colors: ['#2C3E50'],
-      category: 'polarized-lenses'
-    },
-    {
-      id: 'anti-reflective-lenses',
-      title: 'Anti-Reflective',
-      description: 'Eliminate reflections and glare for crystal clear vision and better appearance.',
-      image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      price: 'From PKR 3,800',
-      features: [<FiZap key="zap" />, <FiEye key="eye" />],
-      colors: ['transparent'],
-      category: 'anti-reflective-lenses'
-    }
-  ];
+
+  };
 
   const handleLensSelect = (lens) => {
     if (onLensSelect) {
@@ -362,7 +368,7 @@ const LensesMegaMenu = ({ onLensSelect }) => {
     } else {
       document.removeEventListener('click', handleClickOutside);
     }
-    
+
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
@@ -370,62 +376,68 @@ const LensesMegaMenu = ({ onLensSelect }) => {
 
   return (
     <MegaMenuContainer className="mega-menu-container">
-      <MenuTrigger 
+      <MenuTrigger
         isOpen={isOpen}
         onClick={() => setIsOpen(!isOpen)}
       >
         Lenses
         <FiChevronDown />
       </MenuTrigger>
-      
+
       <MegaMenuDropdown isOpen={isOpen}>
         <MenuHeader>
-          <MenuTitle>Lens Collection</MenuTitle>
+          <MenuTitle>Complete Lens Collection</MenuTitle>
           <MenuSubtitle>Discover our premium range of contact and prescription lenses</MenuSubtitle>
         </MenuHeader>
-        
+
         <LensesGrid>
-          {lensCategories.map((lens) => (
-            <LensCategory 
-              key={lens.id}
-              onClick={() => handleLensSelect(lens)}
+          {Object.entries(lensCategories).map(([categoryId, lens]) => (
+            <LensCategory
+              key={categoryId}
+              onClick={() => handleLensSelect({ ...lens, id: categoryId })}
             >
               <LensImageContainer>
                 {lens.image ? (
                   <LensImage src={lens.image} alt={lens.title} />
                 ) : (
-                  <LensPlaceholder color={lens.id === 'colored' ? '#FF6B6B' : '#4ECDC4'}>
-                    {lens.features[0]}
+                  <LensPlaceholder color={categoryId === 'colored-lenses' ? '#FF6B6B' : '#4ECDC4'}>
+                    <FiEye />
                   </LensPlaceholder>
                 )}
               </LensImageContainer>
-              
+
               <LensInfo>
                 <LensTitle>{lens.title}</LensTitle>
-                <LensDescription>{lens.description}</LensDescription>
-                
+                <LensDescription>{lens.subtitle}</LensDescription>
+
                 <LensFeatures>
-                  {lens.features.map((feature, index) => (
-                    <FeatureIcon key={index}>
-                      {feature}
-                    </FeatureIcon>
-                  ))}
+                  {lens.features.slice(0, 3).map((feature, index) => {
+                    const icons = [<FiEye />, <FiShield />, <FiTarget />];
+                    return (
+                      <FeatureIcon key={index} title={feature}>
+                        {icons[index] || <FiEye />}
+                      </FeatureIcon>
+                    );
+                  })}
                 </LensFeatures>
-                
-                {lens.colors[0] !== 'transparent' && (
+
+                {lens.subcategories && lens.subcategories.some(sub => sub.color !== 'transparent') && (
                   <ColorOptions>
-                    {lens.colors.map((color, index) => (
-                      <ColorSwatch key={index} color={color} />
-                    ))}
+                    {lens.subcategories
+                      .filter(sub => sub.color !== 'transparent')
+                      .slice(0, 5)
+                      .map((sub, index) => (
+                        <ColorSwatch key={index} color={sub.color} title={sub.name} />
+                      ))}
                   </ColorOptions>
                 )}
-                
-                <LensPrice>{lens.price}</LensPrice>
+
+
               </LensInfo>
             </LensCategory>
           ))}
         </LensesGrid>
-        
+
         <BottomSection>
           <ViewAllButton onClick={() => handleLensSelect({ id: 'all', title: 'All Lenses' })}>
             View All Lenses

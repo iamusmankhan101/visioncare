@@ -150,7 +150,7 @@ const ColorSwatchContainer = styled.div`
 `;
 
 const ColorSwatch = styled.div`
-  width: 50px;
+  width: 30px;
   height: 50px;
   border-radius: 50%;
   background: ${props => props.color};

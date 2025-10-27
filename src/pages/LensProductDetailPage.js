@@ -185,11 +185,24 @@ const PowerDropdown = styled.select`
   font-size: 1rem;
   background-color: white;
   cursor: pointer;
-  min-width: 140px;
+  min-width: 180px;
   
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #48b2ee;
+    box-shadow: 0 0 0 3px rgba(72, 178, 238, 0.1);
+  }
+  
+  &:invalid {
+    border-color: #dc3545;
+  }
+  
+  option {
+    padding: 0.5rem;
+  }
+  
+  option[value=""] {
+    color: #999;
   }
 `;
 
@@ -800,8 +813,8 @@ const LensProductDetailPage = () => {
   const dispatch = useDispatch();
   
   const [selectedColor, setSelectedColor] = useState('');
-  const [rightEyePower, setRightEyePower] = useState('0.00-plain');
-  const [leftEyePower, setLeftEyePower] = useState('0.00-plain');
+  const [rightEyePower, setRightEyePower] = useState('');
+  const [leftEyePower, setLeftEyePower] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -856,9 +869,63 @@ const LensProductDetailPage = () => {
   const currentProduct = lensProduct || fallbackProduct;
   
   const powerOptions = [
-    '0.00-plain', '-0.25', '-0.50', '-0.75', '-1.00', '-1.25', '-1.50', '-1.75', '-2.00',
-    '-2.25', '-2.50', '-2.75', '-3.00', '-3.25', '-3.50', '-3.75', '-4.00', '-4.25',
-    '-4.50', '-4.75', '-5.00', '-5.25', '-5.50', '-5.75', '-6.00'
+    { value: '0.00-plain', label: '0.00 (Plain/No Power)' },
+    { value: '+0.25', label: '+0.25' },
+    { value: '+0.50', label: '+0.50' },
+    { value: '+0.75', label: '+0.75' },
+    { value: '+1.00', label: '+1.00' },
+    { value: '+1.25', label: '+1.25' },
+    { value: '+1.50', label: '+1.50' },
+    { value: '+1.75', label: '+1.75' },
+    { value: '+2.00', label: '+2.00' },
+    { value: '+2.25', label: '+2.25' },
+    { value: '+2.50', label: '+2.50' },
+    { value: '+2.75', label: '+2.75' },
+    { value: '+3.00', label: '+3.00' },
+    { value: '+3.25', label: '+3.25' },
+    { value: '+3.50', label: '+3.50' },
+    { value: '+3.75', label: '+3.75' },
+    { value: '+4.00', label: '+4.00' },
+    { value: '-0.25', label: '-0.25' },
+    { value: '-0.50', label: '-0.50' },
+    { value: '-0.75', label: '-0.75' },
+    { value: '-1.00', label: '-1.00' },
+    { value: '-1.25', label: '-1.25' },
+    { value: '-1.50', label: '-1.50' },
+    { value: '-1.75', label: '-1.75' },
+    { value: '-2.00', label: '-2.00' },
+    { value: '-2.25', label: '-2.25' },
+    { value: '-2.50', label: '-2.50' },
+    { value: '-2.75', label: '-2.75' },
+    { value: '-3.00', label: '-3.00' },
+    { value: '-3.25', label: '-3.25' },
+    { value: '-3.50', label: '-3.50' },
+    { value: '-3.75', label: '-3.75' },
+    { value: '-4.00', label: '-4.00' },
+    { value: '-4.25', label: '-4.25' },
+    { value: '-4.50', label: '-4.50' },
+    { value: '-4.75', label: '-4.75' },
+    { value: '-5.00', label: '-5.00' },
+    { value: '-5.25', label: '-5.25' },
+    { value: '-5.50', label: '-5.50' },
+    { value: '-5.75', label: '-5.75' },
+    { value: '-6.00', label: '-6.00' },
+    { value: '-6.25', label: '-6.25' },
+    { value: '-6.50', label: '-6.50' },
+    { value: '-6.75', label: '-6.75' },
+    { value: '-7.00', label: '-7.00' },
+    { value: '-7.25', label: '-7.25' },
+    { value: '-7.50', label: '-7.50' },
+    { value: '-7.75', label: '-7.75' },
+    { value: '-8.00', label: '-8.00' },
+    { value: '-8.25', label: '-8.25' },
+    { value: '-8.50', label: '-8.50' },
+    { value: '-8.75', label: '-8.75' },
+    { value: '-9.00', label: '-9.00' },
+    { value: '-9.25', label: '-9.25' },
+    { value: '-9.50', label: '-9.50' },
+    { value: '-9.75', label: '-9.75' },
+    { value: '-10.00', label: '-10.00' }
   ];
   
   const handleFileUpload = (event) => {
@@ -1060,6 +1127,15 @@ const LensProductDetailPage = () => {
             </Select>
           </OptionSection>
           
+          <LensesNote>
+            <NoteTitle>Power Selection Guide</NoteTitle>
+            <NoteText>
+              <strong>Positive (+) Powers:</strong> For farsightedness (hyperopia) - difficulty seeing close objects clearly.<br/>
+              <strong>Negative (-) Powers:</strong> For nearsightedness (myopia) - difficulty seeing distant objects clearly.<br/>
+              <strong>Plain (0.00):</strong> No vision correction needed, cosmetic lenses only.
+            </NoteText>
+          </LensesNote>
+
           <PrescriptionTable>
             <TableHeader>
               <div></div>
@@ -1074,8 +1150,9 @@ const LensProductDetailPage = () => {
                 value={rightEyePower} 
                 onChange={(e) => setRightEyePower(e.target.value)}
               >
+                <option value="">Select Power</option>
                 {powerOptions.map(power => (
-                  <option key={power} value={power}>{power}</option>
+                  <option key={power.value} value={power.value}>{power.label}</option>
                 ))}
               </PowerDropdown>
               <SpecValue>8.4</SpecValue>
@@ -1088,8 +1165,9 @@ const LensProductDetailPage = () => {
                 value={leftEyePower} 
                 onChange={(e) => setLeftEyePower(e.target.value)}
               >
+                <option value="">Select Power</option>
                 {powerOptions.map(power => (
-                  <option key={power} value={power}>{power}</option>
+                  <option key={power.value} value={power.value}>{power.label}</option>
                 ))}
               </PowerDropdown>
               <SpecValue>8.4</SpecValue>

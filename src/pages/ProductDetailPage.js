@@ -227,6 +227,7 @@ const OriginalPrice = styled.span`
   text-align:left;
   text-decoration: line-through;
   margin-right: 0.5rem;
+
   
   @media (max-width: 768px) {
     font-size: 1.1rem;
@@ -243,6 +244,7 @@ const DiscountedPrice = styled.span`
   font-weight: 600;
   color: #e74c3c;
   margin-right: 1rem;
+  text-align: left;
   
   @media (max-width: 768px) {
     font-size: 1.3rem;

@@ -116,6 +116,7 @@ const Price = styled.p`
   font-weight: 700;
   color: #333;
   margin: 0;
+  text-align: left;
 `;
 
 const OptionSection = styled.div`

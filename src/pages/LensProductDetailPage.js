@@ -95,6 +95,7 @@ const ProductTitle = styled.h1`
   font-weight: 700;
   color: #333;
   margin: 0;
+  text-align: left;
 `;
 
 const PriceSection = styled.div`
@@ -126,6 +127,7 @@ const OptionLabel = styled.label`
   font-size: 0.9rem;
   font-weight: 600;
   color: #333;
+  text-align: left;
 `;
 
 const Select = styled.select`

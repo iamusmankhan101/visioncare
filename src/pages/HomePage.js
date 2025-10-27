@@ -876,6 +876,17 @@ const HomePage = () => {
     };
   };
 
+  // Helper function to determine if a product is a lens product
+  const isLensProduct = (product) => {
+    const lensCategories = ['contact-lenses', 'transparent-lenses', 'colored-lenses', 'prescription-lenses'];
+    const lensNames = ['FreshKon Mosaic', 'Acuvue Oasys', 'Bella Elite', 'Dailies AquaComfort', 'Solotica Natural', 'Air Optix Colors'];
+    const lensBrands = ['FreshKon', 'Acuvue', 'Bella', 'Alcon', 'Solotica'];
+    
+    return lensCategories.includes(product.category) ||
+           lensNames.some(name => product.name.includes(name)) ||
+           lensBrands.includes(product.brand);
+  };
+
   // Testimonial data
   const testimonials = [
     {
@@ -1324,7 +1335,7 @@ const HomePage = () => {
                 <FiHeart fill={isInWishlist(product.id) ? '#ff4757' : 'none'} />
               </WishlistButton>
               
-              <Link to={`/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link to={isLensProduct(product) ? `/lenses/${product.id}` : `/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <ProductImage image={product.image} />
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>
@@ -1398,7 +1409,7 @@ const HomePage = () => {
                 <FiHeart fill={isInWishlist(product.id) ? '#ff4757' : 'none'} />
               </WishlistButton>
               
-              <Link to={`/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link to={isLensProduct(product) ? `/lenses/${product.id}` : `/products/${generateUniqueSlug(product.name, product.id)}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <ProductImage image={product.image} />
                 <ProductContent>
                   <ProductTitle>{product.name}</ProductTitle>

@@ -142,6 +142,50 @@ const Select = styled.select`
   }
 `;
 
+const ColorSwatchContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+const ColorSwatch = styled.div`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: ${props => props.color};
+  border: 3px solid ${props => props.selected ? '#48b2ee' : '#e0e0e0'};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &:hover {
+    border-color: #48b2ee;
+    transform: scale(1.1);
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    opacity: ${props => props.selected ? 1 : 0};
+    transition: opacity 0.3s ease;
+  }
+`;
+
+const SelectedColorName = styled.div`
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+`;
+
 const PrescriptionTable = styled.div`
   margin: 2rem 0;
   border: 1px solid #e0e0e0;
@@ -853,10 +897,10 @@ const LensProductDetailPage = () => {
       '/images/contact-lenses-solution-bottle-banner_33099-1916.jpg'
     ],
     colors: [
-      { name: 'Natural Brown', value: 'natural-brown' },
-      { name: 'Honey', value: 'honey' },
-      { name: 'Gray', value: 'gray' },
-      { name: 'Blue', value: 'blue' }
+      { name: 'Natural Brown', value: 'natural-brown', hex: '#8B4513' },
+      { name: 'Honey', value: 'honey', hex: '#CD853F' },
+      { name: 'Gray', value: 'gray', hex: '#808080' },
+      { name: 'Blue', value: 'blue', hex: '#4169E1' }
     ],
     specifications: {
       power: '8.4',
@@ -1114,17 +1158,22 @@ const LensProductDetailPage = () => {
           
           <OptionSection>
             <OptionLabel>Select Color</OptionLabel>
-            <Select 
-              value={selectedColor} 
-              onChange={(e) => setSelectedColor(e.target.value)}
-            >
-              <option value="">--</option>
+            <ColorSwatchContainer>
               {(currentProduct.colors || fallbackProduct.colors).map(color => (
-                <option key={color.value} value={color.value}>
-                  {color.name}
-                </option>
+                <ColorSwatch
+                  key={color.value}
+                  color={color.hex}
+                  selected={selectedColor === color.value}
+                  onClick={() => setSelectedColor(color.value)}
+                  title={color.name}
+                />
               ))}
-            </Select>
+            </ColorSwatchContainer>
+            {selectedColor && (
+              <SelectedColorName>
+                Color: {(currentProduct.colors || fallbackProduct.colors).find(c => c.value === selectedColor)?.name}
+              </SelectedColorName>
+            )}
           </OptionSection>
           
           <LensesNote>

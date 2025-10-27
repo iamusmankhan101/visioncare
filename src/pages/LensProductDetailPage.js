@@ -102,6 +102,7 @@ const PriceSection = styled.div`
   background: #f8f9fa;
   padding: 1rem;
   border-radius: 8px;
+  text-align: left;
 `;
 
 const PriceLabel = styled.p`
@@ -153,7 +154,7 @@ const ColorSwatchContainer = styled.div`
 
 const ColorSwatch = styled.div`
   width: 30px;
-  height: 50px;
+  height: 30px;
   border-radius: 50%;
   background: ${props => props.color};
   border: 3px solid ${props => props.selected ? '#48b2ee' : '#e0e0e0'};

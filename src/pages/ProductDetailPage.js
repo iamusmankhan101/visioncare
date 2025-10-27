@@ -202,6 +202,7 @@ const ProductTitle = styled.h1`
 
 const PriceContainer = styled.div`
   margin-bottom: 1.5rem;
+  text-align: left;
 `;
 
 const CurrentPrice = styled.span`

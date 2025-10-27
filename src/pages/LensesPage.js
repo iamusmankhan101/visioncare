@@ -4,7 +4,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { fetchProducts, setFilters, resetFilters } from '../redux/slices/productSlice';
 import formatPrice from '../utils/formatPrice';
-import { generateUniqueSlug } from '../utils/slugUtils';
+
 
 const PageContainer = styled.div`
   max-width: 1450px;
@@ -358,7 +358,7 @@ const LensesPage = () => {
               {sortedProducts.map(product => (
                 <ProductCard key={product.id}>
                   <CategoryBadge>{product.category}</CategoryBadge>
-                  <Link to={`/products/${generateUniqueSlug(product.name, product.id)}`}>
+                  <Link to={`/lenses/${product.id}`}>
                     <ProductImage 
                       src={product.image || '/images/default-product.jpg'} 
                       alt={product.name}

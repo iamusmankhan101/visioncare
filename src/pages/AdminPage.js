@@ -2131,7 +2131,7 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   backdrop-filter: blur(4px);
 `;
 
@@ -2143,6 +2143,7 @@ const ModalContent = styled.div`
   width: 90%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   position: relative;
+  z-index: 10001;
   animation: modalSlideIn 0.3s ease-out;
   
   @keyframes modalSlideIn {
@@ -2491,6 +2492,9 @@ const AdminPage = () => {
   const [showProductTypeModal, setShowProductTypeModal] = useState(false);
   const [selectedProductType, setSelectedProductType] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // Debug: Log modal state changes
+  console.log('🔍 showProductTypeModal state:', showProductTypeModal);
 
   // Default product state - used for initialization and reset
   const defaultProductData = {
@@ -3049,8 +3053,10 @@ const AdminPage = () => {
 
   // Helper function to handle tab clicks and close mobile menu
   const handleTabClick = (tabName) => {
+    console.log('🔍 handleTabClick called with:', tabName);
     if (tabName === 'add-product') {
       // Show product type selection modal instead of directly going to add-product
+      console.log('🔍 Setting showProductTypeModal to true');
       setShowProductTypeModal(true);
     } else {
       setActiveTab(tabName);
@@ -4131,6 +4137,52 @@ Type "DELETE ALL" to confirm:`;
 
   return (
     <DashboardContainer>
+      {/* Product Type Selection Modal - Moved to top level */}
+      {showProductTypeModal && (
+        <ModalOverlay onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalClose onClick={handleCloseModal}>×</ModalClose>
+            <ModalHeader>
+              <h2>Choose Product Type</h2>
+              <p>Select the type of product you want to add</p>
+            </ModalHeader>
+            <ProductTypeGrid>
+              <ProductTypeCard onClick={() => handleProductTypeSelect('eyewear')}>
+                <span className="icon">👓</span>
+                <h3>Eyewear Product</h3>
+                <p>Add sunglasses, eyeglasses, reading glasses, and other eyewear products</p>
+              </ProductTypeCard>
+              <ProductTypeCard onClick={() => handleProductTypeSelect('lens')}>
+                <span className="icon">🔍</span>
+                <h3>Lens Product</h3>
+                <p>Add contact lenses, lens solutions, and lens accessories</p>
+              </ProductTypeCard>
+            </ProductTypeGrid>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      
+      {/* Debug: Always show modal state */}
+      <div style={{position: 'fixed', top: '10px', right: '10px', background: 'red', color: 'white', padding: '5px', zIndex: 9999}}>
+        Modal State: {showProductTypeModal ? 'TRUE' : 'FALSE'}
+      </div>
+      
+      {/* Debug: Test if modal renders at all */}
+      {showProductTypeModal && (
+        <div style={{
+          position: 'fixed', 
+          top: '50px', 
+          right: '10px', 
+          background: 'green', 
+          color: 'white', 
+          padding: '10px', 
+          zIndex: 10002,
+          border: '2px solid yellow'
+        }}>
+          MODAL IS RENDERING!
+        </div>
+      )}
+      
       <MobileOverlay
         isOpen={isMobileMenuOpen}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -4583,30 +4635,6 @@ Type "DELETE ALL" to confirm:`;
               </HeaderRight>
             </DashboardHeader>
             <ContentArea>
-              {/* Product Type Selection Modal */}
-              {showProductTypeModal && (
-                <ModalOverlay onClick={handleCloseModal}>
-                  <ModalContent onClick={(e) => e.stopPropagation()}>
-                    <ModalClose onClick={handleCloseModal}>×</ModalClose>
-                    <ModalHeader>
-                      <h2>Choose Product Type</h2>
-                      <p>Select the type of product you want to add</p>
-                    </ModalHeader>
-                    <ProductTypeGrid>
-                      <ProductTypeCard onClick={() => handleProductTypeSelect('eyewear')}>
-                        <span className="icon">👓</span>
-                        <h3>Eyewear Product</h3>
-                        <p>Add sunglasses, eyeglasses, reading glasses, and other eyewear products</p>
-                      </ProductTypeCard>
-                      <ProductTypeCard onClick={() => handleProductTypeSelect('lens')}>
-                        <span className="icon">🔍</span>
-                        <h3>Lens Product</h3>
-                        <p>Add contact lenses, lens solutions, and lens accessories</p>
-                      </ProductTypeCard>
-                    </ProductTypeGrid>
-                  </ModalContent>
-                </ModalOverlay>
-              )}
 
               {/* Eyewear Product Form */}
               {activeTab === 'add-eyewear-product' && (

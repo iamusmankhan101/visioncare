@@ -890,7 +890,61 @@ const LensProductDetailPage = () => {
   // Find the lens product by ID from Redux store
   const lensProduct = products?.find(product => product.id === parseInt(id));
 
-  // Fallback mock data if product not found
+  // Show loading state if products are still loading and we don't have the specific product
+  if (loading === 'loading' && !lensProduct) {
+    return (
+      <PageContainer>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          Loading product details...
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Show error state if products failed to load
+  if (loading === 'failed') {
+    return (
+      <PageContainer>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px',
+          fontSize: '1.2rem',
+          color: '#e74c3c'
+        }}>
+          Failed to load product details. Please try again.
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Show not found state if products loaded but specific product not found
+  if (loading === 'succeeded' && !lensProduct) {
+    return (
+      <PageContainer>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          Product not found.
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Fallback mock data (only used if no products are available at all)
   const fallbackProduct = {
     id: parseInt(id) || 1,
     name: 'FreshKon Mosaic',
@@ -913,7 +967,7 @@ const LensProductDetailPage = () => {
     }
   };
 
-  // Use actual product data or fallback
+  // Use actual product data or fallback (fallback should rarely be used now)
   const currentProduct = lensProduct || fallbackProduct;
   
   const powerOptions = [
@@ -976,7 +1030,31 @@ const LensProductDetailPage = () => {
     { value: '+3.25', label: '+3.25' },
     { value: '+3.50', label: '+3.50' },
     { value: '+3.75', label: '+3.75' },
-    { value: '+4.00', label: '+4.00' }
+    { value: '+4.00', label: '+4.00' },
+    { value: '+4.25', label: '+4.25' },
+    { value: '+4.50', label: '+4.50' },
+    { value: '+4.75', label: '+4.75' },
+    { value: '+5.00', label: '+5.00' },
+    { value: '+5.25', label: '+5.25' },
+    { value: '+5.50', label: '+5.50' },
+    { value: '+5.75', label: '+5.75' },
+    { value: '+6.00', label: '+6.00' },
+    { value: '+6.25', label: '+6.25' },
+    { value: '+6.50', label: '+6.50' },
+    { value: '+6.75', label: '+6.75' },
+    { value: '+7.00', label: '+7.00' },
+    { value: '+7.25', label: '+7.25' },
+    { value: '+7.50', label: '+7.50' },
+    { value: '+7.75', label: '+7.75' },
+    { value: '+8.00', label: '+8.00' },
+    { value: '+8.25', label: '+8.25' },
+    { value: '+8.50', label: '+8.50' },
+    { value: '+8.75', label: '+8.75' },
+    { value: '+9.00', label: '+9.00' },
+    { value: '+9.25', label: '+9.25' },
+    { value: '+9.50', label: '+9.50' },
+    { value: '+9.75', label: '+9.75' },
+    { value: '+10.00', label: '+10.00' }
   ];
   
   const handleFileUpload = (event) => {

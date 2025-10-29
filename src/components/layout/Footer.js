@@ -248,7 +248,7 @@ const Footer = () => {
 </Logo>
 
           <LogoDescription>
-            Transformação digital que realmente funciona. Oferecemos os melhores óculos com preços acessíveis e qualidade premium.
+            Your trusted partner for premium eyewear with affordable prices and exceptional quality.
           </LogoDescription>
           <SocialIcons>
             <SocialIcon href="https://linkedin.com" target="_blank" rel="noopener noreferrer">

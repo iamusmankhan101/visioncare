@@ -269,9 +269,10 @@ const Footer = () => {
         <MenuSection>
           <FooterTitle>Useful Links</FooterTitle>
           <FooterLink to="/">Home</FooterLink>
-          <FooterLink to="/about">About</FooterLink>
-          <FooterLink to="/collections">Collections</FooterLink>
-          <FooterLink to="/contact">Contact</FooterLink>
+          <FooterLink to="/products?category=eyeglasses">Eyewear</FooterLink>
+          <FooterLink to="/products?category=sunglasses">Sunglasses</FooterLink>
+          <FooterLink to="/lenses">Lenses</FooterLink>
+          <FooterLink to="/premium-brands">Premium Brands</FooterLink>
         </MenuSection>
         
         <MenuSection>

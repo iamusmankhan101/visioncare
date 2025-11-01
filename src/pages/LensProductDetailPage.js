@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -863,6 +863,34 @@ const LensProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [rightEyePower, setRightEyePower] = useState('0.00-plain');
   const [leftEyePower, setLeftEyePower] = useState('0.00-plain');
+  
+  // Refs for power dropdowns
+  const rightEyeDropdownRef = useRef(null);
+  const leftEyeDropdownRef = useRef(null);
+
+  // Function to center dropdown on selected option
+  const centerDropdownOnSelected = (dropdownRef, selectedValue) => {
+    if (!dropdownRef.current) return;
+    
+    const dropdown = dropdownRef.current;
+    const selectedIndex = powerOptions.findIndex(option => option.value === selectedValue);
+    
+    if (selectedIndex !== -1) {
+      // Calculate the position to center the selected option
+      const optionHeight = 30; // Approximate height of each option
+      const dropdownHeight = dropdown.clientHeight;
+      const scrollPosition = (selectedIndex * optionHeight) - (dropdownHeight / 2) + (optionHeight / 2);
+      
+      dropdown.scrollTop = Math.max(0, scrollPosition);
+    }
+  };
+
+  // Handle dropdown focus to center on selected option
+  const handleDropdownFocus = (dropdownRef, selectedValue) => {
+    setTimeout(() => {
+      centerDropdownOnSelected(dropdownRef, selectedValue);
+    }, 50); // Small delay to ensure dropdown is fully opened
+  };
   const [selectedImage, setSelectedImage] = useState(0);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -1281,10 +1309,12 @@ const LensProductDetailPage = () => {
             <TableRow>
               <EyeLabel>Right Eye (OD)</EyeLabel>
               <PowerDropdown 
+                ref={rightEyeDropdownRef}
                 value={rightEyePower} 
                 onChange={(e) => setRightEyePower(e.target.value)}
+                onFocus={() => handleDropdownFocus(rightEyeDropdownRef, rightEyePower)}
+                size="10"
               >
-                <option value="">Select Power</option>
                 {powerOptions.map(power => (
                   <option key={power.value} value={power.value}>{power.label}</option>
                 ))}
@@ -1296,10 +1326,12 @@ const LensProductDetailPage = () => {
             <TableRow>
               <EyeLabel>Left Eye (OS)</EyeLabel>
               <PowerDropdown 
+                ref={leftEyeDropdownRef}
                 value={leftEyePower} 
                 onChange={(e) => setLeftEyePower(e.target.value)}
+                onFocus={() => handleDropdownFocus(leftEyeDropdownRef, leftEyePower)}
+                size="10"
               >
-                <option value="">Select Power</option>
                 {powerOptions.map(power => (
                   <option key={power.value} value={power.value}>{power.label}</option>
                 ))}

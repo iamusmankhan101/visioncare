@@ -861,8 +861,8 @@ const LensProductDetailPage = () => {
   const dispatch = useDispatch();
   
   const [selectedColor, setSelectedColor] = useState('');
-  const [rightEyePower, setRightEyePower] = useState('');
-  const [leftEyePower, setLeftEyePower] = useState('');
+  const [rightEyePower, setRightEyePower] = useState('0.00-plain');
+  const [leftEyePower, setLeftEyePower] = useState('0.00-plain');
   const [selectedImage, setSelectedImage] = useState(0);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);

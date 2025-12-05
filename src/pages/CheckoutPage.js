@@ -316,7 +316,7 @@ const CODInfo = styled.div`
 const CheckoutPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [discountCode, setDiscountCode] = useState('');
-  const [selectedPayment, setSelectedPayment] = useState('card');
+  const [selectedPayment, setSelectedPayment] = useState('bank');
   const navigate = useNavigate();
   const cartItems = useSelector(state => state.cart.items) || [];
 
@@ -568,75 +568,42 @@ const CheckoutPage = () => {
             <PaymentSection>
               <SectionTitle>Payment Information</SectionTitle>
               
-              {/* Credit Card Payment Option */}
+              {/* Bank Transfer Payment Option */}
               <PaymentOption>
                 <PaymentHeader 
-                  selected={selectedPayment === 'card'}
-                  onClick={() => setSelectedPayment('card')}
+                  selected={selectedPayment === 'bank'}
+                  onClick={() => setSelectedPayment('bank')}
                 >
                   <PaymentTitle>
                     <PaymentRadio
                       type="radio"
                       name="payment"
-                      value="card"
-                      checked={selectedPayment === 'card'}
+                      value="bank"
+                      checked={selectedPayment === 'bank'}
                       onChange={(e) => setSelectedPayment(e.target.value)}
                     />
-                    <PaymentIcon>💳</PaymentIcon>
-                    Credit / Debit Card
+                    <PaymentIcon>🏦</PaymentIcon>
+                    Bank Transfer
                   </PaymentTitle>
-                  <AccordionIcon expanded={selectedPayment === 'card'}>
+                  <AccordionIcon expanded={selectedPayment === 'bank'}>
                     ▼
                   </AccordionIcon>
                 </PaymentHeader>
                 
-                <PaymentContent expanded={selectedPayment === 'card'}>
-                  <PaymentForm>
-                    <FormGroup>
-                      <Label>Card Number</Label>
-                      <Input 
-                        {...register('cardNumber', { 
-                          required: selectedPayment === 'card' ? 'Card number is required' : false 
-                        })}
-                        placeholder="1234 5678 9012 3456"
-                      />
-                      {errors.cardNumber && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cardNumber.message}</span>}
-                    </FormGroup>
-
-                    <CardFormRow>
-                      <FormGroup>
-                        <Label>Expiry Date</Label>
-                        <Input 
-                          {...register('expiryDate', { 
-                            required: selectedPayment === 'card' ? 'Expiry date is required' : false 
-                          })}
-                          placeholder="MM/YY"
-                        />
-                        {errors.expiryDate && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.expiryDate.message}</span>}
-                      </FormGroup>
-                      <FormGroup>
-                        <Label>CVV</Label>
-                        <Input 
-                          {...register('cvv', { 
-                            required: selectedPayment === 'card' ? 'CVV is required' : false 
-                          })}
-                          placeholder="123"
-                        />
-                        {errors.cvv && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cvv.message}</span>}
-                      </FormGroup>
-                    </CardFormRow>
-
-                    <FormGroup>
-                      <Label>Cardholder Name</Label>
-                      <Input 
-                        {...register('cardholderName', { 
-                          required: selectedPayment === 'card' ? 'Cardholder name is required' : false 
-                        })}
-                        placeholder="John Doe"
-                      />
-                      {errors.cardholderName && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cardholderName.message}</span>}
-                    </FormGroup>
-                  </PaymentForm>
+                <PaymentContent expanded={selectedPayment === 'bank'}>
+                  <CODInfo>
+                    <h4>Bank Transfer Details</h4>
+                    <p style={{marginBottom: '1rem'}}>Transfer the order amount to the following bank account:</p>
+                    <div style={{backgroundColor: 'white', padding: '1rem', borderRadius: '4px', marginBottom: '1rem'}}>
+                      <p style={{margin: '0.5rem 0'}}><strong>Bank Name:</strong> Meezan Bank</p>
+                      <p style={{margin: '0.5rem 0'}}><strong>Account Title:</strong> Vision Care Optometry Clinic</p>
+                      <p style={{margin: '0.5rem 0'}}><strong>Account Number:</strong> 01234567890123</p>
+                      <p style={{margin: '0.5rem 0'}}><strong>IBAN:</strong> PK36MEZN0001234567890123</p>
+                    </div>
+                    <p style={{fontSize: '0.85rem', color: '#666'}}>
+                      After making the payment, please send the payment receipt to our WhatsApp: +92 311 478 2424 or email: Visioncareoptometryclinic@gmail.com
+                    </p>
+                  </CODInfo>
                 </PaymentContent>
               </PaymentOption>
 

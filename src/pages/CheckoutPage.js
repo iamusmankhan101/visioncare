@@ -492,7 +492,7 @@ const CheckoutPage = () => {
               <Label>Phone</Label>
               <Input 
                 {...register('phone', { required: 'Phone number is required' })}
-                placeholder="+1 (555) 123-4567"
+                placeholder="+92 300 1234567"
               />
               {errors.phone && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.phone.message}</span>}
             </FormGroup>
@@ -503,7 +503,7 @@ const CheckoutPage = () => {
               <Label>Address</Label>
               <Input 
                 {...register('address', { required: 'Address is required' })}
-                placeholder="123 Main Street"
+                placeholder="House # 123, Street 45, Block A"
               />
               {errors.address && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.address.message}</span>}
             </FormGroup>
@@ -511,20 +511,33 @@ const CheckoutPage = () => {
             <FormRow>
               <FormGroup>
                 <Label>City</Label>
-                <Input 
-                  {...register('city', { required: 'City is required' })}
-                  placeholder="New York"
-                />
+                <Select {...register('city', { required: 'City is required' })}>
+                  <option value="">Select City</option>
+                  <option value="Lahore">Lahore</option>
+                  <option value="Karachi">Karachi</option>
+                  <option value="Islamabad">Islamabad</option>
+                  <option value="Rawalpindi">Rawalpindi</option>
+                  <option value="Faisalabad">Faisalabad</option>
+                  <option value="Multan">Multan</option>
+                  <option value="Peshawar">Peshawar</option>
+                  <option value="Quetta">Quetta</option>
+                  <option value="Sialkot">Sialkot</option>
+                  <option value="Gujranwala">Gujranwala</option>
+                  <option value="Other">Other</option>
+                </Select>
                 {errors.city && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.city.message}</span>}
               </FormGroup>
               <FormGroup>
-                <Label>State</Label>
-                <Select {...register('state', { required: 'State is required' })}>
-                  <option value="">Select State</option>
-                  <option value="NY">New York</option>
-                  <option value="CA">California</option>
-                  <option value="TX">Texas</option>
-                  <option value="FL">Florida</option>
+                <Label>Province</Label>
+                <Select {...register('state', { required: 'Province is required' })}>
+                  <option value="">Select Province</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Sindh">Sindh</option>
+                  <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
+                  <option value="Balochistan">Balochistan</option>
+                  <option value="Gilgit-Baltistan">Gilgit-Baltistan</option>
+                  <option value="Azad Kashmir">Azad Kashmir</option>
+                  <option value="Islamabad Capital Territory">Islamabad Capital Territory</option>
                 </Select>
                 {errors.state && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.state.message}</span>}
               </FormGroup>
@@ -532,19 +545,21 @@ const CheckoutPage = () => {
 
             <FormRow>
               <FormGroup>
-                <Label>ZIP Code</Label>
+                <Label>Postal Code</Label>
                 <Input 
-                  {...register('zipCode', { required: 'ZIP code is required' })}
-                  placeholder="10001"
+                  {...register('zipCode', { required: 'Postal code is required' })}
+                  placeholder="54000"
                 />
                 {errors.zipCode && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.zipCode.message}</span>}
               </FormGroup>
               <FormGroup>
                 <Label>Country</Label>
-                <Select {...register('country', { required: 'Country is required' })} defaultValue="US">
-                  <option value="US">United States</option>
-                  <option value="CA">Canada</option>
-                  <option value="UK">United Kingdom</option>
+                <Select {...register('country', { required: 'Country is required' })} defaultValue="Pakistan">
+                  <option value="Pakistan">Pakistan</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="UAE">United Arab Emirates</option>
                 </Select>
                 {errors.country && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.country.message}</span>}
               </FormGroup>

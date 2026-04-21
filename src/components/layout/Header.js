@@ -1054,12 +1054,193 @@ const MobileMenuBackdrop = styled.div`
   transition: opacity 0.3s ease, visibility 0.3s ease;
 `;
 
+const CartPopupOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1003;
+  display: ${props => props.isOpen ? 'block' : 'none'};
+`;
+
+const CartPopup = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  z-index: 1004;
+  margin-top: 8px;
+  width: 380px;
+  max-height: 500px;
+  display: ${props => props.isOpen ? 'flex' : 'none'};
+  flex-direction: column;
+  animation: ${props => props.isOpen ? 'cartSlideIn 0.2s ease-out' : 'none'};
+  
+  @keyframes cartSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    width: 320px;
+    right: -20px;
+  }
+`;
+
+const CartPopupHeader = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+`;
+
+const CartPopupTitle = styled.h3`
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+`;
+
+const CartPopupClose = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  
+  &:hover {
+    color: #333;
+  }
+`;
+
+const CartPopupItems = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #48b2ee;
+    border-radius: 10px;
+  }
+`;
+
+const CartPopupItem = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const CartPopupItemImage = styled.img`
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #f5f5f5;
+`;
+
+const CartPopupItemDetails = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+const CartPopupItemName = styled.p`
+  margin: 0 0 0.25rem 0;
+  font-size: 0.85rem;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.3;
+`;
+
+const CartPopupItemPrice = styled.p`
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+`;
+
+const CartPopupItemQty = styled.p`
+  margin: 0;
+  font-size: 0.75rem;
+  color: #999;
+`;
+
+const CartPopupFooter = styled.div`
+  padding: 1rem;
+  border-top: 1px solid #f0f0f0;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+`;
+
+const CartPopupTotal = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const CartPopupButton = styled.button`
+  width: 100%;
+  padding: 0.75rem;
+  background: #48b2ee;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #3a9bd9;
+    transform: translateY(-1px);
+  }
+`;
+
+const CartPopupEmpty = styled.div`
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+`;
+
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchMegaMenuOpen, setSearchMegaMenuOpen] = useState(false);
   const [mobileSearchOverlayOpen, setMobileSearchOverlayOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [cartPopupOpen, setCartPopupOpen] = useState(false);
   const [mobileDropdowns, setMobileDropdowns] = useState({
     eyeglasses: false,
     sunglasses: false,
@@ -1074,10 +1255,11 @@ const Header = () => {
   const searchRef = useRef(null);
   const headerRef = useRef(null);
   const userDropdownRef = useRef(null);
+  const cartRef = useRef(null);
   
   const { items: products } = useSelector(state => state.products);
   const { user, isAuthenticated } = useSelector(state => state.auth);
-  const { totalQuantity } = useSelector(state => state.cart);
+  const { items: cartItems, totalQuantity } = useSelector(state => state.cart);
   
   // Fetch products when component mounts
   useEffect(() => {
@@ -1095,6 +1277,9 @@ const Header = () => {
       }
       if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
         setUserDropdownOpen(false);
+      }
+      if (cartRef.current && !cartRef.current.contains(event.target)) {
+        setCartPopupOpen(false);
       }
     };
     
@@ -1487,11 +1672,71 @@ const Header = () => {
           )}
         </div>
         <IconLink to="/wishlist"><FiHeart /></IconLink>
-        <IconLink to="/cart">
-          <FiShoppingBag />
-          {totalQuantity > 0 && <CartBadge>{totalQuantity}</CartBadge>}
-        </IconLink>
+        <div ref={cartRef} style={{ position: 'relative' }}>
+          <IconLink 
+            as="button"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#333', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
+            onClick={(e) => {
+              e.preventDefault();
+              setCartPopupOpen(!cartPopupOpen);
+            }}
+          >
+            <FiShoppingBag />
+            {totalQuantity > 0 && <CartBadge>{totalQuantity}</CartBadge>}
+          </IconLink>
+          
+          <CartPopup isOpen={cartPopupOpen}>
+            <CartPopupHeader>
+              <CartPopupTitle>Shopping Cart ({totalQuantity})</CartPopupTitle>
+              <CartPopupClose onClick={() => setCartPopupOpen(false)}>
+                <FiX />
+              </CartPopupClose>
+            </CartPopupHeader>
+            
+            {cartItems && cartItems.length > 0 ? (
+              <>
+                <CartPopupItems>
+                  {cartItems.map(item => (
+                    <CartPopupItem key={item.id}>
+                      <CartPopupItemImage 
+                        src={item.image} 
+                        alt={item.name}
+                        onError={(e) => {
+                          e.target.src = '/images/placeholder.jpg';
+                        }}
+                      />
+                      <CartPopupItemDetails>
+                        <CartPopupItemName>{item.name}</CartPopupItemName>
+                        <CartPopupItemPrice>PKR {item.price}</CartPopupItemPrice>
+                        <CartPopupItemQty>Qty: {item.quantity}</CartPopupItemQty>
+                      </CartPopupItemDetails>
+                    </CartPopupItem>
+                  ))}
+                </CartPopupItems>
+                
+                <CartPopupFooter>
+                  <CartPopupTotal>
+                    <span>Total:</span>
+                    <span>PKR {cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}</span>
+                  </CartPopupTotal>
+                  <CartPopupButton onClick={() => {
+                    setCartPopupOpen(false);
+                    navigate('/cart');
+                  }}>
+                    View Cart
+                  </CartPopupButton>
+                </CartPopupFooter>
+              </>
+            ) : (
+              <CartPopupEmpty>
+                Your cart is empty
+              </CartPopupEmpty>
+            )}
+          </CartPopup>
+        </div>
       </IconGroup>
+      
+      <CartPopupOverlay isOpen={cartPopupOpen} onClick={() => setCartPopupOpen(false)} />
       
       {/* Mobile Menu Background */}
       <MobileMenuBackdrop 

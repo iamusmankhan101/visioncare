@@ -82,6 +82,7 @@ const HeaderContainer = styled.header`
   border-bottom: 1px solid #f0f0f0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   gap: 2rem;
+  overflow: visible;
   
   @media (max-width: 768px) {
     top: 0;
@@ -1006,7 +1007,9 @@ const CartButton = styled.button`
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 0;
+  padding: 0.5rem;
+  min-width: 24px;
+  min-height: 24px;
   transition: color 0.3s ease;
   
   &:hover {

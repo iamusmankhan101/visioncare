@@ -1,0 +1,28 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/api/products",
+      "destination": "/api/products"
+    },
+    {
+      "source": "/api/products/(.*)",
+      "destination": "/api/products"
+    },
+    {
+      "source": "/api/orders",
+      "destination": "/api/orders"
+    },
+    {
+      "source": "/api/orders/(.*)",
+      "destination": "/api/orders"
+    }
+  ],
+  "env": {
+    "UPSTASH_REDIS_REST_URL": "https://optimal-sailfish-15823.upstash.io",
+    "UPSTASH_REDIS_REST_TOKEN": "AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM"
+  }
+}

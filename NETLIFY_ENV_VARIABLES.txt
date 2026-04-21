@@ -1,0 +1,40 @@
+# 🌐 Environment Variables for PERMANENT Storage
+# Copy these exact values into your deployment dashboard
+
+# === VERCEL DEPLOYMENT URLS ===
+# Using your actual Vercel deployment URL with PERMANENT storage
+REACT_APP_API_URL=https://vision-care-hmn4.vercel.app/api/products
+REACT_APP_API_BASE_URL=https://vision-care-hmn4.vercel.app
+REACT_APP_PRODUCTS_API_URL=https://vision-care-hmn4.vercel.app/api
+REACT_APP_ORDER_API_URL=https://vision-care-hmn4.vercel.app/api
+
+# === VERCEL KV (PERMANENT STORAGE) ===
+# These are automatically added when you enable Vercel KV
+# KV_REST_API_URL=https://your-kv-url.upstash.io
+# KV_REST_API_TOKEN=your-secret-token
+# KV_REST_API_READ_ONLY_TOKEN=your-readonly-token
+# 
+# Instructions:
+# 1. Deploy backend to Railway
+# 2. Replace YOUR_RAILWAY_URL with your actual Railway URL
+# 3. Add these variables to Netlify dashboard
+# 4. Redeploy your frontend
+
+# === BUILD CONFIGURATION ===
+CI=false
+DISABLE_ESLINT_PLUGIN=true
+NODE_ENV=production
+
+# === OPTIONAL (Add if you use these features) ===
+# Firebase Push Notifications (if enabled)
+# REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+# REACT_APP_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+# REACT_APP_FIREBASE_PROJECT_ID=your-project-id
+# REACT_APP_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+# REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
+# REACT_APP_FIREBASE_APP_ID=your_app_id
+
+# EmailJS (if using contact forms)
+# REACT_APP_EMAILJS_SERVICE_ID=your_service_id
+# REACT_APP_EMAILJS_TEMPLATE_ID=your_template_id
+# REACT_APP_EMAILJS_PUBLIC_KEY=your_public_key

@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "env": {
+    "NODE_ENV": "production",
+    "UPSTASH_REDIS_REST_URL": "https://optimal-sailfish-15823.upstash.io",
+    "UPSTASH_REDIS_REST_TOKEN": "AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM",
+    "KV_URL": "rediss://default:AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM@optimal-sailfish-15823.upstash.io:6379",
+    "KV_REST_API_URL": "https://optimal-sailfish-15823.upstash.io",
+    "KV_REST_API_TOKEN": "AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM",
+    "KV_REST_API_READ_ONLY_TOKEN": "Aj3PAAIgcDK-zZ9e5hCGZwDDEEOmFAp0uKCE6Pe3hUOouS1ZTmqcnQ",
+    "REDIS_URL": "rediss://default:AT3PAAIncDIxOTBhZDMzM2IxZmQ0ZTg5ODRhZDI0ODQxMTQ2NGFiZnAyMTU4MjM@optimal-sailfish-15823.upstash.io:6379"
+  }
+}

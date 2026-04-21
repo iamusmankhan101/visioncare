@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lenses Mega Menu Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .demo-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+
+        .demo-subtitle {
+            font-size: 1.2rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        .navbar-demo {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .mega-menu-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            color: #333;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .menu-trigger:hover {
+            background: #f8f9fa;
+            color: #3ABEF9;
+        }
+
+        .menu-trigger.active {
+            background: #3ABEF9;
+            color: white;
+        }
+
+        .chevron {
+            transition: transform 0.3s ease;
+        }
+
+        .menu-trigger.active .chevron {
+            transform: rotate(180deg);
+        }
+
+        .mega-menu-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e2e8f0;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%) translateY(-10px);
+            transition: all 0.3s ease;
+            padding: 2rem;
+            margin-top: 0.5rem;
+        }
+
+        .mega-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .menu-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .menu-subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .lenses-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .lens-category {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .lens-category:hover {
+            background: #f1f5f9;
+            border-color: #3ABEF9;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(58, 190, 249, 0.15);
+        }
+
+        .lens-image-container {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lens-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .lens-category:hover .lens-image {
+            transform: scale(1.05);
+        }
+
+        .lens-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .lens-info {
+            text-align: center;
+        }
+
+        .lens-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .lens-description {
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0 0 1rem 0;
+        }
+
+        .lens-features {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3ABEF9;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .lens-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #3ABEF9;
+        }
+
+        .color-options {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .color-swatch {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px #e2e8f0;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.2);
+        }
+
+        .bottom-section {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+            text-align: center;
+        }
+
+        .view-all-button {
+            background: linear-gradient(135deg, #3ABEF9 0%, #3572EF 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(58, 190, 249, 0.3);
+        }
+
+        .demo-info {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .demo-info h3 {
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+
+        .demo-info p {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .mega-menu-dropdown {
+                width: 95vw;
+                left: 2.5vw;
+                transform: none;
+                padding: 1.5rem;
+            }
+
+            .mega-menu-dropdown.open {
+                transform: none;
+            }
+
+            .lenses-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">🔍 Lenses Mega Menu</h1>
+            <p class="demo-subtitle">Interactive dropdown menu showcasing colored and transparent contact lenses</p>
+        </div>
+
+        <div class="navbar-demo">
+            <div class="mega-menu-container">
+                <button class="menu-trigger" id="menuTrigger">
+                    Contact Lenses
+                    <span class="chevron">▼</span>
+                </button>
+                
+                <div class="mega-menu-dropdown" id="megaMenu">
+                    <div class="menu-header">
+                        <h2 class="menu-title">Contact Lenses Collection</h2>
+                        <p class="menu-subtitle">Discover our premium range of contact lenses</p>
+                    </div>
+                    
+                    <div class="lenses-grid">
+                        <div class="lens-category" onclick="selectLens('colored')">
+                            <div class="lens-image-container">
+                                <img src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                                     alt="Colored Contact Lenses" class="lens-image">
+                            </div>
+                            
+                            <div class="lens-info">
+                                <h3 class="lens-title">Colored Contact Lenses</h3>
+                                <p class="lens-description">Transform your look with vibrant colored lenses. Available in natural and dramatic shades.</p>
+                                
+                                <div class="lens-features">
+                                    <div class="feature-icon">👁️</div>
+                                    <div class="feature-icon">⚡</div>
+                                </div>
+                                
+                                <div class="color-options">
+                                    <div class="color-swatch" style="background: #8B4513;"></div>
+                                    <div class="color-swatch" style="background: #228B22;"></div>
+                                    <div class="color-swatch" style="background: #4169E1;"></div>
+                                    <div class="color-swatch" style="background: #9932CC;"></div>
+                                    <div class="color-swatch" style="background: #FF1493;"></div>
+                                    <div class="color-swatch" style="background: #32CD32;"></div>
+                                </div>
+                                
+                                <div class="lens-price">From $25</div>
+                            </div>
+                        </div>
+
+                        <div class="lens-category" onclick="selectLens('transparent')">
+                            <div class="lens-image-container">
+                                <img src="https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                                     alt="Clear Contact Lenses" class="lens-image">
+                            </div>
+                            
+                            <div class="lens-info">
+                                <h3 class="lens-title">Clear Contact Lenses</h3>
+                                <p class="lens-description">Crystal clear vision correction lenses. Comfortable daily wear with UV protection.</p>
+                                
+                                <div class="lens-features">
+                                    <div class="feature-icon">🛡️</div>
+                                    <div class="feature-icon">☀️</div>
+                                </div>
+                                
+                                <div class="lens-price">From $15</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bottom-section">
+                        <button class="view-all-button" onclick="selectLens('all')">
+                            View All Contact Lenses
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-info">
+            <h3>🎯 Features</h3>
+            <p>• <strong>Visual Categories:</strong> Colored lenses with vibrant swatches and clear lenses with UV protection icons</p>
+            <p>• <strong>Interactive Design:</strong> Hover effects, smooth animations, and responsive layout</p>
+            <p>• <strong>Product Information:</strong> Descriptions, features, pricing, and color options</p>
+            <p>• <strong>Mobile Responsive:</strong> Adapts perfectly to mobile devices</p>
+            <p>• <strong>Easy Integration:</strong> Ready to integrate into React components</p>
+        </div>
+    </div>
+
+    <script>
+        const menuTrigger = document.getElementById('menuTrigger');
+        const megaMenu = document.getElementById('megaMenu');
+        let isOpen = false;
+
+        menuTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isOpen = !isOpen;
+            
+            if (isOpen) {
+                megaMenu.classList.add('open');
+                menuTrigger.classList.add('active');
+            } else {
+                megaMenu.classList.remove('open');
+                menuTrigger.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.mega-menu-container')) {
+                megaMenu.classList.remove('open');
+                menuTrigger.classList.remove('active');
+                isOpen = false;
+            }
+        });
+
+        function selectLens(type) {
+            alert(`Selected: ${type} lenses`);
+            megaMenu.classList.remove('open');
+            menuTrigger.classList.remove('active');
+            isOpen = false;
+        }
+
+        // Add some demo interactions
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const color = e.target.style.background;
+                alert(`Selected color: ${color}`);
+            });
+        });
+    </script>
+</body>
+</html>

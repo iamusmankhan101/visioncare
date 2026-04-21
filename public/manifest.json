@@ -1,0 +1,54 @@
+{
+  "short_name": "Eyewearr Admin",
+  "name": "Eyewearr Order Management",
+  "description": "Mobile admin app for managing eyewear orders and receiving push notifications",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#3ABEF9",
+  "background_color": "#3ABEF9",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["business", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "gcm_sender_id": "103953800507",
+  "permissions": [
+    "notifications",
+    "push"
+  ],
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Push Test",
+      "short_name": "Push Test",
+      "description": "Test mobile push notifications",
+      "url": "/mobile-push-test.html",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

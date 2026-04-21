@@ -211,8 +211,8 @@ const SearchContainer = styled.div`
   border-radius: 25px;
   padding: 0.6rem 1rem;
   gap: 0.5rem;
-  min-width: 300px;
-  max-width: 350px;
+  min-width: 200px;
+  max-width: 280px;
   
   @media (max-width: 768px) {
     display: none;

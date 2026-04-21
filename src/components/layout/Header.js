@@ -996,6 +996,24 @@ const CartPopupEmpty = styled.div`
   font-size: 0.9rem;
 `;
 
+const CartButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0;
+  transition: color 0.3s ease;
+  
+  &:hover {
+    color: #48b2ee;
+  }
+`;
+
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1361,17 +1379,10 @@ const Header = () => {
         </div>
         <IconLink to="/wishlist"><FiHeart /></IconLink>
         <div ref={cartRef} style={{ position: 'relative' }}>
-          <IconLink 
-            as="button"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#333', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
-            onClick={(e) => {
-              e.preventDefault();
-              setCartPopupOpen(!cartPopupOpen);
-            }}
-          >
+          <CartButton onClick={() => setCartPopupOpen(!cartPopupOpen)}>
             <FiShoppingBag />
             {totalQuantity > 0 && <CartBadge>{totalQuantity}</CartBadge>}
-          </IconLink>
+          </CartButton>
           
           <CartPopup isOpen={cartPopupOpen}>
             <CartPopupHeader>

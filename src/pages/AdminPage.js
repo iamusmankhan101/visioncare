@@ -2131,7 +2131,7 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   backdrop-filter: blur(4px);
 `;
 
@@ -2143,6 +2143,7 @@ const ModalContent = styled.div`
   width: 90%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   position: relative;
+  z-index: 10001;
   animation: modalSlideIn 0.3s ease-out;
   
   @keyframes modalSlideIn {
@@ -2552,6 +2553,9 @@ const AdminPage = () => {
   const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'One Size'];
   const featureOptions = ['uv-protection', 'polarized', 'anti-glare', 'scratch-resistant', 'lightweight', 'flexible'];
   const lensTypeOptions = ['Standard', 'Blue Light Blocking', 'Progressive', 'Photochromic', 'Polarized'];
+  const rimOptions = ['Full Rim', 'Semi Rim', 'Rimless', 'Browline', 'Wire Frame'];
+  const styleOptions = ['Classic', 'Eco Friendly', 'Artsy', 'Retro', 'Street Style', 'Bold'];
+  const statusOptions = ['active', 'inactive', 'out-of-stock', 'coming-soon'];
   
   // Lens-specific options
   const [lensColorOptions, setLensColorOptions] = useState([
@@ -2705,6 +2709,38 @@ const AdminPage = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
+  };
+
+  // Generate placeholder image for products without images
+  const generatePlaceholderImage = (productName, category) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+    
+    // Background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 300, 200);
+    gradient.addColorStop(0, '#3ABEF9');
+    gradient.addColorStop(1, '#3572EF');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 300, 200);
+    
+    // Add glasses icon
+    ctx.fillStyle = 'white';
+    ctx.font = '48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('👓', 150, 80);
+    
+    // Add product name
+    ctx.font = '16px Arial';
+    ctx.fillText(productName.substring(0, 20), 150, 120);
+    
+    // Add category
+    ctx.font = '12px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillText(category || 'Eyewear', 150, 140);
+    
+    return canvas.toDataURL('image/png');
   };
 
   // Fetch reviews function
@@ -3070,6 +3106,29 @@ const AdminPage = () => {
     setActiveTab('dashboard');
   };
 
+  // Debug function to test update functionality
+  const testUpdateFunctionality = () => {
+    console.log('🧪 Testing update functionality...');
+    console.log('🧪 Current productData:', productData);
+    console.log('🧪 Product ID:', productData.id || productData._id);
+    console.log('🧪 Required fields - Name:', productData.name, 'Price:', productData.price);
+    
+    if (!productData.id && !productData._id) {
+      console.error('❌ No product ID found - cannot update');
+      alert('Error: No product ID found. Please select a product to edit first.');
+      return;
+    }
+    
+    if (!productData.name || !productData.price) {
+      console.error('❌ Missing required fields');
+      alert('Error: Product name and price are required.');
+      return;
+    }
+    
+    console.log('✅ Update functionality test passed - all required data is present');
+    alert('✅ Update test passed! The form has all required data. Try submitting the form.');
+  };
+
   // Enhanced input change handler for lens-specific fields
   const handleLensInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -3261,16 +3320,40 @@ const AdminPage = () => {
       });
     }
 
-    // Debug: Log the data to console (reduced frequency)
-    if (Math.random() < 0.2) {
-      console.log('📊 Chart: Real Orders:', realOrders.length, '| Has Data:', data.some(d => d.orders > 0 || d.revenue > 0));
-    }
+    // Debug: Log the data to console (always for debugging)
+    console.log('📊 Chart Debug - Real Orders:', realOrders.length);
+    console.log('📊 Chart Debug - Chart Data:', data);
+    console.log('📊 Chart Debug - Has Any Data:', data.some(d => d.orders > 0 || d.revenue > 0));
 
     // Calculate max values for scaling (minimum 1 to prevent division by zero)
     const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
     const maxOrders = Math.max(...data.map(d => d.orders), 1);
 
     const hasAnyData = data.some(d => d.orders > 0 || d.revenue > 0);
+
+    // For testing: Add sample data if no real data exists
+    if (!hasAnyData) {
+      console.log('📊 No real data found, adding sample data for testing');
+      const sampleRevenues = [1500, 2300, 1800, 2800, 2100, 3200, 1900];
+      const sampleOrders = [3, 5, 4, 7, 5, 8, 4];
+      
+      data.forEach((item, index) => {
+        item.revenue = sampleRevenues[index];
+        item.orders = sampleOrders[index];
+      });
+      
+      // Recalculate max values with sample data
+      const maxRevenueSample = Math.max(...data.map(d => d.revenue), 1);
+      const maxOrdersSample = Math.max(...data.map(d => d.orders), 1);
+      
+      return { 
+        orderData: data, 
+        maxRevenue: maxRevenueSample, 
+        maxOrders: maxOrdersSample, 
+        hasAnyData: true,
+        isTestData: true
+      };
+    }
 
     return { orderData: data, maxRevenue, maxOrders, hasAnyData };
   }, [realOrders]); // Removed chartDateOffset dependency since we're showing last 7 days
@@ -3651,10 +3734,25 @@ const AdminPage = () => {
         throw new Error('Product name and price are required.');
       }
 
-      // Ensure price is a number
+      // Ensure price is a number and map fields for API compatibility (same as create function)
       const updatedProduct = {
         ...productData,
-        price: parseFloat(productData.price)
+        price: parseFloat(productData.price),
+        // Handle color field - extract from colors array or use direct color field
+        color: productData.colors && productData.colors.length > 0
+          ? productData.colors.map(c => c.name).join(', ')
+          : productData.color || null,
+        // Map frontend field names to API field names
+        framecolor: productData.frameColor || null, // Map frameColor to framecolor for API
+        lenstypes: Array.isArray(productData.lensTypes) ? JSON.stringify(productData.lensTypes) : null,
+        colorimages: productData.colorImages ? JSON.stringify(productData.colorImages) : null,
+        sizes: Array.isArray(productData.sizes) ? JSON.stringify(productData.sizes) : null,
+        gallery: Array.isArray(productData.gallery) ? JSON.stringify(productData.gallery) : null,
+        features: Array.isArray(productData.features) ? JSON.stringify(productData.features) : null,
+        // Ensure required fields have defaults
+        gender: productData.gender || 'Unisex',
+        style: productData.style || 'Classic',
+        status: productData.status || 'active'
       };
 
       const productId = updatedProduct.id || updatedProduct._id;
@@ -3665,14 +3763,18 @@ const AdminPage = () => {
       console.log('🔍 AdminPage: Submitting - gender:', updatedProduct.gender);
       console.log('🔍 AdminPage: Submitting - style:', updatedProduct.style);
       console.log('🔍 AdminPage: Submitting - status:', updatedProduct.status);
-      console.log('🔍 AdminPage: Submitting - frameColor:', updatedProduct.frameColor);
+      console.log('🔍 AdminPage: Submitting - frameColor (frontend):', updatedProduct.frameColor);
+      console.log('🔍 AdminPage: Submitting - framecolor (API):', updatedProduct.framecolor);
       console.log('🔍 AdminPage: Submitting - sizes:', updatedProduct.sizes);
 
       // Dispatch async action to update product in API and Redux store
+      console.log('🚀 AdminPage: Dispatching updateProductAsync...');
       const result = await dispatch(updateProductAsync({
         id: productId,
         productData: updatedProduct
       })).unwrap();
+      
+      console.log('✅ AdminPage: updateProductAsync completed successfully');
 
       console.log('✅ AdminPage: Product updated successfully');
       console.log('✅ AdminPage: Update result:', result);
@@ -3990,7 +4092,6 @@ Type "DELETE ALL" to confirm:`;
     if (window.confirm('This will update all existing products without style data with random styles. Continue?')) {
       try {
         setIsLoading(true);
-        const styleOptions = ['Classic', 'Eco Friendly', 'Artsy', 'Retro', 'Street Style', 'Bold'];
 
         for (const product of products) {
           if (!product.style) {
@@ -4031,6 +4132,31 @@ Type "DELETE ALL" to confirm:`;
 
   return (
     <DashboardContainer>
+      {/* Product Type Selection Modal */}
+      {showProductTypeModal && (
+        <ModalOverlay onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalClose onClick={handleCloseModal}>×</ModalClose>
+            <ModalHeader>
+              <h2>Choose Product Type</h2>
+              <p>Select the type of product you want to add</p>
+            </ModalHeader>
+            <ProductTypeGrid>
+              <ProductTypeCard onClick={() => handleProductTypeSelect('eyewear')}>
+                <span className="icon">👓</span>
+                <h3>Eyewear Product</h3>
+                <p>Add sunglasses, eyeglasses, reading glasses, and other eyewear products</p>
+              </ProductTypeCard>
+              <ProductTypeCard onClick={() => handleProductTypeSelect('lens')}>
+                <span className="icon">🔍</span>
+                <h3>Lens Product</h3>
+                <p>Add contact lenses, lens solutions, and lens accessories</p>
+              </ProductTypeCard>
+            </ProductTypeGrid>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      
       <MobileOverlay
         isOpen={isMobileMenuOpen}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -4200,7 +4326,21 @@ Type "DELETE ALL" to confirm:`;
             <ContentGrid>
               <ChartContainer>
                 <ChartHeader>
-                  <ChartTitle>Sales & Orders Overview</ChartTitle>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <ChartTitle>Sales & Orders Overview</ChartTitle>
+                    {chartData.isTestData && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        color: 'white',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                      }}>
+                        🧪 Test Data
+                      </div>
+                    )}
+                  </div>
                   <ChartControls>
                     <ChartLegend>
                       <LegendItem>
@@ -4263,7 +4403,7 @@ Type "DELETE ALL" to confirm:`;
                     )}
                     {(() => {
                       // Extract data from chartData
-                      const { orderData, maxRevenue, maxOrders, hasAnyData } = chartData;
+                      const { orderData, maxRevenue, maxOrders, hasAnyData, isTestData } = chartData;
 
                       // Show "no data" message if there are no real orders
                       if (!hasAnyData) {
@@ -4469,30 +4609,6 @@ Type "DELETE ALL" to confirm:`;
               </HeaderRight>
             </DashboardHeader>
             <ContentArea>
-              {/* Product Type Selection Modal */}
-              {showProductTypeModal && (
-                <ModalOverlay onClick={handleCloseModal}>
-                  <ModalContent onClick={(e) => e.stopPropagation()}>
-                    <ModalClose onClick={handleCloseModal}>×</ModalClose>
-                    <ModalHeader>
-                      <h2>Choose Product Type</h2>
-                      <p>Select the type of product you want to add</p>
-                    </ModalHeader>
-                    <ProductTypeGrid>
-                      <ProductTypeCard onClick={() => handleProductTypeSelect('eyewear')}>
-                        <span className="icon">👓</span>
-                        <h3>Eyewear Product</h3>
-                        <p>Add sunglasses, eyeglasses, reading glasses, and other eyewear products</p>
-                      </ProductTypeCard>
-                      <ProductTypeCard onClick={() => handleProductTypeSelect('lens')}>
-                        <span className="icon">🔍</span>
-                        <h3>Lens Product</h3>
-                        <p>Add contact lenses, lens solutions, and lens accessories</p>
-                      </ProductTypeCard>
-                    </ProductTypeGrid>
-                  </ModalContent>
-                </ModalOverlay>
-              )}
 
               {/* Eyewear Product Form */}
               {activeTab === 'add-eyewear-product' && (
@@ -6067,16 +6183,11 @@ Type "DELETE ALL" to confirm:`;
                             {product.image ? (
                               <img src={product.image} alt={product.name} />
                             ) : (
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                height: '100%',
-                                background: '#f8fafc',
-                                color: '#64748b'
-                              }}>
-                                No Image
-                              </div>
+                              <img 
+                                src={generatePlaceholderImage(product.name, product.category)} 
+                                alt={`${product.name} placeholder`}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
                             )}
                           </ProductImage>
                           <ProductInfo>
@@ -6092,9 +6203,9 @@ Type "DELETE ALL" to confirm:`;
                           <ProductActions>
                             <ActionButton
                               onClick={() => {
-                                setSelectedProduct(product);
-                                setProductData(product);
-                                setActiveTab('edit-product');
+                                console.log('🔧 Edit button clicked for product:', product.name);
+                                console.log('🔧 Product data:', product);
+                                handleEditProduct(product);
                               }}
                             >
                               Edit
@@ -6129,6 +6240,7 @@ Type "DELETE ALL" to confirm:`;
 
               {activeTab === 'edit-product' && (
                 <>
+                  {console.log('🎯 Rendering edit-product tab with productData:', productData)}
                   <ProductFormContainer>
                     <ProductFormHeader>
                       <h2>Edit Product</h2>
@@ -6575,9 +6687,26 @@ Type "DELETE ALL" to confirm:`;
                             />
                           </FormGroup>
 
-                          <SubmitButton type="submit" disabled={isLoading}>
-                            {isLoading ? 'Updating...' : 'Update Product'}
-                          </SubmitButton>
+                          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={testUpdateFunctionality}
+                              style={{
+                                padding: '0.75rem 1rem',
+                                background: '#f59e0b',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: '600'
+                              }}
+                            >
+                              🧪 Test Update
+                            </button>
+                            <SubmitButton type="submit" disabled={isLoading}>
+                              {isLoading ? 'Updating...' : 'Update Product'}
+                            </SubmitButton>
+                          </div>
                         </Form>
                       </ProductFormMain>
 
@@ -6936,9 +7065,8 @@ Type "DELETE ALL" to confirm:`;
                             <ProductActions>
                               <ActionButton
                                 onClick={() => {
-                                  setSelectedProduct(product);
-                                  setProductData(product);
-                                  setActiveTab('edit-product');
+                                  console.log('🔧 Edit button clicked for lens product:', product.name);
+                                  handleEditProduct(product);
                                 }}
                               >
                                 Edit

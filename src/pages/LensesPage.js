@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { fetchProducts, setFilters, resetFilters } from '../redux/slices/productSlice';
 import formatPrice from '../utils/formatPrice';
 
+
 const PageContainer = styled.div`
   max-width: 1450px;
   margin: 0 auto;

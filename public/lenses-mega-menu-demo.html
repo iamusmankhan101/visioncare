@@ -100,7 +100,7 @@
             top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            width: 800px;
+            width: 1000px;
             background: white;
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
@@ -140,9 +140,15 @@
 
         .lenses-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
             margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .lenses-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         .lens-category {
@@ -326,8 +332,8 @@
 <body>
     <div class="demo-container">
         <div class="demo-header">
-            <h1 class="demo-title">🔍 Lenses Mega Menu</h1>
-            <p class="demo-subtitle">Interactive dropdown menu showcasing colored and transparent contact lenses</p>
+            <h1 class="demo-title">🔍 Complete Lenses Mega Menu</h1>
+            <p class="demo-subtitle">Interactive dropdown menu showcasing contact, prescription, and specialty lenses</p>
         </div>
 
         <div class="navbar-demo">
@@ -339,8 +345,8 @@
                 
                 <div class="mega-menu-dropdown" id="megaMenu">
                     <div class="menu-header">
-                        <h2 class="menu-title">Contact Lenses Collection</h2>
-                        <p class="menu-subtitle">Discover our premium range of contact lenses</p>
+                        <h2 class="menu-title">Complete Lens Collection</h2>
+                        <p class="menu-subtitle">Discover our comprehensive range of contact, prescription, and specialty lenses</p>
                     </div>
                     
                     <div class="lenses-grid">
@@ -351,24 +357,24 @@
                             </div>
                             
                             <div class="lens-info">
-                                <h3 class="lens-title">Colored Contact Lenses</h3>
-                                <p class="lens-description">Transform your look with vibrant colored lenses. Available in natural and dramatic shades.</p>
+                                <h3 class="lens-title">Colored Lenses</h3>
+                                <p class="lens-description">Transform your look with natural-looking colored contact lenses</p>
                                 
                                 <div class="lens-features">
                                     <div class="feature-icon">👁️</div>
-                                    <div class="feature-icon">⚡</div>
+                                    <div class="feature-icon">🛡️</div>
+                                    <div class="feature-icon">🎯</div>
                                 </div>
                                 
                                 <div class="color-options">
-                                    <div class="color-swatch" style="background: #8B4513;"></div>
-                                    <div class="color-swatch" style="background: #228B22;"></div>
-                                    <div class="color-swatch" style="background: #4169E1;"></div>
-                                    <div class="color-swatch" style="background: #9932CC;"></div>
-                                    <div class="color-swatch" style="background: #FF1493;"></div>
-                                    <div class="color-swatch" style="background: #32CD32;"></div>
+                                    <div class="color-swatch" style="background: #8B4513;" title="Natural Brown"></div>
+                                    <div class="color-swatch" style="background: #4169E1;" title="Ocean Blue"></div>
+                                    <div class="color-swatch" style="background: #228B22;" title="Emerald Green"></div>
+                                    <div class="color-swatch" style="background: #CD853F;" title="Honey Hazel"></div>
+                                    <div class="color-swatch" style="background: #9932CC;" title="Violet Purple"></div>
                                 </div>
                                 
-                                <div class="lens-price">From $25</div>
+                                <div class="lens-price">From PKR 3,200</div>
                             </div>
                         </div>
 
@@ -379,22 +385,111 @@
                             </div>
                             
                             <div class="lens-info">
-                                <h3 class="lens-title">Clear Contact Lenses</h3>
-                                <p class="lens-description">Crystal clear vision correction lenses. Comfortable daily wear with UV protection.</p>
+                                <h3 class="lens-title">Transparent Lenses</h3>
+                                <p class="lens-description">Crystal clear vision correction without changing your natural eye color</p>
                                 
                                 <div class="lens-features">
+                                    <div class="feature-icon">👁️</div>
                                     <div class="feature-icon">🛡️</div>
-                                    <div class="feature-icon">☀️</div>
+                                    <div class="feature-icon">🎯</div>
                                 </div>
                                 
-                                <div class="lens-price">From $15</div>
+                                <div class="lens-price">From PKR 2,200</div>
+                            </div>
+                        </div>
+
+                        <div class="lens-category" onclick="selectLens('contact')">
+                            <div class="lens-image-container">
+                                <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                                     alt="Contact Lenses" class="lens-image">
+                            </div>
+                            
+                            <div class="lens-info">
+                                <h3 class="lens-title">Contact Lenses</h3>
+                                <p class="lens-description">Premium contact lenses for all-day comfort and clear vision</p>
+                                
+                                <div class="lens-features">
+                                    <div class="feature-icon">👁️</div>
+                                    <div class="feature-icon">🛡️</div>
+                                    <div class="feature-icon">🎯</div>
+                                </div>
+                                
+                                <div class="lens-price">From PKR 2,500</div>
+                            </div>
+                        </div>
+
+                        <div class="lens-category" onclick="selectLens('prescription')">
+                            <div class="lens-image-container">
+                                <img src="https://images.unsplash.com/photo-1509695507497-903c140c43b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                                     alt="Prescription Lenses" class="lens-image">
+                            </div>
+                            
+                            <div class="lens-info">
+                                <h3 class="lens-title">Prescription Lenses</h3>
+                                <p class="lens-description">Custom prescription solutions for all vision correction needs</p>
+                                
+                                <div class="lens-features">
+                                    <div class="feature-icon">👁️</div>
+                                    <div class="feature-icon">🛡️</div>
+                                    <div class="feature-icon">🎯</div>
+                                </div>
+                                
+                                <div class="lens-price">From PKR 4,500</div>
+                            </div>
+                        </div>
+
+                        <div class="lens-category" onclick="selectLens('specialty')">
+                            <div class="lens-image-container">
+                                <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                                     alt="Specialty Lenses" class="lens-image">
+                            </div>
+                            
+                            <div class="lens-info">
+                                <h3 class="lens-title">Specialty Lenses</h3>
+                                <p class="lens-description">Advanced lens solutions for specific vision needs and conditions</p>
+                                
+                                <div class="lens-features">
+                                    <div class="feature-icon">👁️</div>
+                                    <div class="feature-icon">🛡️</div>
+                                    <div class="feature-icon">🎯</div>
+                                </div>
+                                
+                                <div class="lens-price">From PKR 5,500</div>
+                            </div>
+                        </div>
+
+                        <div class="lens-category" onclick="selectLens('computer')">
+                            <div class="lens-image-container">
+                                <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                                     alt="Computer Lenses" class="lens-image">
+                            </div>
+                            
+                            <div class="lens-info">
+                                <h3 class="lens-title">Computer & Gaming Lenses</h3>
+                                <p class="lens-description">Protect your eyes from digital screens and enhance visual comfort</p>
+                                
+                                <div class="lens-features">
+                                    <div class="feature-icon">👁️</div>
+                                    <div class="feature-icon">🛡️</div>
+                                    <div class="feature-icon">🎯</div>
+                                </div>
+                                
+                                <div class="color-options">
+                                    <div class="color-swatch" style="background: #FFE4B5;" title="Blue Light Blocking"></div>
+                                    <div class="color-swatch" style="background: #F0E68C;" title="Gaming Pro"></div>
+                                    <div class="color-swatch" style="background: #E6E6FA;" title="Office Pro"></div>
+                                    <div class="color-swatch" style="background: #FFB6C1;" title="Night Mode"></div>
+                                    <div class="color-swatch" style="background: #F5F5DC;" title="Anti-Fatigue"></div>
+                                </div>
+                                
+                                <div class="lens-price">From PKR 3,800</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="bottom-section">
                         <button class="view-all-button" onclick="selectLens('all')">
-                            View All Contact Lenses
+                            View All Lenses
                         </button>
                     </div>
                 </div>
@@ -403,11 +498,12 @@
 
         <div class="demo-info">
             <h3>🎯 Features</h3>
-            <p>• <strong>Visual Categories:</strong> Colored lenses with vibrant swatches and clear lenses with UV protection icons</p>
-            <p>• <strong>Interactive Design:</strong> Hover effects, smooth animations, and responsive layout</p>
-            <p>• <strong>Product Information:</strong> Descriptions, features, pricing, and color options</p>
-            <p>• <strong>Mobile Responsive:</strong> Adapts perfectly to mobile devices</p>
-            <p>• <strong>Easy Integration:</strong> Ready to integrate into React components</p>
+            <p>• <strong>Complete Categories:</strong> Contact, prescription, specialty, and computer lenses with detailed options</p>
+            <p>• <strong>Visual Design:</strong> Color swatches for tinted lenses and professional imagery</p>
+            <p>• <strong>Interactive Features:</strong> Hover effects, smooth animations, and responsive grid layout</p>
+            <p>• <strong>Comprehensive Info:</strong> Descriptions, features, pricing, and subcategory options</p>
+            <p>• <strong>Mobile Optimized:</strong> Responsive design that works perfectly on all devices</p>
+            <p>• <strong>React Ready:</strong> Fully integrated React component with styled-components</p>
         </div>
     </div>
 

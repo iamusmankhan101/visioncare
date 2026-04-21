@@ -9,10 +9,17 @@ const getApiBaseUrl = () => {
   console.log('Current hostname:', hostname);
   console.log('Window location:', window.location.href);
   
-  // Use environment variable if available (from Vercel)
+  // For deployed environments, use the same domain as the frontend
+  if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
+    const currentDomainApiUrl = `${window.location.protocol}//${window.location.host}/api`;
+    console.log('🌐 Using current domain API for deployed environment:', currentDomainApiUrl);
+    return currentDomainApiUrl;
+  }
+
+  // Use environment variable if available (from Vercel) - only for local development
   const envApiUrl = process.env.REACT_APP_PRODUCTS_API_URL;
-  if (envApiUrl) {
-    console.log('☁️ Using environment API:', envApiUrl);
+  if (envApiUrl && (hostname === 'localhost' || hostname === '127.0.0.1')) {
+    console.log('☁️ Using environment API for local development:', envApiUrl);
     return envApiUrl;
   }
   
@@ -40,10 +47,10 @@ const getApiBaseUrl = () => {
     return null; // Force localStorage usage for deployed sites
   }
   
-  // Fallback to Vercel API if needed
-  const vercelApiUrl = 'https://vision-care-hmn4.vercel.app/api';
-  console.log('☁️ Using Vercel API as fallback:', vercelApiUrl);
-  return vercelApiUrl;
+  // Fallback: Use the same domain as the frontend for API calls
+  const currentDomainApiUrl = `${window.location.protocol}//${window.location.host}/api`;
+  console.log('🌐 Using current domain API as fallback:', currentDomainApiUrl);
+  return currentDomainApiUrl;
 };
 
 // Helper function to handle API requests
@@ -495,7 +502,7 @@ const productApi = {
       const API_BASE_URL = getApiBaseUrl();
       console.log('🔗 ProductAPI: Update URL:', `${API_BASE_URL}/products/${resolvedId}`);
       
-     console.log(products);// Try to update with resolved ID - try multiple API formats
+      // Try to update with resolved ID - try multiple API formats
       try {
         console.log('🔄 ProductAPI: Attempting update with URL path format...');
         const updatedProduct = await apiRequest(`/products/${resolvedId}`, {

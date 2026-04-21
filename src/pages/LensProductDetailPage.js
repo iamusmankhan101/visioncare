@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -95,12 +95,14 @@ const ProductTitle = styled.h1`
   font-weight: 700;
   color: #333;
   margin: 0;
+  text-align: left;
 `;
 
 const PriceSection = styled.div`
   background: #f8f9fa;
   padding: 1rem;
   border-radius: 8px;
+  text-align: left;
 `;
 
 const PriceLabel = styled.p`
@@ -114,6 +116,7 @@ const Price = styled.p`
   font-weight: 700;
   color: #333;
   margin: 0;
+  text-align: left;
 `;
 
 const OptionSection = styled.div`
@@ -126,6 +129,7 @@ const OptionLabel = styled.label`
   font-size: 0.9rem;
   font-weight: 600;
   color: #333;
+  text-align: left;
 `;
 
 const Select = styled.select`
@@ -140,6 +144,50 @@ const Select = styled.select`
     outline: none;
     border-color: #48b2ee;
   }
+`;
+
+const ColorSwatchContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+const ColorSwatch = styled.div`
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: ${props => props.color};
+  border: 3px solid ${props => props.selected ? '#48b2ee' : '#e0e0e0'};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &:hover {
+    border-color: #48b2ee;
+    transform: scale(1.1);
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    opacity: ${props => props.selected ? 1 : 0};
+    transition: opacity 0.3s ease;
+  }
+`;
+
+const SelectedColorName = styled.div`
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
 `;
 
 const PrescriptionTable = styled.div`
@@ -185,11 +233,24 @@ const PowerDropdown = styled.select`
   font-size: 1rem;
   background-color: white;
   cursor: pointer;
-  min-width: 140px;
+  min-width: 180px;
   
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #48b2ee;
+    box-shadow: 0 0 0 3px rgba(72, 178, 238, 0.1);
+  }
+  
+  &:invalid {
+    border-color: #dc3545;
+  }
+  
+  option {
+    padding: 0.5rem;
+  }
+  
+  option[value=""] {
+    color: #999;
   }
 `;
 
@@ -802,6 +863,8 @@ const LensProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [rightEyePower, setRightEyePower] = useState('0.00-plain');
   const [leftEyePower, setLeftEyePower] = useState('0.00-plain');
+  
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -829,7 +892,61 @@ const LensProductDetailPage = () => {
   // Find the lens product by ID from Redux store
   const lensProduct = products?.find(product => product.id === parseInt(id));
 
-  // Fallback mock data if product not found
+  // Show loading state if products are still loading and we don't have the specific product
+  if (loading === 'loading' && !lensProduct) {
+    return (
+      <PageContainer>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          Loading product details...
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Show error state if products failed to load
+  if (loading === 'failed') {
+    return (
+      <PageContainer>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px',
+          fontSize: '1.2rem',
+          color: '#e74c3c'
+        }}>
+          Failed to load product details. Please try again.
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Show not found state if products loaded but specific product not found
+  if (loading === 'succeeded' && !lensProduct) {
+    return (
+      <PageContainer>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          Product not found.
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Fallback mock data (only used if no products are available at all)
   const fallbackProduct = {
     id: parseInt(id) || 1,
     name: 'FreshKon Mosaic',
@@ -840,10 +957,10 @@ const LensProductDetailPage = () => {
       '/images/contact-lenses-solution-bottle-banner_33099-1916.jpg'
     ],
     colors: [
-      { name: 'Natural Brown', value: 'natural-brown' },
-      { name: 'Honey', value: 'honey' },
-      { name: 'Gray', value: 'gray' },
-      { name: 'Blue', value: 'blue' }
+      { name: 'Natural Brown', value: 'natural-brown', hex: '#8B4513' },
+      { name: 'Honey', value: 'honey', hex: '#CD853F' },
+      { name: 'Gray', value: 'gray', hex: '#808080' },
+      { name: 'Blue', value: 'blue', hex: '#4169E1' }
     ],
     specifications: {
       power: '8.4',
@@ -852,13 +969,94 @@ const LensProductDetailPage = () => {
     }
   };
 
-  // Use actual product data or fallback
+  // Use actual product data or fallback (fallback should rarely be used now)
   const currentProduct = lensProduct || fallbackProduct;
   
   const powerOptions = [
-    '0.00-plain', '-0.25', '-0.50', '-0.75', '-1.00', '-1.25', '-1.50', '-1.75', '-2.00',
-    '-2.25', '-2.50', '-2.75', '-3.00', '-3.25', '-3.50', '-3.75', '-4.00', '-4.25',
-    '-4.50', '-4.75', '-5.00', '-5.25', '-5.50', '-5.75', '-6.00'
+    // Negative values (from highest to lowest)
+    { value: '-10.00', label: '-10.00' },
+    { value: '-9.75', label: '-9.75' },
+    { value: '-9.50', label: '-9.50' },
+    { value: '-9.25', label: '-9.25' },
+    { value: '-9.00', label: '-9.00' },
+    { value: '-8.75', label: '-8.75' },
+    { value: '-8.50', label: '-8.50' },
+    { value: '-8.25', label: '-8.25' },
+    { value: '-8.00', label: '-8.00' },
+    { value: '-7.75', label: '-7.75' },
+    { value: '-7.50', label: '-7.50' },
+    { value: '-7.25', label: '-7.25' },
+    { value: '-7.00', label: '-7.00' },
+    { value: '-6.75', label: '-6.75' },
+    { value: '-6.50', label: '-6.50' },
+    { value: '-6.25', label: '-6.25' },
+    { value: '-6.00', label: '-6.00' },
+    { value: '-5.75', label: '-5.75' },
+    { value: '-5.50', label: '-5.50' },
+    { value: '-5.25', label: '-5.25' },
+    { value: '-5.00', label: '-5.00' },
+    { value: '-4.75', label: '-4.75' },
+    { value: '-4.50', label: '-4.50' },
+    { value: '-4.25', label: '-4.25' },
+    { value: '-4.00', label: '-4.00' },
+    { value: '-3.75', label: '-3.75' },
+    { value: '-3.50', label: '-3.50' },
+    { value: '-3.25', label: '-3.25' },
+    { value: '-3.00', label: '-3.00' },
+    { value: '-2.75', label: '-2.75' },
+    { value: '-2.50', label: '-2.50' },
+    { value: '-2.25', label: '-2.25' },
+    { value: '-2.00', label: '-2.00' },
+    { value: '-1.75', label: '-1.75' },
+    { value: '-1.50', label: '-1.50' },
+    { value: '-1.25', label: '-1.25' },
+    { value: '-1.00', label: '-1.00' },
+    { value: '-0.75', label: '-0.75' },
+    { value: '-0.50', label: '-0.50' },
+    { value: '-0.25', label: '-0.25' },
+    // Zero power (center)
+    { value: '0.00-plain', label: '0.00 (Plain/No Power)' },
+    // Positive values (from lowest to highest)
+    { value: '+0.25', label: '+0.25' },
+    { value: '+0.50', label: '+0.50' },
+    { value: '+0.75', label: '+0.75' },
+    { value: '+1.00', label: '+1.00' },
+    { value: '+1.25', label: '+1.25' },
+    { value: '+1.50', label: '+1.50' },
+    { value: '+1.75', label: '+1.75' },
+    { value: '+2.00', label: '+2.00' },
+    { value: '+2.25', label: '+2.25' },
+    { value: '+2.50', label: '+2.50' },
+    { value: '+2.75', label: '+2.75' },
+    { value: '+3.00', label: '+3.00' },
+    { value: '+3.25', label: '+3.25' },
+    { value: '+3.50', label: '+3.50' },
+    { value: '+3.75', label: '+3.75' },
+    { value: '+4.00', label: '+4.00' },
+    { value: '+4.25', label: '+4.25' },
+    { value: '+4.50', label: '+4.50' },
+    { value: '+4.75', label: '+4.75' },
+    { value: '+5.00', label: '+5.00' },
+    { value: '+5.25', label: '+5.25' },
+    { value: '+5.50', label: '+5.50' },
+    { value: '+5.75', label: '+5.75' },
+    { value: '+6.00', label: '+6.00' },
+    { value: '+6.25', label: '+6.25' },
+    { value: '+6.50', label: '+6.50' },
+    { value: '+6.75', label: '+6.75' },
+    { value: '+7.00', label: '+7.00' },
+    { value: '+7.25', label: '+7.25' },
+    { value: '+7.50', label: '+7.50' },
+    { value: '+7.75', label: '+7.75' },
+    { value: '+8.00', label: '+8.00' },
+    { value: '+8.25', label: '+8.25' },
+    { value: '+8.50', label: '+8.50' },
+    { value: '+8.75', label: '+8.75' },
+    { value: '+9.00', label: '+9.00' },
+    { value: '+9.25', label: '+9.25' },
+    { value: '+9.50', label: '+9.50' },
+    { value: '+9.75', label: '+9.75' },
+    { value: '+10.00', label: '+10.00' }
   ];
   
   const handleFileUpload = (event) => {
@@ -1047,19 +1245,33 @@ const LensProductDetailPage = () => {
           
           <OptionSection>
             <OptionLabel>Select Color</OptionLabel>
-            <Select 
-              value={selectedColor} 
-              onChange={(e) => setSelectedColor(e.target.value)}
-            >
-              <option value="">--</option>
+            <ColorSwatchContainer>
               {(currentProduct.colors || fallbackProduct.colors).map(color => (
-                <option key={color.value} value={color.value}>
-                  {color.name}
-                </option>
+                <ColorSwatch
+                  key={color.value}
+                  color={color.hex}
+                  selected={selectedColor === color.value}
+                  onClick={() => setSelectedColor(color.value)}
+                  title={color.name}
+                />
               ))}
-            </Select>
+            </ColorSwatchContainer>
+            {selectedColor && (
+              <SelectedColorName>
+                Color: {(currentProduct.colors || fallbackProduct.colors).find(c => c.value === selectedColor)?.name}
+              </SelectedColorName>
+            )}
           </OptionSection>
           
+          <LensesNote>
+            <NoteTitle>Power Selection Guide</NoteTitle>
+            <NoteText>
+              <strong>Positive (+) Powers:</strong> For farsightedness (hyperopia) - difficulty seeing close objects clearly.<br/>
+              <strong>Negative (-) Powers:</strong> For nearsightedness (myopia) - difficulty seeing distant objects clearly.<br/>
+              <strong>Plain (0.00):</strong> No vision correction needed, cosmetic lenses only.
+            </NoteText>
+          </LensesNote>
+
           <PrescriptionTable>
             <TableHeader>
               <div></div>
@@ -1075,7 +1287,7 @@ const LensProductDetailPage = () => {
                 onChange={(e) => setRightEyePower(e.target.value)}
               >
                 {powerOptions.map(power => (
-                  <option key={power} value={power}>{power}</option>
+                  <option key={power.value} value={power.value}>{power.label}</option>
                 ))}
               </PowerDropdown>
               <SpecValue>8.4</SpecValue>
@@ -1089,7 +1301,7 @@ const LensProductDetailPage = () => {
                 onChange={(e) => setLeftEyePower(e.target.value)}
               >
                 {powerOptions.map(power => (
-                  <option key={power} value={power}>{power}</option>
+                  <option key={power.value} value={power.value}>{power.label}</option>
                 ))}
               </PowerDropdown>
               <SpecValue>8.4</SpecValue>

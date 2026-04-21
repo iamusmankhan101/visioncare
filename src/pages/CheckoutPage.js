@@ -321,7 +321,7 @@ const CODInfo = styled.div`
 const CheckoutPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [discountCode, setDiscountCode] = useState('');
-  const [selectedPayment, setSelectedPayment] = useState('card');
+  const [selectedPayment, setSelectedPayment] = useState('bank');
   const navigate = useNavigate();
   const cartItems = useSelector(state => state.cart.items) || [];
 
@@ -497,7 +497,7 @@ const CheckoutPage = () => {
               <Label>Phone</Label>
               <Input 
                 {...register('phone', { required: 'Phone number is required' })}
-                placeholder="+1 (555) 123-4567"
+                placeholder="+92 300 1234567"
               />
               {errors.phone && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.phone.message}</span>}
             </FormGroup>
@@ -508,7 +508,7 @@ const CheckoutPage = () => {
               <Label>Address</Label>
               <Input 
                 {...register('address', { required: 'Address is required' })}
-                placeholder="123 Main Street"
+                placeholder="House # 123, Street 45, Block A"
               />
               {errors.address && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.address.message}</span>}
             </FormGroup>
@@ -516,20 +516,33 @@ const CheckoutPage = () => {
             <FormRow>
               <FormGroup>
                 <Label>City</Label>
-                <Input 
-                  {...register('city', { required: 'City is required' })}
-                  placeholder="New York"
-                />
+                <Select {...register('city', { required: 'City is required' })}>
+                  <option value="">Select City</option>
+                  <option value="Lahore">Lahore</option>
+                  <option value="Karachi">Karachi</option>
+                  <option value="Islamabad">Islamabad</option>
+                  <option value="Rawalpindi">Rawalpindi</option>
+                  <option value="Faisalabad">Faisalabad</option>
+                  <option value="Multan">Multan</option>
+                  <option value="Peshawar">Peshawar</option>
+                  <option value="Quetta">Quetta</option>
+                  <option value="Sialkot">Sialkot</option>
+                  <option value="Gujranwala">Gujranwala</option>
+                  <option value="Other">Other</option>
+                </Select>
                 {errors.city && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.city.message}</span>}
               </FormGroup>
               <FormGroup>
-                <Label>State</Label>
-                <Select {...register('state', { required: 'State is required' })}>
-                  <option value="">Select State</option>
-                  <option value="NY">New York</option>
-                  <option value="CA">California</option>
-                  <option value="TX">Texas</option>
-                  <option value="FL">Florida</option>
+                <Label>Province</Label>
+                <Select {...register('state', { required: 'Province is required' })}>
+                  <option value="">Select Province</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Sindh">Sindh</option>
+                  <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
+                  <option value="Balochistan">Balochistan</option>
+                  <option value="Gilgit-Baltistan">Gilgit-Baltistan</option>
+                  <option value="Azad Kashmir">Azad Kashmir</option>
+                  <option value="Islamabad Capital Territory">Islamabad Capital Territory</option>
                 </Select>
                 {errors.state && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.state.message}</span>}
               </FormGroup>
@@ -537,19 +550,21 @@ const CheckoutPage = () => {
 
             <FormRow>
               <FormGroup>
-                <Label>ZIP Code</Label>
+                <Label>Postal Code</Label>
                 <Input 
-                  {...register('zipCode', { required: 'ZIP code is required' })}
-                  placeholder="10001"
+                  {...register('zipCode', { required: 'Postal code is required' })}
+                  placeholder="54000"
                 />
                 {errors.zipCode && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.zipCode.message}</span>}
               </FormGroup>
               <FormGroup>
                 <Label>Country</Label>
-                <Select {...register('country', { required: 'Country is required' })} defaultValue="US">
-                  <option value="US">United States</option>
-                  <option value="CA">Canada</option>
-                  <option value="UK">United Kingdom</option>
+                <Select {...register('country', { required: 'Country is required' })} defaultValue="Pakistan">
+                  <option value="Pakistan">Pakistan</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="UAE">United Arab Emirates</option>
                 </Select>
                 {errors.country && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.country.message}</span>}
               </FormGroup>
@@ -558,75 +573,42 @@ const CheckoutPage = () => {
             <PaymentSection>
               <SectionTitle>Payment Information</SectionTitle>
               
-              {/* Credit Card Payment Option */}
+              {/* Bank Transfer Payment Option */}
               <PaymentOption>
                 <PaymentHeader 
-                  selected={selectedPayment === 'card'}
-                  onClick={() => setSelectedPayment('card')}
+                  selected={selectedPayment === 'bank'}
+                  onClick={() => setSelectedPayment('bank')}
                 >
                   <PaymentTitle>
                     <PaymentRadio
                       type="radio"
                       name="payment"
-                      value="card"
-                      checked={selectedPayment === 'card'}
+                      value="bank"
+                      checked={selectedPayment === 'bank'}
                       onChange={(e) => setSelectedPayment(e.target.value)}
                     />
-                    <PaymentIcon>💳</PaymentIcon>
-                    Credit / Debit Card
+                    <PaymentIcon>🏦</PaymentIcon>
+                    Bank Transfer
                   </PaymentTitle>
-                  <AccordionIcon expanded={selectedPayment === 'card'}>
+                  <AccordionIcon expanded={selectedPayment === 'bank'}>
                     ▼
                   </AccordionIcon>
                 </PaymentHeader>
                 
-                <PaymentContent expanded={selectedPayment === 'card'}>
-                  <PaymentForm>
-                    <FormGroup>
-                      <Label>Card Number</Label>
-                      <Input 
-                        {...register('cardNumber', { 
-                          required: selectedPayment === 'card' ? 'Card number is required' : false 
-                        })}
-                        placeholder="1234 5678 9012 3456"
-                      />
-                      {errors.cardNumber && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cardNumber.message}</span>}
-                    </FormGroup>
-
-                    <CardFormRow>
-                      <FormGroup>
-                        <Label>Expiry Date</Label>
-                        <Input 
-                          {...register('expiryDate', { 
-                            required: selectedPayment === 'card' ? 'Expiry date is required' : false 
-                          })}
-                          placeholder="MM/YY"
-                        />
-                        {errors.expiryDate && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.expiryDate.message}</span>}
-                      </FormGroup>
-                      <FormGroup>
-                        <Label>CVV</Label>
-                        <Input 
-                          {...register('cvv', { 
-                            required: selectedPayment === 'card' ? 'CVV is required' : false 
-                          })}
-                          placeholder="123"
-                        />
-                        {errors.cvv && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cvv.message}</span>}
-                      </FormGroup>
-                    </CardFormRow>
-
-                    <FormGroup>
-                      <Label>Cardholder Name</Label>
-                      <Input 
-                        {...register('cardholderName', { 
-                          required: selectedPayment === 'card' ? 'Cardholder name is required' : false 
-                        })}
-                        placeholder="John Doe"
-                      />
-                      {errors.cardholderName && <span style={{color: 'red', fontSize: '0.8rem'}}>{errors.cardholderName.message}</span>}
-                    </FormGroup>
-                  </PaymentForm>
+                <PaymentContent expanded={selectedPayment === 'bank'}>
+                  <CODInfo>
+                    <h4>Bank Transfer Details</h4>
+                    <p style={{marginBottom: '1rem'}}>Transfer the order amount to the following bank account:</p>
+                    <div style={{backgroundColor: 'white', padding: '1rem', borderRadius: '4px', marginBottom: '1rem'}}>
+                      <p style={{margin: '0.5rem 0'}}><strong>Bank Name:</strong> Meezan Bank</p>
+                      <p style={{margin: '0.5rem 0'}}><strong>Account Title:</strong> Vision Care Optometry Clinic</p>
+                      <p style={{margin: '0.5rem 0'}}><strong>Account Number:</strong> 01234567890123</p>
+                      <p style={{margin: '0.5rem 0'}}><strong>IBAN:</strong> PK36MEZN0001234567890123</p>
+                    </div>
+                    <p style={{fontSize: '0.85rem', color: '#666'}}>
+                      After making the payment, please send the payment receipt to our WhatsApp: +92 311 478 2424 or email: Visioncareoptometryclinic@gmail.com
+                    </p>
+                  </CODInfo>
                 </PaymentContent>
               </PaymentOption>
 

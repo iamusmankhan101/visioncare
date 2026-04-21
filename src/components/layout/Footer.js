@@ -237,18 +237,18 @@ const Footer = () => {
       <FooterContent>
         <LogoSection>
           <Logo>
-  <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-    <img 
-      src="/images/logo2.png" 
-      alt="eyebuydirect logo" 
-      style={{ height: '62px', marginRight: '8px' , filter: 'invert(1)' }} 
-    />
+            <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <img
+                src="/images/logo2.png"
+                alt="eyebuydirect logo"
+                style={{ height: '62px', marginRight: '8px', filter: 'invert(1)' }}
+              />
 
-  </Link>
-</Logo>
+            </Link>
+          </Logo>
 
           <LogoDescription>
-            Transformação digital que realmente funciona. Oferecemos os melhores óculos com preços acessíveis e qualidade premium.
+            Your trusted partner for premium eyewear with affordable prices and exceptional quality.
           </LogoDescription>
           <SocialIcons>
             <SocialIcon href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
@@ -265,15 +265,16 @@ const Footer = () => {
             </SocialIcon>
           </SocialIcons>
         </LogoSection>
-        
+
         <MenuSection>
           <FooterTitle>Useful Links</FooterTitle>
           <FooterLink to="/">Home</FooterLink>
-          <FooterLink to="/about">About</FooterLink>
-          <FooterLink to="/collections">Collections</FooterLink>
-          <FooterLink to="/contact">Contact</FooterLink>
+          <FooterLink to="/products?category=eyeglasses">Eyewear</FooterLink>
+          <FooterLink to="/products?category=sunglasses">Sunglasses</FooterLink>
+          <FooterLink to="/lenses">Lenses</FooterLink>
+          <FooterLink to="/premium-brands">Premium Brands</FooterLink>
         </MenuSection>
-        
+
         <MenuSection>
           <FooterTitle>Help</FooterTitle>
           <FooterLink to="/size-guide">Size Guide</FooterLink>
@@ -281,7 +282,7 @@ const Footer = () => {
           <FooterLink to="/help/exchange-return">Returns & Exchanges</FooterLink>
           <FooterLink to="/help/faq">FAQ</FooterLink>
         </MenuSection>
-        
+
         <ContactSection>
           <FooterTitle>Contact Us</FooterTitle>
           <ContactItem>
@@ -310,10 +311,10 @@ const Footer = () => {
           </ContactItem>
         </ContactSection>
       </FooterContent>
-      
+
       <Copyright>
         <div>© {new Date().getFullYear()} Eyewearr. All Rights Reserved.</div>
-        
+
       </Copyright>
     </FooterContainer>
   );
